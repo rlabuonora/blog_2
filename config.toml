@@ -12,12 +12,9 @@ enableEmoji = true
 pygmentsCodeFences = true
 
 [author]
-    name = ""
-    github = "funkydan2"
-    gitlab = ""
-    linkedin = ""
-    facebook = ""
-    twitter = "ds_says"
+    name = "Rafael La Buonora"
+    github = "rlabuonora"
+    twitter = "rlabuonora"
     instagram = ""
 
 [params]
