@@ -1,11 +1,11 @@
 
    <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
      <channel>
-       <title>Posts on Kiera</title>
+       <title>Posts on Rafael La Buonora</title>
        <link>/posts/</link>
-       <description>Recent content in Posts on Kiera</description>
+       <description>Recent content in Posts on Rafael La Buonora</description>
        <generator>Hugo -- gohugo.io</generator>
-       <copyright>Copyright &amp;copy; 2019 - Author Name</copyright>
+       <copyright>Copyright &amp;copy; 2019 - Rafael La Buonora</copyright>
        <lastBuildDate>Thu, 23 Jul 2015 21:13:14 -0500</lastBuildDate>
        
            <atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />

@@ -1,6 +1,6 @@
 baseurl = "/"
-title = "Kiera"
-copyright = "Copyright &copy; 2019 - Author Name"
+title = "Rafael La Buonora"
+copyright = "Copyright &copy; 2019 - Rafael La Buonora"
 canonifyurls = true
 theme = "hugo-kiera"
 ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
@@ -15,7 +15,7 @@ pygmentsCodeFences = true
     name = "Rafael La Buonora"
     github = "rlabuonora"
     twitter = "rlabuonora"
-    instagram = ""
 
 [params]
-    tagline = "A Hugo theme for creative and technical writing"
+    tagline = "Mi blog de data science"
+    favicon = "favicon.png"
