@@ -7,7 +7,7 @@ categories: []
 tags: []
 draft: false
 ---
-```{r echo = FALSE}
+```{r echo = FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning=FALSE)
 
 suppressPackageStartupMessages(library(dplyr))
@@ -46,7 +46,6 @@ libros <- tribble(
 mvll_tidy <- readRDS('../../public/data/mvll_tidy.rds') %>%
   unnest_tokens(word, text)
 ```
-# Vargas Llosa
 
 Mario Vargas Llosa es uno de mis novelistas preferidos. El año pasado releí varios de sus libros y escribí [algunos reviews](https://rlabuonora74.wordpress.com/). En este post aplico algunas de las técnicas de [este libro](https://www.tidytextmining.com/) a las novelas.
 

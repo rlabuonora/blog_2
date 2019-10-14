@@ -20,16 +20,7 @@
          <description>
 
 
-&lt;pre&gt;&lt;code&gt;## Loading required package: RColorBrewer&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Registered S3 methods overwritten by &amp;#39;ggplot2&amp;#39;:
-##   method         from 
-##   [.quosures     rlang
-##   c.quosures     rlang
-##   print.quosures rlang&lt;/code&gt;&lt;/pre&gt;
-&lt;div id=&#34;vargas-llosa&#34; class=&#34;section level1&#34;&gt;
-&lt;h1&gt;Vargas Llosa&lt;/h1&gt;
 &lt;p&gt;Mario Vargas Llosa es uno de mis novelistas preferidos. El año pasado releí varios de sus libros y escribí &lt;a href=&#34;https://rlabuonora74.wordpress.com/&#34;&gt;algunos reviews&lt;/a&gt;. En este post aplico algunas de las técnicas de &lt;a href=&#34;https://www.tidytextmining.com/&#34;&gt;este libro&lt;/a&gt; a las novelas.&lt;/p&gt;
-&lt;/div&gt;
 &lt;div id=&#34;datos&#34; class=&#34;section level1&#34;&gt;
 &lt;h1&gt;Datos&lt;/h1&gt;
 &lt;p&gt;Para este proyecto, conseguí todas las novelas de Vargas Llosa en Inglés en formato digital (epub, mobi) y las convertí a texto.&lt;/p&gt;
