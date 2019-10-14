@@ -30,6 +30,15 @@
        </item>
        
        <item>
+         <title>vis</title>
+         <link>/tags/vis/</link>
+         <pubDate>Tue, 17 Jul 2018 00:00:00 +0000</pubDate>
+         
+         <guid>/tags/vis/</guid>
+         <description></description>
+       </item>
+       
+       <item>
          <title>nlp</title>
          <link>/tags/nlp/</link>
          <pubDate>Sat, 20 Jan 2018 00:00:00 +0000</pubDate>
@@ -44,15 +53,6 @@
          <pubDate>Wed, 16 Aug 2017 00:00:00 +0000</pubDate>
          
          <guid>/tags/ggplot/</guid>
-         <description></description>
-       </item>
-       
-       <item>
-         <title>vis</title>
-         <link>/tags/vis/</link>
-         <pubDate>Wed, 16 Aug 2017 00:00:00 +0000</pubDate>
-         
-         <guid>/tags/vis/</guid>
          <description></description>
        </item>
        

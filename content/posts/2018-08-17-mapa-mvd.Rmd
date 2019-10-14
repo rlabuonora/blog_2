@@ -1,0 +1,107 @@
+---
+title: Un mapa de Montevideo con leaflet
+author: Rafa
+date: '2018-07-17'
+slug: mapas
+categories: [R]
+tags:
+  - R
+  - Vis
+---
+
+```{r results='hide', echo = FALSE, message=FALSE, warning=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, 
+                      warning=FALSE,
+                      message = FALSE)
+
+```
+
+R tiene abstracciones para trabajar con información geográfica sin entender a fondo los detalles de cómo se hacen las proyecciones cartográficas y qué son los sistemas de coordenadas. 
+
+La API de `StreetView` publica un mapa con bastante información del terreno como calles, ríos y lugares importantes obtenidos a partir de fotos satelitales. Este es el tipo de mapas que suelen usar aplicaciones como Uber o Google Maps. Leaflet facilita el consumo de la API para hacer mapas interactivos generando un widget HTML con controles para moverse y hacer zoom. 
+
+
+```{r}
+library(tidyverse)
+library(maptools)
+library(leaflet)
+library(dplyr)
+library(rgdal)
+library(shiny)
+
+mvd <- list(lng=-56.164532, lat=-34.901112)
+
+leaflet() %>% 
+  setView(lng=mvd$lng, lat=mvd$lat, zoom=12) %>% 
+  addTiles(group="Google") 
+```
+
+Para hacer este mapa llamamos a `leaflet::leaflet()` sin argumentos, `setView()` para especificar las coordenadas y zoom iniciales y `addTiles()` para dibujar el mapa. Leaflet sigue las convenciones del `tidyverse`, por lo que podemos encadenar las llamadas a las funciones con `%>% `.
+
+Hay otro tipo de mapas que representan algun tipo de entidad geográfica (un país o un barrio) mediante un polígono. La información para construir estos mapas no está disponible en las imágenes satelitales, porque las fronteras entre estas entidades no es visible. En Uruguay, el INE publica _shapefiles_ con la información cartográfica de los departamentos de Uruguay, los barrios de Montevideo, etc.
+
+Los _shapefiles_ se publican con otros archivos que incluyen datos y otros atributos de las formas. `readOGR()` devuelve un objeto `SpatialPolygonsDataFrame`:
+
+```{r}
+# leer shapefile (cuidado que incluyen los shpx, dbf, etc.)
+states <- readOGR("../../static/shps/barrios/ine_barrios_mvd_nbi85.shp",
+                  layer = "ine_barrios_mvd_nbi85", GDAL1_integer64_policy = TRUE)
+
+
+crswgs84 <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+# proyeccion ine
+prj <- CRS("+proj=utm +zone=21 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
+
+# asignar proy
+proj4string(states) <- prj
+# transformar la proyección
+st <- spTransform(states, crswgs84)
+```
+
+El mapa que vamos a usar tiene un `data_frame` con tres columnas: un código para cada barrio, el nombre y el área. Estos datos estan en el archivo dbf que viene en el zip.
+
+
+```{r}
+head(states@data)
+```
+
+Los _shapefiles_ son útiles para dibujar _choropleths_, que pintan cada polígono con un color para mostrar alguna variable. Acá pintamos cada barrio según su área:
+
+```{r}
+# Paleta de colores
+qpal <- colorNumeric("YlOrRd", st@data$AREA_KM)
+
+leaflet(st) %>%
+  addPolygons(layerId=~NROBARRIO, color = "#444444", weight = 1, smoothFactor = 0.5,
+              opacity = 1.0, fillOpacity = 0.5,
+              fillColor = ~qpal(AREA_KM),
+              highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                  bringToFront = TRUE), group="INE") %>% 
+  addLegend(pal = qpal, values = ~AREA_KM)
+
+```
+
+Para hacer el _choropleth_ necesitamos una función que nos de un color para cada valor de la variable que queremos visualizar. Eso es lo que hace `qpal`. Luego dibujamos el mapa con `leaflet()` y `addPolygons()`.
+
+
+Los shapefiles tienen las coordenadas de las formas que contienen, por lo que si especificamos la proyección usada podemos superponerlos con los mapas que publica `StreetView`:
+
+
+
+```{r}
+
+leaflet(st) %>%
+  addPolygons(layerId=~NROBARRIO, color = "#444444", weight = 1, smoothFactor = 0.5,
+              opacity = 1.0, fillOpacity = 0.5,
+              fillColor = ~colorQuantile("YlOrRd", AREA_KM)(AREA_KM),
+              highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                  bringToFront = TRUE), group="INE") %>%
+  addTiles(group="StreetView") %>%
+  addLayersControl(
+    overlayGroups = c("INE", "StreetView"),
+    options = layersControlOptions(collapsed = FALSE)
+  )
+```
+
+Especificar `group=INE` y `group=StreetView` permite agrupar estas capas del mapa para que `addLayerControl` las identifique para genera los dos checkboxes que permiten prender y apagar esas capas del mapa. 

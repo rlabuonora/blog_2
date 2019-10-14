@@ -38,6 +38,26 @@
   </url>
   
   <url>
+    <loc>/categories/</loc>
+    <lastmod>2018-07-17T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/categories/r/</loc>
+    <lastmod>2018-07-17T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/posts/mapas/</loc>
+    <lastmod>2018-07-17T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/vis/</loc>
+    <lastmod>2018-07-17T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/posts/hamlet/</loc>
     <lastmod>2018-01-20T00:00:00+00:00</lastmod>
   </url>
@@ -60,15 +80,6 @@
   <url>
     <loc>/tags/ggplot/</loc>
     <lastmod>2017-08-16T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/vis/</loc>
-    <lastmod>2017-08-16T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/categories/</loc>
   </url>
   
 </urlset>

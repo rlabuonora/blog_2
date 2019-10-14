@@ -17,7 +17,7 @@ pygmentsCodeFences = true
     twitter = "rlabuonora"
 
 [params]
-    tagline = "Mi blog de data science"
+    tagline = "Data blog"
     favicon = "favicon.png"
     MathJaxCDN = "//cdnjs.cloudflare.com/ajax/libs"
     MathJaxVersion = "2.7.5"
