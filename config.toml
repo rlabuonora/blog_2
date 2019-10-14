@@ -1,4 +1,4 @@
-baseurl = "/"
+baseurl = "https://www.blog.rlabuonora.com/"
 title = "Rafael La Buonora"
 copyright = "Copyright &copy; 2019 - Rafael La Buonora"
 canonifyurls = true
