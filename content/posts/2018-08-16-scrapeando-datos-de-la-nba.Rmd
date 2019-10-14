@@ -1,0 +1,321 @@
+---
+title: Scraping NBA data with rvest and purrr
+author: Rafa
+date: '2018-08-01'
+slug: scraping-nba-data
+categories: []
+tags: ["R", "purrr"]
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      warning = FALSE,
+                      message = FALSE, 
+                      cache = TRUE)
+
+library(knitr)
+library(tidyverse)
+hook_output <- knit_hooks$get("output")
+knit_hooks$set(output = function(x, options) {
+  lines <- options$output.lines
+  if (is.null(lines)) {
+    return(hook_output(x, options))  # pass to default hook
+  }
+  x <- unlist(strsplit(x, "\n"))
+  more <- "..."
+  if (length(lines)==1) {        # first n lines
+    if (length(x) > lines) {
+      # truncate the output, but add ....
+      x <- c(head(x, lines), more)
+    }
+  } else {
+    x <- c(more, x[lines], more)
+  }
+  # paste these lines together
+  x <- paste(c(x, ""), collapse = "\n")
+  hook_output(x, options)
+})
+```
+
+
+The NBA does a great job releasing statistics on every aspect of the game. Most teams have analytics experts crunching those numbers for insights to get a competitive advantage.
+
+In this post I go through the process of scraping data from [basketball-reference.com](https://www.basketball-reference.com/) using the R package `rvest`. We also do some data munging with `purrr` and string interpolation with `glue`.
+
+
+# NBA Reference
+This website has statistics on every aspect of the game for a long time. In this post, I'll focus on individual player stats (Field Goal Percentage, Average Minutes, etc.) from the 2000/2001 season up to 2017/2018.
+
+If you follow [this link](https://www.basketball-reference.com/leagues/NBA_2017_per_game.html), you can find the data for the 2017 season in an html table.
+
+Html uses a special markup language to format the tables so that your browser can render it properly. Typically, an html table has this structure:
+
+```{html html, eval = FALSE}
+<table>
+  <th>Player</th>
+  <td>Data<td>
+</table>
+```
+
+To get this into an R data frame, you can use rvest. The first step is to get all the html from the page using read_html.
+
+```{r get_webpage}
+library(rvest)
+nba_url <- "https://www.basketball-reference.com/leagues/NBA_2017_per_game.html"
+web_page <- read_html(nba_url)
+
+```
+
+Now we need to get the actual data from the table. `html_table` does just that:
+
+```{r page_to_table}
+data <- html_table(web_page)
+head(data[[1]])
+```
+
+That was easy! html_table returns a list with all the tables in the web_page as a data_frame. What we want is the first element of that list.
+
+```{r}
+data <- data[[1]]
+```
+
+
+Let's inspect the data:
+
+```{r, output.lines=15}
+str(data)
+```
+Ok, so all the columns are read in as text. That's natural, since all html pages are text, so we need to convert the data to the correct data types. 
+
+Most columns seem to be `numeric`, except `Player Name` which is a `character` vector, `Player Position` and `Team` which are `factors`.
+
+One approach to correcting the data types is to use dplyr's mutate:
+
+```{r convert_types, message=FALSE}
+library(dplyr)
+data_1 <- data %>% 
+  mutate(Rk = as.numeric(Rk),
+         Pos = as.factor(Pos),
+         Age = as.numeric(Age))
+#       ...
+
+str(select(data_1, Rk, Pos, Age))
+```
+
+But there's a better way. `mutate_at` applies a function to a list of columns.
+
+```{r convert_types_2}
+data_2 <- data %>% 
+  mutate_at(vars(Tm, Pos), factor)
+
+str(select(data_2, Tm, Pos))
+```
+
+ The Columns need to be specified as a list of variables: `vars(Tm, Pos)`. In this case, the function applied is `factor`.
+
+Repeat for all the numeric variables using the `:` notation to select all the columns from `G` to `PS.G`.
+
+```{r convert_type_3, output.lines=15}
+data_3 <- data %>%
+  mutate_at(vars(G:`PTS`, Age), as.numeric)
+str(select(data_3, G:`PTS`, Age))
+```
+
+But wait, what about the rest of the years? You probably heard about the DRY principe: Don't Repeat Yourself. It'd be silly to write a whole script just to download data from another season, because most of the code would be the same. So we need to *reuse* our code to get data from the rest of the seasons.
+
+
+To make our code more reusable, the first thing we need to do is build the url to get the html. We'll use a super cool package called `glue` for that. 
+
+```{r glue}
+library(glue)
+name <- "Rafa"
+glue("Hello, {name}")
+```
+
+I'm sure you get the idea. It's what programmer's call *string interpolation*.
+
+For loops are used to *iterate* over collections, so we can repeat some process without copying the code. With a for loop, we can generate a vector of urls for every season we're interested in:
+  
+```{r for_loop}
+base_url <- "https://www.basketball-reference.com/leagues/"
+page <- "NBA_{year}_per_game.html"
+urls <- vector("double", length(2000:2017))
+for (year in 2000:2017) {
+  urls[[year-1999]] <- glue(base_url, page) ## year -1999 gives 1, 2, 3, ...
+}
+head(urls)
+```
+
+Awesome! Now instead of creating a vector of urls, we'll create a list of data frames, one for every season.
+  
+```{r for_loop_2, cache = TRUE, output.lines=15}
+base_url <- "https://www.basketball-reference.com/leagues/"
+page <- "NBA_{year}_per_game.html"
+data <- list()
+
+for (year in 2015:2017) {
+  nba_url <- glue(base_url, page) 
+  web_page <- read_html(nba_url)
+  data[[year-2014]] <- html_table(web_page)[[1]]
+
+}
+str(data)
+```
+
+# Better iteration with map
+Now our script does everything we want it to do. But there's a wrinkle we have to iron out. 
+
+A lot of programming is about iteration, and every programming language supports for loops. R has a great way to make iteration cleaner with the `purrr` package. There's a whole chapter on iteration in [R for Data Science](http://r4ds.had.co.nz/iteration.html), which is a must read for anyone interested in R.
+
+Our script has to repeat the same steps for every year from 2000 to 2017. That's a job for `map`! `map` takes a `list` and applies a function to every element of the list. 
+
+For example, here we apply the `head` function to a list of data frames to get the first 6 lines of each one:
+  
+```{r purrr}
+my_list <- list(mtcars, iris)
+purrr::map(my_list, head)
+```
+
+Instead of `head`, which is a predefined function, you can use your own functions:
+  
+```{r}
+my_list <- list(mtcars, iris)
+my_func <- function(data_frame) { print("Hello from my fun!")}
+purrr::map(my_list, my_func)
+```
+
+When applying map, you need to figure out our initial list to iterate over, and the function we want to apply to it's elements in every iteration. The first part is easy, to get a list of seasons, we convert a numeric vector into a list like: `as.list(2000:2017)`.
+
+
+Now we need a function that takes one year and does the job for that year. Something like:
+  
+```{r}
+get_player_data <- function(year) {
+  base_url <- "https://www.basketball-reference.com/leagues/"
+  page <- "NBA_{year}_per_game.html"
+  # Download data
+  nba_url <- glue(base_url, page) 
+  # extract the data frame from the table
+  web_page <- read_html(nba_url)
+  data <- html_table(web_page)[[1]]
+  # return a data frame
+  data
+}
+
+data.14 <- get_player_data(2014)
+head(data.14)
+```
+
+# Pipes
+Pipes are a well known feature in the `tidyverse`, so I won't go into detail of how they work. We could turn our function into a set of pipes easily except for this line: `data <- html_table(web_page)[[1]]`. 
+
+We're actually calling two functions in that line: `html_table` with the `web_page` argument and `[[` with `1` as an argument. 
+```{r}
+web_page <- read_html(nba_url)
+tbl_lst <- html_table(web_page)
+df <- `[[`(tbl_lst, 1)
+```
+  
+So we can pipe it like this:
+
+```{r}
+df_2 <- web_page %>% 
+ html_table %>% 
+ `[[`(1)
+```
+
+Finally, we re-write our get_player_data function as:
+  
+```{r}
+get_player_data <- function(year) {
+  base_url <- "https://www.basketball-reference.com/leagues/"
+  page <- "NBA_{year}_per_game.html"
+  
+  glue(base_url, page) %>% 
+    read_html %>% 
+    html_table %>% 
+    `[[`(1)
+}
+
+df.14 <- get_player_data(2014)
+head(df.14)
+```
+
+Good, now we're all set for using `map`:
+
+```{r, cache = TRUE, output.lines=15}
+list_of_data_frames <- as.list(2000:2017) %>% 
+  purrr::map(get_player_data)
+  
+str(list_of_data_frames)
+```
+
+# Another functional idiom: Reduce
+
+Map takes list and returns a list. In our script, it takes a list of numbers as input and returns a list of data frames. We now need to roll all those data frames into a single data frame.
+
+That's what reduce does. It takes a list and applies a function to consequtive pairs. accumulating the results. 
+  
+```{r}
+lst <- list(1, 2, 3, 4) 
+purrr::reduce(lst, sum) # don't do this in real life!
+```
+  
+Of course, since R's sum is vectorized you don't ever need to do that,
+
+Reduce works great with map:
+  
+```{r}
+lst <- list(1, 2, 3, 4) 
+# Find the sum of the square root of 1, 2, 3, 4
+purrr::map(lst, sqrt) %>% 
+  purrr::reduce(sum)
+```
+
+Another example: get the sum of the rows in a list of data frames:
+```{r}
+list(mtcars, iris) %>% 
+  purrr::map(nrow) %>% 
+  purrr::reduce(sum)
+```
+
+In our case, what we need it to use `reduce` with bind_rows, so we accumulate all the rows in our data_frame into a single one.
+
+Putting all the pieces together in the final script:
+```{r script, eval = FALSE}
+library(glue)
+library(purrr)
+library(dplyr)
+library(rvest)
+
+# Download data table from basketball reference
+get_player_data <- function(year) {
+  
+  base_nba_url <- "https://www.basketball-reference.com/leagues/NBA_{year}_per_game.html"
+  
+  glue(base_nba_url) %>% 
+    read_html() %>% 
+    html_table() %>% 
+    `[[`(1) %>% 
+    mutate(Year = year)
+}
+
+data <- as.list(2000:2018) %>% 
+  purrr::map(get_player_data) %>% 
+  purrr::reduce(bind_rows) %>% 
+  mutate_at(vars(G:`PS/G`, Age), as.numeric) %>% 
+  mutate_at(vars(Tm, Pos), factor)
+
+#saveRDS(data, file="~/Desktop/data_science/nba_data_00_18.rds")
+```
+
+# What to do with the data
+  - https://fastbreakdata.com/classifying-the-modern-nba-player-with-machine-learning-539da03bb824
+  - https://www.reddit.com/r/nba/comments/6pp8jo/ocrethinking_basketball_positions_with_machine/
+  - http://cs229.stanford.edu/proj2012/Wheeler-PredictingNBAPlayerPerformance.pdf
+  
+  + Effect of injury
+  + Regression candidates in a team
+  + PCA
+  + player stats predict team offense and defense rating?
+  + predict wins based on offense and defense rating
