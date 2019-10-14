@@ -1,0 +1,92 @@
+---
+title: Tidy Vargas Llosa
+author: Rafa
+date: '2017-12-20'
+slug: tidy-vargas-llosa
+categories: []
+tags: []
+draft: false
+---
+
+
+
+<p>Mario Vargas Llosa es uno de mis novelistas preferidos. El año pasado releí varios de sus libros y escribí <a href="https://rlabuonora74.wordpress.com/">algunos reviews</a>. En este post aplico algunas de las técnicas de <a href="https://www.tidytextmining.com/">este libro</a> a las novelas.</p>
+<div id="datos" class="section level1">
+<h1>Datos</h1>
+<p>Para este proyecto, conseguí todas las novelas de Vargas Llosa en Inglés en formato digital (epub, mobi) y las convertí a texto.</p>
+<p>El primer paso para analizar texto es estructurarlo para el análisis. Este proceso se llama tokenización, porque implica separar el texto en “tokens”, pequeñas unidades de análisis. En este caso vamos a trabajar con texto tokenizado en palabras. El proceso de tokenización también puede incluír convertir las palabras a minúsculas y sacar las puntuaciones.</p>
+</div>
+<div id="wordcloud" class="section level1">
+<h1>Wordcloud</h1>
+<p>El análisis más básico de texto on R se llama WordCloud, y grafica las palabras más usadas en el texto analizando con el tamaño de la fuente proporcional a la frecuencia en que aparecen los términos.</p>
+<p>Para hacer un WordCloud para una novela concreta, filtramos el data frame para que tenga solo el texto de la novela, y usamos <code>anti_join</code> para sacar las stop words. Las <code>stop words</code> son palabras como “la” y “de”. Suelen ser las palabras más usadas, pero no tienen información sobre el contenido del texto, por lo que es conveniente sacarlas.</p>
+<p>Los otros tokens que llaman la atención en este análisis son los nombres de los personajes. Rigoberto y Lucrecia son los tokens más usados en Los cuadernos de don Rigoberto.</p>
+<pre class="r"><code>s &lt;- mvll_tidy %&gt;% 
+  filter(title == &quot;Notebooks of Don Rigoberto&quot; ) %&gt;%
+  filter(!str_detect(word, &quot;\u2019&quot;)) %&gt;% # remove didn&#39;t, they&#39;re, etc.
+  anti_join(stop_words) %&gt;%
+  count(word, sort = TRUE) %&gt;% 
+  with(wordcloud(word, n, max.words = 40))</code></pre>
+<p><img src="/posts/2018-11-20-tidy-vargas-llosa_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+</div>
+<div id="palabras-caracteristicas-de-cada-libro" class="section level1">
+<h1>Palabras características de cada libro</h1>
+<p>Otro análisis similar es el índice de tf-idf. Esta métrica busca extraer los términos más característicos de un texto.</p>
+<pre class="r"><code>book_words &lt;- mvll_tidy %&gt;%
+  count(title, word, sort = TRUE) %&gt;%
+  ungroup %&gt;%
+  bind_tf_idf(word, title, n)
+
+plt &lt;- book_words %&gt;%
+  arrange(desc(tf_idf)) %&gt;%
+  mutate(word = factor(word, levels = rev(unique(word))))
+
+
+
+plt %&gt;%
+  filter(title %in% libros$title[10:13]) %&gt;%
+  group_by(title) %&gt;%
+  top_n(10) %&gt;%
+  ungroup %&gt;%
+  ggplot(aes(word, tf_idf, fill = title)) +
+  geom_col(show.legend = FALSE) +
+  labs(x = NULL, y = &quot;tf-idf&quot;) + 
+  facet_wrap(~title, ncol = 2, scales=&quot;free&quot;) + 
+  coord_flip()</code></pre>
+<p><img src="/posts/2018-11-20-tidy-vargas-llosa_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+</div>
+<div id="sentiment-analysis" class="section level1">
+<h1>Sentiment Analysis</h1>
+<p>El análisis de sentimiento busca crear métricas para que tan positivo o negativo es el texto que estamos analizando. Para eso, necesitamos un “léxico”, una base de datos con palabras y sus sentimientos correspondientes. Bing es uno de los léxicos disponibles, y para cada palabra define si es positivo o negativo:</p>
+<pre class="r"><code>head(get_sentiments(&quot;bing&quot;))</code></pre>
+<pre><code>## # A tibble: 6 x 2
+##   word       sentiment
+##   &lt;chr&gt;      &lt;chr&gt;    
+## 1 2-faces    negative 
+## 2 abnormal   negative 
+## 3 abolish    negative 
+## 4 abominable negative 
+## 5 abominably negative 
+## 6 abominate  negative</code></pre>
+<p>Para analizar el texto de las novelas, usamos el léxico para determinar si cada palabra es positiva o negativa. Después tomamos unidades de 80 líneas y calculamos <code>sentiment</code> como la diferencia entre la cantidad de palabras positivas y negativas. Esto nos da una métrica de que tan positivas son las palabras usadas en esa parte del texto.</p>
+<p>La columna <code>idx</code> son bloques de 80 líneas y sirven para encontrar pasajes en las novelas después de visualizarlas.</p>
+<pre class="r"><code>mvll_sentiment &lt;- mvll_tidy %&gt;% 
+   filter(title %in% c(&quot;Aunt Julia and the Scriptwriter&quot;,
+                       &quot;Conversation in the Cathedral&quot;,
+                       &quot;A Fish in the Water&quot;,
+                       &quot;Feast of the Goat&quot;,
+                       &quot;Notebooks of Don Rigoberto&quot;,
+                       &quot;Bad Girl&quot;)) %&gt;%
+  inner_join(get_sentiments(&quot;bing&quot;)) %&gt;% 
+  count(title, index = line %/% 80, sentiment) %&gt;%
+  spread(sentiment, n) %&gt;%
+  mutate(sentiment = positive - negative)
+
+
+ggplot(mvll_sentiment, aes(index, sentiment, fill=title)) + 
+  geom_col() + 
+  facet_wrap(~title, ncol = 2, scales = &quot;free_x&quot;) + 
+  guides(fill=FALSE)</code></pre>
+<p><img src="/posts/2018-11-20-tidy-vargas-llosa_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>En general, Vargas Llosa usa pocas palabras con sentimientos positivos. Esta visualización también identifica momentos particularmente buenos o malos en las novelas: en la mitad de los Cuadernos de don Rigoberto hay una parte que destaca como buena.</p>
+</div>
