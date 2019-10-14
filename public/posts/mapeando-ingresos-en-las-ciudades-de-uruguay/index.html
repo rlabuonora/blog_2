@@ -1,0 +1,304 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+  <title>Rafael La Buonora</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="The HTML5 Herald" />
+  <meta name="author" content="Rafa" /><meta name="generator" content="Hugo 0.58.3" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" />
+  <script src="https://kit.fontawesome.com/b76b73e8e8.js" crossorigin="anonymous"></script>
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab|Ruda" />
+  <link rel="stylesheet" type="text/css" href="/css/styles.css" /><link rel="icon" type="image/png" href="./favicon.png">
+
+</head>
+
+<body>
+  <div id="container">
+    <header>
+      <h1>
+                <a href="/">Rafael La Buonora</a>
+            </h1>
+
+      <ul id="social-media">
+        
+        
+        
+        <li><a href="https://twitter.com/rlabuonora"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+          
+        <li><a href="https://github.com/rlabuonora"><i class="fab fa-github fa-lg" aria-hidden="true"></i></a></li>
+           
+        <li><a href="http://cv.rlabuonora.com"><i class="fas fa-file-alt" aria-hidden="true"></i></a></li>
+        
+      </ul>
+      
+      <p><em>Data blog</em></p>
+      
+    </header>
+
+    
+<nav>
+    <ul>
+        
+        <li>
+            <a class="" href="/posts/">
+                <i class="fa-li fa  fa-lg"></i><span>Posts</span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="" href="/about/">
+                <i class="fa-li fa  fa-lg"></i><span>Este Blog</span>
+            </a>
+        </li>
+        
+    </ul>
+</nav>
+
+    <main>
+
+
+
+
+<article>
+
+    <h1>Mapeando Ingresos en los barrios de Montevideo</h1>
+
+    
+        <aside>
+    <ul>
+        <li>
+            <time class="post-date" datetime="2019-04-13T00:00:00Z">Apr 13, 2019</time>
+        </li>
+        
+
+        
+
+        <li>4 minutes read</li>
+    </ul>
+</aside>
+
+    
+
+    
+
+
+<pre><code>## OGR data source with driver: ESRI Shapefile 
+## Source: &quot;/Users/rlabuonora/Desktop/data_science/work/blog_2/public/shps/ine_seg_11&quot;, layer: &quot;ine_seg_11&quot;
+## with 4313 features
+## It has 13 fields</code></pre>
+<pre><code>## [1] &quot;en_US.UTF-8/UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8&quot;</code></pre>
+<p>Todas las ciudades tienen zonas ricas y zonas pobres. En Montevideo, las zonas costeras concentran los hogares de mayores ingresos (Carrasco, Punta Gorda, Malvín, Pocitos, etc.).</p>
+<p>En este post armo un mapa para visualizar cuáles son las zonas con mayores ingresos en las ciudades de Uruguay linkeando los mapas que publica el INE con las formas de los segmentos censales y los datos de ingresos de la Encuesta Continua de Hogares:</p>
+<!-- En este post quiero visualizar la distribución del ingreso en las ciudades de Uruguay. En Montevideo sabemos que la zona costera es donde se concentran los hogares de mayores ingresos  -->
+<!-- Para visualizar esta estructura, linkeo los datos de la [Encuesta Continua de Hogares](http://ine.gub.uy/web/guest/encuesta-continua-de-hogares1) con un mapa de los segmentos censales del país. -->
+<!-- TODO: Refactor using chunk names -->
+<p><img src="/posts/2019-04-13-mapeando-ingresos-en-las-ciudades-de-uruguay_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<div id="las-zonas-censales" class="section level1">
+<h1>Las Zonas Censales</h1>
+<p>La información geográfica puede venir en formato <code>raster</code> o en formato <code>shapefile</code>. Un objeto <code>raster</code> es una grilla de números, y cada celda de la grilla está georeferenciada a una parte de la superficie de la tierra. Los shapefiles son una forma de almacenar datos de formas, que pueden representar entidades geográficas físicas o imaginarias (ríos, países, etc.)</p>
+<p>El INE <a href="http://ine.gub.uy/mapas-vectoriales">publica shapefiles</a> con las formas de los segmentos censales que usa para muestrear la Encuesta de Hogares. En Uruguay hay <code>nrow(ine_seg_11_sf)</code> segmentos censales.</p>
+<p>La librería sf tiene un montón de herramientas para trabajar con datos geográficos. La mejor fuente que conozco para aprender más es <a href="https://geocompr.robinlovelace.net/">Geocomputation with R</a>.</p>
+<pre class="r"><code>library(sf)
+
+# Cargar mapa
+ine_seg_11_sf &lt;- st_read(&#39;../../public/shps/ine_seg_11/ine_seg_11.shp&#39;)</code></pre>
+<pre><code>## Reading layer `ine_seg_11&#39; from data source `/Users/rlabuonora/Desktop/data_science/work/blog_2/public/shps/ine_seg_11/ine_seg_11.shp&#39; using driver `ESRI Shapefile&#39;
+## Simple feature collection with 4313 features and 13 fields
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: 366582.2 ymin: 6127919 xmax: 858252.1 ymax: 6671738
+## epsg (SRID):    NA
+## proj4string:    NA</code></pre>
+<pre class="r"><code># asignar crs
+st_crs(ine_seg_11_sf) &lt;- &quot;+proj=utm +zone=21 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs&quot;
+ine_seg_11_sf &lt;- st_transform(ine_seg_11_sf, crs=4326)
+class(ine_seg_11_sf)</code></pre>
+<pre><code>## [1] &quot;sf&quot;         &quot;data.frame&quot;</code></pre>
+<pre class="r"><code>plot(st_geometry(ine_seg_11_sf))</code></pre>
+<p><img src="/posts/2019-04-13-mapeando-ingresos-en-las-ciudades-de-uruguay_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<div id="calculamos-las-medianas" class="section level2">
+<h2>Calculamos las medianas</h2>
+<p>Para calcular el ingreso en cada segmento censal, usamos los datos de la Encuesta Continua de Hogares. Los microdatos incluyen el segmento censal de cada hogar y una estimación de su ingreso. <code>dplyr</code> hace muy fácil calcular la mediana del ingreso de los hogares encuestados:</p>
+<pre class="r"><code>Sys.setlocale(&quot;LC_ALL&quot;, &quot;UTF-8&quot;)</code></pre>
+<pre><code>## [1] &quot;en_US.UTF-8/UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8&quot;</code></pre>
+<pre class="r"><code>medianas &lt;- read_tsv(&quot;../../public/ech/H_2018_Terceros.dat&quot;) %&gt;% 
+  transmute(id       =as.character(numero),
+            depto_id = dpto, 
+            depto = nomdpto,
+            localidad_id = as.numeric(locagr),
+            localidad = nom_locagr,
+            seccion_id = as.numeric(secc),
+            segmento_id = as.numeric(segm),
+            ingreso = YSVL) %&gt;% 
+  group_by(depto_id, seccion_id, segmento_id) %&gt;% 
+  summarize(mediana = median(ingreso))</code></pre>
+</div>
+<div id="linkear-los-datos-al-mapa" class="section level2">
+<h2>Linkear los datos al mapa</h2>
+<p>Para visualizar todo en un mapa, hay que linkear los datos con el dataframe de los segmentos censales. Agregarle atributos no espaciales a un objeto <code>sf</code> es simple, ya que se comportan como <code>data.frames</code> y soportan las funciones del <code>tidyverse</code>, por lo que podemos usar <code>left_join</code> con <code>depto_id</code>, <code>seccion_id</code> y <code>segmento_id</code> como identificadores:</p>
+<pre class="r"><code>ine_seg_11_sf &lt;- ine_seg_11_sf %&gt;% 
+  left_join(medianas, by=c(&quot;DEPTO&quot; = &quot;depto_id&quot;,
+                           &quot;SECCION&quot; = &quot;seccion_id&quot;,
+                           &quot;SEGMENTO&quot; = &quot;segmento_id&quot;))</code></pre>
+</div>
+<div id="elegir-una-localidad" class="section level2">
+<h2>Elegir una localidad</h2>
+<p>Como queremos mapear los ingresos en cada ciudad, tenemos que encontrar una forma de seleccionar una zona del mapa. Para esto podemos usar <code>filter</code> y seleccionar los polígonos que pertenecen a cierta localidad`:</p>
+<pre class="r"><code># Montevideo es la localidad 1020
+cod_loc &lt;- &quot;1020&quot;
+mapa_loc &lt;- filter(ine_seg_11_sf, CODLOC==cod_loc)
+plot(st_geometry(mapa_loc))</code></pre>
+<p><img src="/posts/2019-04-13-mapeando-ingresos-en-las-ciudades-de-uruguay_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+</div>
+<div id="agregar-mapa-de-fondo" class="section level2">
+<h2>Agregar mapa de fondo</h2>
+<p>Este mapa funciona bien si conocemos la ciudad, pero para zonas geográficas no tan familiares puede ser conveniente agregar referencias como calles importantes o cuerpos de agua.</p>
+<p>Para eso podemos usar google maps, que publica una API con mapas basadas en imágenes satelitales.Para consumir la API, es necesario registrarse y darles una tarjeta de crédito 👎 para obtener una clave. <a href="https://cran.r-project.org/web/packages/httr/vignettes/secrets.html">Acá</a>. hay más info sobre como trabajar con API keys en R.</p>
+<pre class="r"><code>library(ggmap)
+# Leer la API key de variable de environment
+API_KEY &lt;- Sys.getenv(&quot;GOOGLE_API&quot;)
+# Loguearse a la API
+register_google(API_KEY)</code></pre>
+<p>Para bajar el mapa de Google Maps, necesitamos las coordenadas del mapa que vamos a dibujar. Para obtener estas coordenadas, subseteo el mapa original con el código de la localidad que quiero mapear y obtengo las coordenadas del mapa subseteado.</p>
+<pre class="r"><code>cod_loc &lt;- &quot;1020&quot;
+mapa_loc &lt;- filter(ine_seg_11_sf, CODLOC==cod_loc)
+
+bbox &lt;- st_bbox(mapa_loc) %&gt;% 
+   setNames(c(&quot;left&quot;, &quot;bottom&quot;, &quot;right&quot;, &quot;top&quot;))
+
+mapa &lt;- get_map(location=bbox)</code></pre>
+<p>Para poder dibujar este mapa con <code>tmap</code>, tengo que convertirlo a un <code>Raster</code> con la función <code>ggmap_rast</code>.</p>
+<pre class="r"><code># https://gis.stackexchange.com/questions/155334/ggmap-clip-a-map
+library(raster)
+library(tmap)
+
+ggmap_rast &lt;- function(map) {
+  map_bbox &lt;- attr(map, &#39;bb&#39;) 
+  .extent &lt;- extent(as.numeric(map_bbox[c(2,4,1,3)]))
+  my_map &lt;- raster(.extent, nrow= nrow(map), ncol = ncol(map))
+  rgb_cols &lt;- setNames(as.data.frame(t(col2rgb(map))), c(&#39;red&#39;,&#39;green&#39;,&#39;blue&#39;))
+  red &lt;- my_map
+  values(red) &lt;- rgb_cols[[&#39;red&#39;]]
+  green &lt;- my_map
+  values(green) &lt;- rgb_cols[[&#39;green&#39;]]
+  blue &lt;- my_map
+  values(blue) &lt;- rgb_cols[[&#39;blue&#39;]]
+  stack(red,green,blue)
+}
+
+mapa_raster &lt;- ggmap_rast(mapa)</code></pre>
+<p>Ahora que tengo el <code>Raster</code>, los polígonos de los segmentos censales y la estimación de las medianas, podemos hacer un mapa en capas con <code>tmap</code>:</p>
+<pre class="r"><code>tm_shape(mapa_raster) + 
+  tm_rgb() + 
+  tm_shape(mapa_loc) +
+  tm_fill(col=&quot;mediana&quot;, 
+          style=&quot;quantile&quot;,
+          title = &quot;Ingreso&quot;,
+          textNA = &quot;S/D&quot;,
+          alpha = 0.75) + 
+  tm_layout(&quot;Montevideo&quot;, 
+            frame = FALSE,
+            legend.position = c(&quot;right&quot;, &quot;bottom&quot;),
+            legend.format = list(
+              &quot;text.separator&quot; = &quot;-&quot;
+            )) +
+  tm_legend(show=FALSE)</code></pre>
+<p><img src="/posts/2019-04-13-mapeando-ingresos-en-las-ciudades-de-uruguay_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<!-- # Otras localidades -->
+<!-- `tmap` nos permite dibujar un mapa con todos los elementos que vinimos desarrollando en distintas capas. También tiene una función que permite armar grillas de mapas.  -->
+<!-- Podemos hacer el mismo mapa para otras localidades: -->
+<!-- ```{r} -->
+<!-- # salto: 15120 -->
+<!-- mapa_loc <- filter(ine_seg_11_sf, CODLOC=="15120") -->
+<!-- bbox <- st_bbox(mapa_loc) %>%  -->
+<!--     setNames(c("left", "bottom", "right", "top")) -->
+<!-- mapa_raster <- get_map(location=bbox) %>%  -->
+<!--     ggmap_rast() -->
+<!-- mapa_salto <- tm_shape(mapa_raster) +  -->
+<!--     tm_rgb() +  -->
+<!--     tm_shape(mapa_loc) + -->
+<!--     tm_fill(col="mediana",  -->
+<!--           style="quantile", -->
+<!--           title = "Ingreso", -->
+<!--           textNA = "S/D", -->
+<!--           alpha = 0.75) +  -->
+<!--   tm_layout("Salto",  -->
+<!--             frame = FALSE, -->
+<!--             legend.position = legend_pos, -->
+<!--             legend.format = list( -->
+<!--               "text.separator" = "-" -->
+<!--             )) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- # Durazno: 6220 -->
+<!-- mapa_loc <- filter(ine_seg_11_sf, CODLOC=="6220") -->
+<!-- bbox <- st_bbox(mapa_loc) %>%  -->
+<!--     setNames(c("left", "bottom", "right", "top")) -->
+<!-- mapa_raster <- get_map(location=bbox) %>%  -->
+<!--     ggmap_rast() -->
+<!-- mapa_durazno <- tm_shape(mapa_raster) +  -->
+<!--     tm_rgb() +  -->
+<!--     tm_shape(mapa_loc) + -->
+<!--     tm_fill(col="mediana",  -->
+<!--           style="quantile", -->
+<!--           title = "Ingreso", -->
+<!--           textNA = "S/D", -->
+<!--           alpha = 0.75) +  -->
+<!--   tm_layout("Durazno",  -->
+<!--             frame = FALSE, -->
+<!--             legend.position = legend_pos, -->
+<!--             legend.format = list( -->
+<!--               "text.separator" = "-" -->
+<!--             )) -->
+<!-- ``` -->
+<!-- Para sacar varios mapas a la vez podemos combinar `tmap_arrange` con esta función: -->
+<!-- ```{r} -->
+<!-- tmap_arrange( -->
+<!--             mapa_salto, -->
+<!--             mapa_durazno, -->
+<!--             ncol = 1) -->
+<!-- ``` -->
+</div>
+</div>
+
+
+</article>
+
+
+<section class="post-nav">
+    <ul>
+        
+        <li>
+            <a href="/posts/scraping-nba-data/"><i class="fa fa-chevron-circle-left"></i> Scraping NBA data with rvest and purrr</a>
+        </li>
+        
+        
+    </ul>
+</section>
+    
+
+
+
+
+
+</main>
+    <footer>
+        <h6>Copyright &copy; 2019 - Rafael La Buonora |
+            Rendered by <a href="https://gohugo.io" title="Hugo">Hugo</a> |
+            <a href="/index.xml">Subscribe</a></h6>
+    </footer>
+</div>
+<script src="/js/scripts.js"></script>
+
+  
+
+
+</body>
+
+
+
+</html>
