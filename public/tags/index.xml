@@ -29,5 +29,23 @@
          <description></description>
        </item>
        
+       <item>
+         <title>ggplot</title>
+         <link>/tags/ggplot/</link>
+         <pubDate>Wed, 16 Aug 2017 00:00:00 +0000</pubDate>
+         
+         <guid>/tags/ggplot/</guid>
+         <description></description>
+       </item>
+       
+       <item>
+         <title>vis</title>
+         <link>/tags/vis/</link>
+         <pubDate>Wed, 16 Aug 2017 00:00:00 +0000</pubDate>
+         
+         <guid>/tags/vis/</guid>
+         <description></description>
+       </item>
+       
      </channel>
    </rss>

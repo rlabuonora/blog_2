@@ -1,0 +1,223 @@
+
+   <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+     <channel>
+       <title>vis on Rafael La Buonora</title>
+       <link>/tags/vis/</link>
+       <description>Recent content in vis on Rafael La Buonora</description>
+       <generator>Hugo -- gohugo.io</generator>
+       <copyright>Copyright &amp;copy; 2019 - Rafael La Buonora</copyright>
+       <lastBuildDate>Wed, 16 Aug 2017 00:00:00 +0000</lastBuildDate>
+       
+           <atom:link href="/tags/vis/index.xml" rel="self" type="application/rss+xml" />
+       
+       
+       <item>
+         <title>Geometría con ggplot</title>
+         <link>/posts/ggplot-geometria/</link>
+         <pubDate>Wed, 16 Aug 2017 00:00:00 +0000</pubDate>
+         
+         <guid>/posts/ggplot-geometria/</guid>
+         <description>
+
+
+&lt;p&gt;&lt;code&gt;ggplot&lt;/code&gt; es el estándar para visualización de datos en R. Siempre quise explorar si podía servir para hacer diagramas más conceptuales. En este post uso &lt;code&gt;ggplot&lt;/code&gt; para dibujar algunas formas geométricas.&lt;/p&gt;
+&lt;p&gt;Para dibujar el gráfico de una función, podemos usar &lt;code&gt;stat_function&lt;/code&gt;. En el primer gráfico, dibujo &lt;span class=&#34;math inline&#34;&gt;\(sin(x)\)&lt;/span&gt; y &lt;span class=&#34;math inline&#34;&gt;\(cos(x)\)&lt;/span&gt;. Especifico &lt;code&gt;aes(colour = &amp;quot;sin(x)&amp;quot;)&lt;/code&gt; para que el color de ese cada &lt;code&gt;geom&lt;/code&gt; quede ligado al texto correcto en la leyenda.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;geom_segment&lt;/code&gt; y &lt;code&gt;scale_x_continuous&lt;/code&gt; permiten especificar la posición y etiqueta de las guías.&lt;/p&gt;
+&lt;p&gt;Este post de stackoverflow sobre &lt;a href=&#34;https://stackoverflow.com/questions/5293715/how-to-use-greek-symbols-in-ggplot2&#34;&gt;como poner letras griegas en ggplot&lt;/a&gt; explica como poner caractéres del alfabeto griego en los ejes usando &lt;code&gt;expression()&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(tidyverse)
+library(ggplot2)
+theme_set(theme_minimal())
+
+# Crear etiquetas para eje x
+lbls &amp;lt;- c( expression(-2 * pi),
+           expression(-3 * pi / 2),
+           expression(- pi),
+           expression(-pi/2),
+           0,
+           expression(pi/ 2),
+           expression(pi),
+           expression(3 * pi /2),
+           expression(2 * pi)
+           )
+
+
+# Gráfico
+ggplot(data_frame(x = c(-7, 7)), aes(x = x)) +
+  stat_function(fun = function(x) { sin(x) }, 
+                geom = &amp;quot;line&amp;quot;, 
+                linetype = &amp;quot;dashed&amp;quot;, 
+                size = 1,
+                aes(colour = &amp;quot;sin(x)&amp;quot;)) +
+  stat_function(fun = function(x) { cos(x) },
+                linetype = &amp;quot;dashed&amp;quot;,
+                size = 1,
+                aes(colour = &amp;quot;cos(x)&amp;quot;)
+                ) +
+  scale_x_continuous(
+    breaks = seq(-2 * pi, 2*pi, pi/2),
+    labels = lbls
+  ) + 
+  labs(x = &amp;quot;x&amp;quot;, y = &amp;quot;y&amp;quot;) + 
+  geom_segment(aes(x=-7, xend = 7, y=0, yend=0), 
+               size = 0.5,
+               arrow = arrow(length = unit(0.2, &amp;quot;cm&amp;quot;))) + 
+  geom_segment(aes(x=0, xend=0, y=-1, yend=1.2),
+               size = 0.5,
+               lineend = &amp;quot;butt&amp;quot;,
+               arrow = arrow(length = unit(0.2, &amp;quot;cm&amp;quot;))) + 
+  labs(title = &amp;quot;Funciones Trigonométricas&amp;quot;) + 
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    legend.title = element_blank(),
+  ) &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2018-08-16-trigonometric-funs_files/figure-html/unnamed-chunk-1-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;div id=&#34;circulo&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Círculo&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;stat_fun&lt;/code&gt; resuelve el problema de graficar funciones, pero no sirve cuando queremos graficar otro tipo de objeto. La ecuación de un círculo es&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[ (x-h)^2+(y-k)^2=r^2 \]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;donde &lt;span class=&#34;math inline&#34;&gt;\((h, k)\)&lt;/span&gt; es el centro y &lt;span class=&#34;math inline&#34;&gt;\(r\)&lt;/span&gt; el radio. Escribir esta ecuación explícitamente como una función puede resultar complicado.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://stackoverflow.com/questions/6862742/draw-a-circle-with-ggplot2&#34;&gt;Este post en Stack Overflow&lt;/a&gt; explica como graficar una función en forma paramétrica usando &lt;code&gt;annotate&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(ggplot2)
+library(latex2exp)
+
+center &amp;lt;- c(x=3, y=1)
+#pt1 &amp;lt;- c(x=1, y=1)
+#pt2 &amp;lt;- c(x=5, y=1)
+pt3 &amp;lt;- c(x=3, y=3)
+pt4 &amp;lt;- c(x=3, y=-1)
+pts &amp;lt;- dplyr::bind_rows(center,pt3, pt4)
+radius &amp;lt;- 2
+t &amp;lt;- seq(0, 2*pi, length.out = 100)
+
+g &amp;lt;- ggplot() + 
+  geom_segment(aes(x=-1, xend = 6, y=0, yend=0),
+               size = 0.5,
+               arrow = arrow(length = unit(0.2, &amp;quot;cm&amp;quot;))) + # Eje X
+  geom_segment(aes(x=0, xend=0, y=-1, yend=4),
+               size = 0.5,
+               lineend = &amp;quot;butt&amp;quot;,
+               arrow = arrow(length = unit(0.2, &amp;quot;cm&amp;quot;))) + # Eje Y
+  annotate(&amp;quot;path&amp;quot;, 
+           x = center[1] + radius * cos(t),
+           y = center[2] + radius * sin(t)) + 
+  geom_point(data = pts, aes(x=x, y =y)) + 
+  geom_text(data = pts,
+            parse = TRUE,
+            nudge_y = 0.2,
+            aes(x=x, y=y, label = paste0(&amp;quot;list(&amp;quot;, x ,&amp;quot;,&amp;quot;, y, &amp;quot;)&amp;quot;))) +
+  annotate(&amp;quot;point&amp;quot;, x=1, y=1) + 
+  annotate(&amp;quot;text&amp;quot;, x=1.25, y=1, label=&amp;quot;1,1&amp;quot;) + 
+  annotate(&amp;quot;point&amp;quot;, x=5, y=1) + 
+  annotate(&amp;quot;text&amp;quot;, x=4.75, y=1, label=&amp;quot;5, 1&amp;quot;) + 
+  labs(x=&amp;quot;&amp;quot;, y=&amp;quot;&amp;quot;) + 
+  ggtitle(TeX(&amp;quot;(x-3)^2+(y-1)^2=4&amp;quot;)) + 
+  coord_fixed()
+g&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2018-08-16-trigonometric-funs_files/figure-html/unnamed-chunk-2-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;parabola&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Parábola&lt;/h2&gt;
+&lt;p&gt;Una parábola es un conjunto de puntos que equidista de una línea (directriz) y un punto (foco). Estos puntos satisfacen:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math inline&#34;&gt;\((x-h)^2=4p(y-k),\, (p \neq 0)\)&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;El vértice de la parábola está en &lt;span class=&#34;math inline&#34;&gt;\((h,k)\)&lt;/span&gt; y la directriz &lt;span class=&#34;math inline&#34;&gt;\(y=k-p\)&lt;/span&gt;. El foco está en &lt;span class=&#34;math inline&#34;&gt;\((h, k+p)\)&lt;/span&gt; si la parábola es abierta hacia arriba.&lt;/p&gt;
+&lt;div id=&#34;ejemplo&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Ejemplo&lt;/h3&gt;
+&lt;p&gt;&lt;span class=&#34;math inline&#34;&gt;\(x^2=16y\)&lt;/span&gt; es una parábola con vértice en &lt;span class=&#34;math inline&#34;&gt;\((0,0)\)&lt;/span&gt;, &lt;span class=&#34;math inline&#34;&gt;\(p = 4\)&lt;/span&gt; y foco en &lt;span class=&#34;math inline&#34;&gt;\((0,4)\)&lt;/span&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;focus &amp;lt;- list(x=0, y=4, lab = &amp;quot;Foco&amp;quot;)
+vertex &amp;lt;- list(x=0, y=0, lab = &amp;quot;Vértice&amp;quot;)
+notable_points &amp;lt;- bind_rows(focus, 
+                            vertex)
+pt &amp;lt;- data_frame(x=5, y=round(5^2/16, 2))
+
+p &amp;lt;- ggplot(data_frame(x=0), aes(x=x)) +
+  geom_segment(aes(x=-9, xend = 9, y=0, yend=0),
+               size = 0.5,
+               arrow = arrow(length = unit(0.2, &amp;quot;cm&amp;quot;))) + # Eje X
+  geom_segment(aes(x=0, xend=0, y=-5, yend=10),
+               size = 0.5,
+               lineend = &amp;quot;butt&amp;quot;,
+               arrow = arrow(length = unit(0.2, &amp;quot;cm&amp;quot;))) + # Eje Y
+  stat_function(fun = function(x) { x^2 / 16}) + 
+  xlim(-9, 9) + 
+  ylim(-5, 10)
+
+x &amp;lt;- 5
+
+g_2 &amp;lt;- p +
+  geom_point(data = notable_points, aes(x=x, y=y)) + 
+  geom_text(data=notable_points, 
+            size = 3,
+            nudge_y = 1.25,
+            nudge_x = 1.25,
+            aes(label = paste0(lab, &amp;quot;\n(&amp;quot;, x, &amp;quot;,&amp;quot;, y, &amp;quot;)&amp;quot;), 
+                x = x, y = y)) + 
+  geom_hline(yintercept = -4, linetype = &amp;quot;dashed&amp;quot;) + 
+  annotate(&amp;quot;text&amp;quot;, x= 3, y= -3.3, label = &amp;quot;Directriz&amp;quot;, size = 3) +
+  ggtitle(TeX(&amp;#39;$y=x^2/16$&amp;#39;)) + 
+  theme(
+    plot.title = element_text(hjust = 0.5)
+  ) + geom_point(data = pt, aes(x=x, y=y)) + 
+  geom_segment(aes(x= focus$x, y=focus$y, xend=pt$x, yend=pt$y),
+               linetype = &amp;quot;dashed&amp;quot;) + 
+  geom_segment(aes(x=pt$x, y=pt$y, xend=pt$x, yend = -4),
+               linetype = &amp;quot;dashed&amp;quot;) + 
+  annotate(&amp;quot;text&amp;quot;, 
+           label = &amp;quot;phantom(0) == phantom(0)&amp;quot;, 
+           parse = TRUE,
+           angle = 60,
+           size = 5,
+           x = 2.5, y= 2.85) + 
+  annotate(&amp;quot;text&amp;quot;, 
+           label = &amp;quot;phantom(0) == phantom(0)&amp;quot;, 
+           parse = TRUE,
+           size = 5,
+           x = 5, y= -2)
+g_2&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2018-08-16-trigonometric-funs_files/figure-html/g_2-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Todos los puntos de la parábola estan a la misma distancia del foco que de la directriz.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;una-parabola-con-eje-horziontal&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Una parábola con eje horziontal&lt;/h2&gt;
+&lt;p&gt;Dibujar una parábola con eje vertical es simple porque podemos usar &lt;code&gt;stat_fun&lt;/code&gt;. Pero si queremos dibujarlas con eje horizontal no podemos escibir los puntos de la parábola como un función y pasarsela a &lt;code&gt;stat_function&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;La ecuación &lt;span class=&#34;math inline&#34;&gt;\(y^2+6y+8x+25 = 0\)&lt;/span&gt; no parece una parábola, pero si completamos el cuadrado:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\begin{align}
+y^2+6y+8x+25 &amp;amp;= 0\\
+y^2+6y+9+8x+25-9  &amp;amp;= 0\\
+(y+3)^2 &amp;amp;= -16-8x\\
+(y+3)^2 &amp;amp;= 4(-2)(x+2)
+\end{align}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Es una parábola con vértice &lt;span class=&#34;math inline&#34;&gt;\((-2, -3)\)&lt;/span&gt;, p es &lt;span class=&#34;math inline&#34;&gt;\(-2\)&lt;/span&gt;, el foco &lt;span class=&#34;math inline&#34;&gt;\((-4,-3)\)&lt;/span&gt; la directriz es &lt;span class=&#34;math inline&#34;&gt;\(x=0\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Pero como la orientación de esta parábola es horizontal, no es una función. Cómo la graficamos con &lt;code&gt;ggplot&lt;/code&gt;?&lt;/p&gt;
+&lt;p&gt;Si despejamos &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; en función de &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt;, obtenemos dos funciones:
+&lt;span class=&#34;math display&#34;&gt;\[\begin{align}
+(y+3)^2 &amp;amp;= (-8)(x+2)\\
+y     &amp;amp;= -3 \pm \sqrt{-8(x+2)}\\
+y_1  &amp;amp;=-3 + \sqrt{-8(x+2)}\\
+y_2 &amp;amp;=-3 - \sqrt{-8(x+2)}\\
+\end{align}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Podemos graficar &lt;span class=&#34;math inline&#34;&gt;\(y1\)&lt;/span&gt; y &lt;span class=&#34;math inline&#34;&gt;\(y2\)&lt;/span&gt;:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;x &amp;lt;- seq(-5, 0, length.out=1e3)
+lbs &amp;lt;- list(bquote(-3 + sqrt(-8*(x+2))), # investigar bquote!
+            bquote(-3 - sqrt(-8*(x+2))))
+
+g_3 &amp;lt;- ggplot(data_frame(x=x), 
+            aes(x=x, color = color)) + 
+  stat_function(data = data_frame(x=x, color = factor(1)),
+                fun = function(x) { -3 + sqrt(-8*(x+2)) }) + 
+  stat_function(data = data_frame(x=x, color = factor(2)),
+                fun = function(x) { -3 - sqrt(-8*(x+2)) }) + 
+  scale_color_manual(labels = lbs,
+                     name = &amp;quot;&amp;quot;,
+                     values = c(scales::hue_pal()(2)[1], 
+                                scales::hue_pal()(2)[2])) + 
+  geom_hline(yintercept = 0) + 
+  geom_vline(xintercept = 0)
+g_3&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2018-08-16-trigonometric-funs_files/figure-html/g_3-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+</description>
+       </item>
+       
+     </channel>
+   </rss>

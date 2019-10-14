@@ -4,7 +4,7 @@ author: Rafa
 date: '2017-08-16'
 slug: ggplot-geometria
 categories: []
-tags: []
+tags: ["vis", "R", "ggplot"]
 ---
 
 
