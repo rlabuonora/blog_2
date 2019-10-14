@@ -78,16 +78,11 @@ s <- mvll_tidy %>%
 
 ```
  
-
-
-
-
-
-
 # Palabras características de cada libro
 
 
-Otro análisis similar es el índice de tf-idf. Esta métrica busca extraer los términos más característicos de un texto. EXPLICAR METRICA.
+Otro análisis similar es el índice de tf-idf. Esta métrica busca extraer los términos más característicos de un texto. 
+
 ```{r}
 book_words <- mvll_tidy %>%
   count(title, word, sort = TRUE) %>%
@@ -123,11 +118,8 @@ head(get_sentiments("bing"))
 
 Para analizar el texto de las novelas, usamos el léxico para determinar si cada palabra es positiva o negativa. Después tomamos unidades de 80 líneas y calculamos `sentiment` como la diferencia entre la cantidad de palabras positivas y negativas. Esto nos da una métrica de que tan positivas son las palabras usadas en esa parte del texto.
 
-Una cosa importante a tener en cuenta al usar esta técnica es que analiza los tokens individualmente y no entiende la estructura del texto. Esto implica que la métrica no entiende que un texto como 
+La columna `idx` son bloques de 80 líneas y sirven para encontrar pasajes en las novelas después de visualizarlas.
 
-> "esto no es bueno"
-
-tiene sentimientos positivos, porque "esto", "no" y "es" tienen sentimientos neutros (no está en el léxico) y "bueno" tiene sentimientos positivos.
 
 ```{r}
 
@@ -139,7 +131,7 @@ mvll_sentiment <- mvll_tidy %>%
                        "Notebooks of Don Rigoberto",
                        "Bad Girl")) %>%
   inner_join(get_sentiments("bing")) %>% 
-  count(title, index = line %/% 80  , sentiment) %>%
+  count(title, index = line %/% 80, sentiment) %>%
   spread(sentiment, n) %>%
   mutate(sentiment = positive - negative)
 
@@ -152,4 +144,6 @@ ggplot(mvll_sentiment, aes(index, sentiment, fill=title)) +
 ```
 
 
-En, Vargas Llosa usa pocas palabras con sentimientos positivos. Esta visualización también identifica momentos particularmente buenos o malos en las novelas:
+En general, Vargas Llosa usa pocas palabras con sentimientos positivos. Esta visualización también identifica momentos particularmente buenos o malos en las novelas: en la mitad de los Cuadernos de don Rigoberto hay una parte que destaca como buena.
+
+

@@ -77,7 +77,7 @@
 
         
 
-        <li>4 minutes read</li>
+        <li>3 minutes read</li>
     </ul>
 </aside>
 
@@ -107,7 +107,7 @@
 </div>
 <div id="palabras-caracteristicas-de-cada-libro" class="section level1">
 <h1>Palabras características de cada libro</h1>
-<p>Otro análisis similar es el índice de tf-idf. Esta métrica busca extraer los términos más característicos de un texto. EXPLICAR METRICA.</p>
+<p>Otro análisis similar es el índice de tf-idf. Esta métrica busca extraer los términos más característicos de un texto.</p>
 <pre class="r"><code>book_words &lt;- mvll_tidy %&gt;%
   count(title, word, sort = TRUE) %&gt;%
   ungroup %&gt;%
@@ -145,11 +145,7 @@ plt %&gt;%
 ## 5 abominably negative 
 ## 6 abominate  negative</code></pre>
 <p>Para analizar el texto de las novelas, usamos el léxico para determinar si cada palabra es positiva o negativa. Después tomamos unidades de 80 líneas y calculamos <code>sentiment</code> como la diferencia entre la cantidad de palabras positivas y negativas. Esto nos da una métrica de que tan positivas son las palabras usadas en esa parte del texto.</p>
-<p>Una cosa importante a tener en cuenta al usar esta técnica es que analiza los tokens individualmente y no entiende la estructura del texto. Esto implica que la métrica no entiende que un texto como</p>
-<blockquote>
-<p>“esto no es bueno”</p>
-</blockquote>
-<p>tiene sentimientos positivos, porque “esto”, “no” y “es” tienen sentimientos neutros (no está en el léxico) y “bueno” tiene sentimientos positivos.</p>
+<p>La columna <code>idx</code> son bloques de 80 líneas y sirven para encontrar pasajes en las novelas después de visualizarlas.</p>
 <pre class="r"><code>mvll_sentiment &lt;- mvll_tidy %&gt;% 
    filter(title %in% c(&quot;Aunt Julia and the Scriptwriter&quot;,
                        &quot;Conversation in the Cathedral&quot;,
@@ -158,7 +154,7 @@ plt %&gt;%
                        &quot;Notebooks of Don Rigoberto&quot;,
                        &quot;Bad Girl&quot;)) %&gt;%
   inner_join(get_sentiments(&quot;bing&quot;)) %&gt;% 
-  count(title, index = line %/% 80  , sentiment) %&gt;%
+  count(title, index = line %/% 80, sentiment) %&gt;%
   spread(sentiment, n) %&gt;%
   mutate(sentiment = positive - negative)
 
@@ -168,7 +164,7 @@ ggplot(mvll_sentiment, aes(index, sentiment, fill=title)) +
   facet_wrap(~title, ncol = 2, scales = &quot;free_x&quot;) + 
   guides(fill=FALSE)</code></pre>
 <p><img src="/posts/2018-11-20-tidy-vargas-llosa_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
-<p>En, Vargas Llosa usa pocas palabras con sentimientos positivos. Esta visualización también identifica momentos particularmente buenos o malos en las novelas:</p>
+<p>En general, Vargas Llosa usa pocas palabras con sentimientos positivos. Esta visualización también identifica momentos particularmente buenos o malos en las novelas: en la mitad de los Cuadernos de don Rigoberto hay una parte que destaca como buena.</p>
 </div>
 
 
