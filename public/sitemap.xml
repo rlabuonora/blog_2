@@ -18,7 +18,27 @@
   </url>
   
   <url>
+    <loc>/tags/r/</loc>
+    <lastmod>2019-04-13T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/</loc>
+    <lastmod>2019-04-13T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/spatial/</loc>
+    <lastmod>2019-04-13T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/</loc>
+    <lastmod>2019-04-13T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/vis/</loc>
     <lastmod>2019-04-13T00:00:00+00:00</lastmod>
   </url>
   
@@ -28,17 +48,7 @@
   </url>
   
   <url>
-    <loc>/tags/r/</loc>
-    <lastmod>2018-08-01T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
     <loc>/posts/scraping-nba-data/</loc>
-    <lastmod>2018-08-01T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/</loc>
     <lastmod>2018-08-01T00:00:00+00:00</lastmod>
   </url>
   
@@ -54,11 +64,6 @@
   
   <url>
     <loc>/posts/mapas/</loc>
-    <lastmod>2018-07-17T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/vis/</loc>
     <lastmod>2018-07-17T00:00:00+00:00</lastmod>
   </url>
   

@@ -6,10 +6,37 @@
        <description>Recent content in Tags on Rafael La Buonora</description>
        <generator>Hugo -- gohugo.io</generator>
        <copyright>Copyright &amp;copy; 2019 - Rafael La Buonora</copyright>
-       <lastBuildDate>Wed, 01 Aug 2018 00:00:00 +0000</lastBuildDate>
+       <lastBuildDate>Sat, 13 Apr 2019 00:00:00 +0000</lastBuildDate>
        
            <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
        
+       
+       <item>
+         <title>R</title>
+         <link>/tags/r/</link>
+         <pubDate>Sat, 13 Apr 2019 00:00:00 +0000</pubDate>
+         
+         <guid>/tags/r/</guid>
+         <description></description>
+       </item>
+       
+       <item>
+         <title>spatial</title>
+         <link>/tags/spatial/</link>
+         <pubDate>Sat, 13 Apr 2019 00:00:00 +0000</pubDate>
+         
+         <guid>/tags/spatial/</guid>
+         <description></description>
+       </item>
+       
+       <item>
+         <title>vis</title>
+         <link>/tags/vis/</link>
+         <pubDate>Sat, 13 Apr 2019 00:00:00 +0000</pubDate>
+         
+         <guid>/tags/vis/</guid>
+         <description></description>
+       </item>
        
        <item>
          <title>purrr</title>
@@ -17,24 +44,6 @@
          <pubDate>Wed, 01 Aug 2018 00:00:00 +0000</pubDate>
          
          <guid>/tags/purrr/</guid>
-         <description></description>
-       </item>
-       
-       <item>
-         <title>R</title>
-         <link>/tags/r/</link>
-         <pubDate>Wed, 01 Aug 2018 00:00:00 +0000</pubDate>
-         
-         <guid>/tags/r/</guid>
-         <description></description>
-       </item>
-       
-       <item>
-         <title>vis</title>
-         <link>/tags/vis/</link>
-         <pubDate>Tue, 17 Jul 2018 00:00:00 +0000</pubDate>
-         
-         <guid>/tags/vis/</guid>
          <description></description>
        </item>
        

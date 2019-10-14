@@ -6,10 +6,200 @@
        <description>Recent content in vis on Rafael La Buonora</description>
        <generator>Hugo -- gohugo.io</generator>
        <copyright>Copyright &amp;copy; 2019 - Rafael La Buonora</copyright>
-       <lastBuildDate>Tue, 17 Jul 2018 00:00:00 +0000</lastBuildDate>
+       <lastBuildDate>Sat, 13 Apr 2019 00:00:00 +0000</lastBuildDate>
        
            <atom:link href="/tags/vis/index.xml" rel="self" type="application/rss+xml" />
        
+       
+       <item>
+         <title>Barrios ricos y pobres de Montevideo</title>
+         <link>/posts/mapeando-ingresos-en-las-ciudades-de-uruguay/</link>
+         <pubDate>Sat, 13 Apr 2019 00:00:00 +0000</pubDate>
+         
+         <guid>/posts/mapeando-ingresos-en-las-ciudades-de-uruguay/</guid>
+         <description>
+
+
+&lt;p&gt;Todas las ciudades tienen zonas ricas y zonas pobres. En Montevideo, las zonas costeras concentran los hogares de mayores ingresos (Carrasco, Punta Gorda, Malvín, Pocitos, etc.).&lt;/p&gt;
+&lt;p&gt;En este post armo un mapa para visualizar cuáles son los barrios con mayores ingresos en las ciudades de Uruguay.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;## OGR data source with driver: ESRI Shapefile 
+## Source: &amp;quot;/Users/rlabuonora/Desktop/data_science/work/blog_2/public/shps/ine_seg_11&amp;quot;, layer: &amp;quot;ine_seg_11&amp;quot;
+## with 4313 features
+## It has 13 fields&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] &amp;quot;en_US.UTF-8/UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;!-- En este post quiero visualizar la distribución del ingreso en las ciudades de Uruguay. En Montevideo sabemos que la zona costera es donde se concentran los hogares de mayores ingresos  --&gt;
+&lt;!-- Para visualizar esta estructura, linkeo los datos de la [Encuesta Continua de Hogares](http://ine.gub.uy/web/guest/encuesta-continua-de-hogares1) con un mapa de los segmentos censales del país. --&gt;
+&lt;!-- TODO: Refactor using chunk names --&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-04-13-mapeando-ingresos-en-las-ciudades-de-uruguay_files/figure-html/unnamed-chunk-1-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;div id=&#34;las-zonas-censales&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Las Zonas Censales&lt;/h1&gt;
+&lt;p&gt;La información geográfica puede venir en formato &lt;code&gt;raster&lt;/code&gt; o en formato &lt;code&gt;shapefile&lt;/code&gt;. Un objeto &lt;code&gt;raster&lt;/code&gt; es una grilla de números, y cada celda de la grilla está georeferenciada a una parte de la superficie de la tierra. Los shapefiles son una forma de almacenar datos de formas, que pueden representar entidades geográficas físicas o imaginarias (ríos, países, etc.)&lt;/p&gt;
+&lt;p&gt;El INE &lt;a href=&#34;http://ine.gub.uy/mapas-vectoriales&#34;&gt;publica shapefiles&lt;/a&gt; con las formas de los segmentos censales que usa para muestrear la Encuesta de Hogares. En Uruguay hay &lt;code&gt;nrow(ine_seg_11_sf)&lt;/code&gt; segmentos censales.&lt;/p&gt;
+&lt;p&gt;La librería sf tiene un montón de herramientas para trabajar con datos geográficos. La mejor fuente que conozco para aprender más es &lt;a href=&#34;https://geocompr.robinlovelace.net/&#34;&gt;Geocomputation with R&lt;/a&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(sf)
+
+# Cargar mapa
+ine_seg_11_sf &amp;lt;- st_read(&amp;#39;../../public/shps/ine_seg_11/ine_seg_11.shp&amp;#39;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Reading layer `ine_seg_11&amp;#39; from data source `/Users/rlabuonora/Desktop/data_science/work/blog_2/public/shps/ine_seg_11/ine_seg_11.shp&amp;#39; using driver `ESRI Shapefile&amp;#39;
+## Simple feature collection with 4313 features and 13 fields
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: 366582.2 ymin: 6127919 xmax: 858252.1 ymax: 6671738
+## epsg (SRID):    NA
+## proj4string:    NA&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# asignar crs
+st_crs(ine_seg_11_sf) &amp;lt;- &amp;quot;+proj=utm +zone=21 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs&amp;quot;
+ine_seg_11_sf &amp;lt;- st_transform(ine_seg_11_sf, crs=4326)
+class(ine_seg_11_sf)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] &amp;quot;sf&amp;quot;         &amp;quot;data.frame&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;plot(st_geometry(ine_seg_11_sf))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-04-13-mapeando-ingresos-en-las-ciudades-de-uruguay_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;div id=&#34;calculamos-las-medianas&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Calculamos las medianas&lt;/h2&gt;
+&lt;p&gt;Para calcular el ingreso en cada segmento censal, usamos los datos de la Encuesta Continua de Hogares. Los microdatos incluyen el segmento censal de cada hogar y una estimación de su ingreso. &lt;code&gt;dplyr&lt;/code&gt; hace muy fácil calcular la mediana del ingreso de los hogares encuestados:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;Sys.setlocale(&amp;quot;LC_ALL&amp;quot;, &amp;quot;UTF-8&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] &amp;quot;en_US.UTF-8/UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;medianas &amp;lt;- read_tsv(&amp;quot;../../public/ech/H_2018_Terceros.dat&amp;quot;) %&amp;gt;% 
+  transmute(id       =as.character(numero),
+            depto_id = dpto, 
+            depto = nomdpto,
+            localidad_id = as.numeric(locagr),
+            localidad = nom_locagr,
+            seccion_id = as.numeric(secc),
+            segmento_id = as.numeric(segm),
+            ingreso = YSVL) %&amp;gt;% 
+  group_by(depto_id, seccion_id, segmento_id) %&amp;gt;% 
+  summarize(mediana = median(ingreso))&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;linkear-los-datos-al-mapa&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Linkear los datos al mapa&lt;/h2&gt;
+&lt;p&gt;Para visualizar todo en un mapa, hay que linkear los datos con el dataframe de los segmentos censales. Agregarle atributos no espaciales a un objeto &lt;code&gt;sf&lt;/code&gt; es simple, ya que se comportan como &lt;code&gt;data.frames&lt;/code&gt; y soportan las funciones del &lt;code&gt;tidyverse&lt;/code&gt;, por lo que podemos usar &lt;code&gt;left_join&lt;/code&gt; con &lt;code&gt;depto_id&lt;/code&gt;, &lt;code&gt;seccion_id&lt;/code&gt; y &lt;code&gt;segmento_id&lt;/code&gt; como identificadores:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ine_seg_11_sf &amp;lt;- ine_seg_11_sf %&amp;gt;% 
+  left_join(medianas, by=c(&amp;quot;DEPTO&amp;quot; = &amp;quot;depto_id&amp;quot;,
+                           &amp;quot;SECCION&amp;quot; = &amp;quot;seccion_id&amp;quot;,
+                           &amp;quot;SEGMENTO&amp;quot; = &amp;quot;segmento_id&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;elegir-una-localidad&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Elegir una localidad&lt;/h2&gt;
+&lt;p&gt;Como queremos mapear los ingresos en cada ciudad, tenemos que encontrar una forma de seleccionar una zona del mapa. Para esto podemos usar &lt;code&gt;filter&lt;/code&gt; y seleccionar los polígonos que pertenecen a cierta localidad`:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Montevideo es la localidad 1020
+cod_loc &amp;lt;- &amp;quot;1020&amp;quot;
+mapa_loc &amp;lt;- filter(ine_seg_11_sf, CODLOC==cod_loc)
+plot(st_geometry(mapa_loc))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-04-13-mapeando-ingresos-en-las-ciudades-de-uruguay_files/figure-html/unnamed-chunk-6-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;agregar-mapa-de-fondo&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Agregar mapa de fondo&lt;/h2&gt;
+&lt;p&gt;Este mapa funciona bien si conocemos la ciudad, pero para zonas geográficas no tan familiares puede ser conveniente agregar referencias como calles importantes o cuerpos de agua.&lt;/p&gt;
+&lt;p&gt;Para eso podemos usar google maps, que publica una API con mapas basadas en imágenes satelitales.Para consumir la API, es necesario registrarse y darles una tarjeta de crédito 👎 para obtener una clave. &lt;a href=&#34;https://cran.r-project.org/web/packages/httr/vignettes/secrets.html&#34;&gt;Acá&lt;/a&gt;. hay más info sobre como trabajar con API keys en R.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(ggmap)
+# Leer la API key de variable de environment
+API_KEY &amp;lt;- Sys.getenv(&amp;quot;GOOGLE_API&amp;quot;)
+# Loguearse a la API
+register_google(API_KEY)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Para bajar el mapa de Google Maps, necesitamos las coordenadas del mapa que vamos a dibujar. Para obtener estas coordenadas, subseteo el mapa original con el código de la localidad que quiero mapear y obtengo las coordenadas del mapa subseteado.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;cod_loc &amp;lt;- &amp;quot;1020&amp;quot;
+mapa_loc &amp;lt;- filter(ine_seg_11_sf, CODLOC==cod_loc)
+
+bbox &amp;lt;- st_bbox(mapa_loc) %&amp;gt;% 
+   setNames(c(&amp;quot;left&amp;quot;, &amp;quot;bottom&amp;quot;, &amp;quot;right&amp;quot;, &amp;quot;top&amp;quot;))
+
+mapa &amp;lt;- get_map(location=bbox)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Para poder dibujar este mapa con &lt;code&gt;tmap&lt;/code&gt;, tengo que convertirlo a un &lt;code&gt;Raster&lt;/code&gt; con la función &lt;code&gt;ggmap_rast&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# https://gis.stackexchange.com/questions/155334/ggmap-clip-a-map
+library(raster)
+library(tmap)
+
+ggmap_rast &amp;lt;- function(map) {
+  map_bbox &amp;lt;- attr(map, &amp;#39;bb&amp;#39;) 
+  .extent &amp;lt;- extent(as.numeric(map_bbox[c(2,4,1,3)]))
+  my_map &amp;lt;- raster(.extent, nrow= nrow(map), ncol = ncol(map))
+  rgb_cols &amp;lt;- setNames(as.data.frame(t(col2rgb(map))), c(&amp;#39;red&amp;#39;,&amp;#39;green&amp;#39;,&amp;#39;blue&amp;#39;))
+  red &amp;lt;- my_map
+  values(red) &amp;lt;- rgb_cols[[&amp;#39;red&amp;#39;]]
+  green &amp;lt;- my_map
+  values(green) &amp;lt;- rgb_cols[[&amp;#39;green&amp;#39;]]
+  blue &amp;lt;- my_map
+  values(blue) &amp;lt;- rgb_cols[[&amp;#39;blue&amp;#39;]]
+  stack(red,green,blue)
+}
+
+mapa_raster &amp;lt;- ggmap_rast(mapa)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Ahora que tengo el &lt;code&gt;Raster&lt;/code&gt;, los polígonos de los segmentos censales y la estimación de las medianas, podemos hacer un mapa en capas con &lt;code&gt;tmap&lt;/code&gt;:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;tm_shape(mapa_raster) + 
+  tm_rgb() + 
+  tm_shape(mapa_loc) +
+  tm_fill(col=&amp;quot;mediana&amp;quot;, 
+          style=&amp;quot;quantile&amp;quot;,
+          title = &amp;quot;Ingreso&amp;quot;,
+          textNA = &amp;quot;S/D&amp;quot;,
+          alpha = 0.75) + 
+  tm_layout(&amp;quot;Montevideo&amp;quot;, 
+            frame = FALSE,
+            legend.position = c(&amp;quot;right&amp;quot;, &amp;quot;bottom&amp;quot;),
+            legend.format = list(
+              &amp;quot;text.separator&amp;quot; = &amp;quot;-&amp;quot;
+            )) +
+  tm_legend(show=FALSE)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-04-13-mapeando-ingresos-en-las-ciudades-de-uruguay_files/figure-html/unnamed-chunk-10-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;!-- # Otras localidades --&gt;
+&lt;!-- `tmap` nos permite dibujar un mapa con todos los elementos que vinimos desarrollando en distintas capas. También tiene una función que permite armar grillas de mapas.  --&gt;
+&lt;!-- Podemos hacer el mismo mapa para otras localidades: --&gt;
+&lt;!-- ```{r} --&gt;
+&lt;!-- # salto: 15120 --&gt;
+&lt;!-- mapa_loc &lt;- filter(ine_seg_11_sf, CODLOC==&#34;15120&#34;) --&gt;
+&lt;!-- bbox &lt;- st_bbox(mapa_loc) %&gt;%  --&gt;
+&lt;!--     setNames(c(&#34;left&#34;, &#34;bottom&#34;, &#34;right&#34;, &#34;top&#34;)) --&gt;
+&lt;!-- mapa_raster &lt;- get_map(location=bbox) %&gt;%  --&gt;
+&lt;!--     ggmap_rast() --&gt;
+&lt;!-- mapa_salto &lt;- tm_shape(mapa_raster) +  --&gt;
+&lt;!--     tm_rgb() +  --&gt;
+&lt;!--     tm_shape(mapa_loc) + --&gt;
+&lt;!--     tm_fill(col=&#34;mediana&#34;,  --&gt;
+&lt;!--           style=&#34;quantile&#34;, --&gt;
+&lt;!--           title = &#34;Ingreso&#34;, --&gt;
+&lt;!--           textNA = &#34;S/D&#34;, --&gt;
+&lt;!--           alpha = 0.75) +  --&gt;
+&lt;!--   tm_layout(&#34;Salto&#34;,  --&gt;
+&lt;!--             frame = FALSE, --&gt;
+&lt;!--             legend.position = legend_pos, --&gt;
+&lt;!--             legend.format = list( --&gt;
+&lt;!--               &#34;text.separator&#34; = &#34;-&#34; --&gt;
+&lt;!--             )) --&gt;
+&lt;!-- ``` --&gt;
+&lt;!-- ```{r} --&gt;
+&lt;!-- # Durazno: 6220 --&gt;
+&lt;!-- mapa_loc &lt;- filter(ine_seg_11_sf, CODLOC==&#34;6220&#34;) --&gt;
+&lt;!-- bbox &lt;- st_bbox(mapa_loc) %&gt;%  --&gt;
+&lt;!--     setNames(c(&#34;left&#34;, &#34;bottom&#34;, &#34;right&#34;, &#34;top&#34;)) --&gt;
+&lt;!-- mapa_raster &lt;- get_map(location=bbox) %&gt;%  --&gt;
+&lt;!--     ggmap_rast() --&gt;
+&lt;!-- mapa_durazno &lt;- tm_shape(mapa_raster) +  --&gt;
+&lt;!--     tm_rgb() +  --&gt;
+&lt;!--     tm_shape(mapa_loc) + --&gt;
+&lt;!--     tm_fill(col=&#34;mediana&#34;,  --&gt;
+&lt;!--           style=&#34;quantile&#34;, --&gt;
+&lt;!--           title = &#34;Ingreso&#34;, --&gt;
+&lt;!--           textNA = &#34;S/D&#34;, --&gt;
+&lt;!--           alpha = 0.75) +  --&gt;
+&lt;!--   tm_layout(&#34;Durazno&#34;,  --&gt;
+&lt;!--             frame = FALSE, --&gt;
+&lt;!--             legend.position = legend_pos, --&gt;
+&lt;!--             legend.format = list( --&gt;
+&lt;!--               &#34;text.separator&#34; = &#34;-&#34; --&gt;
+&lt;!--             )) --&gt;
+&lt;!-- ``` --&gt;
+&lt;!-- Para sacar varios mapas a la vez podemos combinar `tmap_arrange` con esta función: --&gt;
+&lt;!-- ```{r} --&gt;
+&lt;!-- tmap_arrange( --&gt;
+&lt;!--             mapa_salto, --&gt;
+&lt;!--             mapa_durazno, --&gt;
+&lt;!--             ncol = 1) --&gt;
+&lt;!-- ``` --&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+</description>
+       </item>
        
        <item>
          <title>Un mapa de Montevideo con leaflet</title>

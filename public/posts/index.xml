@@ -12,7 +12,7 @@
        
        
        <item>
-         <title>Mapeando Ingresos en los barrios de Montevideo</title>
+         <title>Barrios ricos y pobres de Montevideo</title>
          <link>/posts/mapeando-ingresos-en-las-ciudades-de-uruguay/</link>
          <pubDate>Sat, 13 Apr 2019 00:00:00 +0000</pubDate>
          
@@ -20,13 +20,13 @@
          <description>
 
 
+&lt;p&gt;Todas las ciudades tienen zonas ricas y zonas pobres. En Montevideo, las zonas costeras concentran los hogares de mayores ingresos (Carrasco, Punta Gorda, Malvín, Pocitos, etc.).&lt;/p&gt;
+&lt;p&gt;En este post armo un mapa para visualizar cuáles son los barrios con mayores ingresos en las ciudades de Uruguay.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;## OGR data source with driver: ESRI Shapefile 
 ## Source: &amp;quot;/Users/rlabuonora/Desktop/data_science/work/blog_2/public/shps/ine_seg_11&amp;quot;, layer: &amp;quot;ine_seg_11&amp;quot;
 ## with 4313 features
 ## It has 13 fields&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## [1] &amp;quot;en_US.UTF-8/UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8&amp;quot;&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Todas las ciudades tienen zonas ricas y zonas pobres. En Montevideo, las zonas costeras concentran los hogares de mayores ingresos (Carrasco, Punta Gorda, Malvín, Pocitos, etc.).&lt;/p&gt;
-&lt;p&gt;En este post armo un mapa para visualizar cuáles son las zonas con mayores ingresos en las ciudades de Uruguay linkeando los mapas que publica el INE con las formas de los segmentos censales y los datos de ingresos de la Encuesta Continua de Hogares:&lt;/p&gt;
 &lt;!-- En este post quiero visualizar la distribución del ingreso en las ciudades de Uruguay. En Montevideo sabemos que la zona costera es donde se concentran los hogares de mayores ingresos  --&gt;
 &lt;!-- Para visualizar esta estructura, linkeo los datos de la [Encuesta Continua de Hogares](http://ine.gub.uy/web/guest/encuesta-continua-de-hogares1) con un mapa de los segmentos censales del país. --&gt;
 &lt;!-- TODO: Refactor using chunk names --&gt;
