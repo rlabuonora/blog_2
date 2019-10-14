@@ -4,7 +4,7 @@ author: Rafa
 date: '2017-12-20'
 slug: tidy-vargas-llosa
 categories: []
-tags: []
+tags: ["nlp", "R"]
 draft: false
 ---
 ```{r echo = FALSE, message=FALSE}
