@@ -19,3 +19,5 @@ pygmentsCodeFences = true
 [params]
     tagline = "Mi blog de data science"
     favicon = "favicon.png"
+    MathJaxCDN = "//cdnjs.cloudflare.com/ajax/libs"
+    MathJaxVersion = "2.7.5"
