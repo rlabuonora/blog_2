@@ -9,6 +9,8 @@
 {{ if .Site.GoogleAnalytics }}
 {{ template "_internal/google_analytics_async.html" . }}
 {{ end }}
+  {{ partial "footer_mathjax.html" . }}
+
 </body>
 
 
