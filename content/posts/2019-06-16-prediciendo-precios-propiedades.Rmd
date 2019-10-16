@@ -1,0 +1,277 @@
+---
+title: Prediciendo Precios de Propiedades con scikit-learn
+author: Rafa
+date: '2019-06-16'
+slug: predicting-house-prices
+categories: []
+tags: ["python", "scikit-learn"]
+---
+
+
+```{r setup, include=FALSE}
+library(reticulate)
+library(knitr)
+```
+
+En este post armo un modelo de regresión para predecir el precio de venta de una propiedad inmobiliaria. Las columnas disponibles incluyen 80 columnas con información sobre la localización de las propiedades, su estructura y estado de conservación, su localización y la fecha y condiciones de la venta.  
+
+En la primera parte importo y describo las columnas disponibles, identifico outliers en algunas variables importantes e implemento algunas correcciones. 
+
+Luego estimo tres modelos para predecir la variable objetivo: el precio de venta de la propiedad. Dado que la variables es continua, uso 3 modelos de regresión: regresión lineal sin regularización, regresión Ridge y regresión Lasso. 
+
+En la última parte analizo la performance del modelo y algunas posibles líneas para mejorarlo. 
+
+```{python}
+# Importar módulos
+import pandas as pd
+import numpy as np
+# Leer los datos 
+casas = pd.read_csv("../../public/data/precios_casas/train.csv")
+
+# Primeras filas
+print(casas.head())
+```
+
+Cantidad de filas y columnas:
+```{python}
+print(casas.shape)
+```
+
+Columnas con datos faltantes
+```{python}
+print(casas.isnull().any().sum())
+```
+
+Columnas numéricas con datos faltantes:
+```{python}
+# Seleccionar numéricas
+numericas = casas.select_dtypes(include = [np.number])
+# Columnas numéricas con faltantes
+print(casas[numericas.columns[numericas.isnull().any()]].isnull().sum().sort_values(ascending = False))
+```
+
+```{python}
+# Columnas categóricas
+categoricas = casas.select_dtypes(include=[object])
+
+# Columnas categóricas con faltantes
+print(casas[categoricas.columns[categoricas.isnull().any()]].isnull().sum().sort_values(ascending = False))
+
+```
+
+
+# Variable objetivo: SalePrice
+
+Es el precio de venta de la propiedad. Es continua y no tiene missings. La propiedad promedio se vendió en $ 180.920, la más barata salió $ 34.900 y la más cara $755.000. Tiene distribución asimétrica, con la cola larga a la derecha (es más probable que una casa sea más cara que más barata que el promedio). Esta asimetría hace que sea conveniente normalizarla para modelarla.
+
+```{python}
+casas[["SalePrice"]].describe()
+```
+
+```{python}
+def helper_curtosis(x):
+  # Texto sobre la curtosis de x
+  # para agregar al gráfico
+  sk = skew(x)
+  sk_pval = skewtest(x)[0]
+  return f'Curtosis:\n{sk:.2f} ({sk_pval:.3f})'
+```
+
+Es asimética:
+
+```{python}
+import matplotlib.pyplot as plt
+import seaborn as sns
+import scipy.stats as stats
+from scipy.stats import skew, skewtest
+
+fig, ax = plt.subplots(1, 2, figsize=(12,4))
+
+# SalePrice sin transformar
+x = casas["SalePrice"]
+sns.distplot(x, kde=False, fit=stats.norm, ax=ax[0])
+ax[0].text(400000, 0.000005, helper_curtosis(x), fontsize = 14)
+#ax[0].set_title("SalePrice")
+
+# SalePrice transformada
+log1_x = np.log1p(casas["SalePrice"])
+sns.distplot(log1_x, kde=False, fit=stats.norm, ax=ax[1])
+ax[1].text(12.6, 0.6, helper_curtosis(log1_x), fontsize = 14)
+ax[1].set_xlabel("log(1+SalePrice)")
+
+_ = fig.suptitle("La transformación x = log(1+x) corrige la asimetría en SalePrice", fontsize=16)
+
+```
+El [test de curtosis](https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.skewtest.html#scipy.stats.skewtest) es una prueba estadística para determinar si la distibución es simétrica. En la variable original rechazamos que la distribución sea simétrica y en la transformada con `log(1+x)` no rechazamos la hipótesis nula de que la distribución es simétrica. 
+
+## Correlaciones con otras columnas
+```{python}
+# Correlaciones con SalePrice
+corr_sales_price = casas.corr()["SalePrice"]
+
+# Solo las mayores que 0.63 ordenadas descendiendo
+corrs_altas = corr_sales_price[corr_sales_price > 0.4].sort_values(ascending = False)
+print(corrs_altas)
+```
+
+
+Calculamos las correlaciones de la variables objetivo con el resto de las variables para determinar en qué variables enfocarnos:
+
+La calidad de la casa (`OverallQual`), el metraje (`GrLivArea`), la cantidad de autos que entran en el garage (`GarageCars`) y el metraje del garage (`GarageArea`) son las variables continuas más importantes.
+
+```{python}
+# Marcar outlier
+casas["outlier"] = np.logical_and(casas["GrLivArea"] > 4000, 
+                                  casas["SalePrice"] < 300000)
+
+# Scatterplot
+
+fig, ax = plt.subplots(1, 2, figsize=(12,4))
+sns.scatterplot(x="GrLivArea", y="SalePrice", hue="outlier", data=casas, ax = ax[0])
+plt.title("Dos propiedades baratas para su tamaño", fontsize = 16)
+ax[1].set(xscale="log", yscale="log")
+ax[1].set_xlabel("log") #, ylabel = "log")
+sns.scatterplot(x="GrLivArea", y="SalePrice", hue="outlier", data=casas, ax = ax[1])
+_ = plt.title("Transformación logarítmica", fontsize = 16)
+
+
+```
+
+## Variables numéricas discontinuas
+
+Estas variables son numéricas pero representan cuentas (cantidad de baños, cantidad de cuartos, etc.). 
+
+```{python}
+# Cantidad de baños, cantidad de garages
+cuentas =   ["KitchenAbvGr", "BedroomAbvGr", 
+             "Fireplaces",   "BsmtFullBath",
+             "TotRmsAbvGrd", "FullBath",
+             "HalfBath",     "YearBuilt"]   
+
+# Panel de (2, 3)
+dim_panel = (2, 4)
+fig, ax = plt.subplots(dim_panel[0], dim_panel[1], figsize=(12,8))
+ax[1,3].tick_params(labelbottom = False)
+fig.subplots_adjust(hspace=0.4, wspace=0.4)
+
+# Ordenar los nombres de las columnas (2, 3) para iterar fácil
+cols = np.reshape(np.array(cuentas)[:8], dim_panel) # tomo los primeros 6 para que entre en el panel
+            
+_ = [sns.countplot(x=cols[i, j], data=casas, ax = ax[i, j]) for i in range(dim_panel[0]) 
+                                                              for j in range(dim_panel[1])]
+        
+```
+
+
+## Variables categóricas
+
+Estas variables son categorías y las modelamos como _dummies_.
+
+```{python}
+categoricas = ["LotShape",     "LandContour",   "BldgType",   "Foundation",
+               "Neighborhood", "Exterior1st",   "LandSlope",  "HouseStyle",  
+               "PavedDrive",   "SaleCondition", "RoofStyle",  "CentralAir",     
+               "LotShape",     "LandContour",   "MSZoning",   "SaleType",
+               "Street",       "Utilities",     "Heating",    "RoofMatl",
+               "Exterior2nd",  "LotConfig",                                     
+               "Alley",        "Electrical",   "BsmtFinType1", "BsmtFinType2",  # Tienen Nan
+               "GarageType",   "MiscFeature",   "MasVnrType",  "Fence"          # Tienen Nan
+              ]
+
+
+
+
+dim_panel = (5, 5)
+fig, ax = plt.subplots(dim_panel[0], dim_panel[1], figsize=(12,16))
+
+# Apagar los tick labels cuando son demasiados
+apagar_ejes = [
+    (0, 2), (0, 3), (0, 4), 
+    (1, 0), (1, 2), (1, 4), 
+    (2, 0), (2, 2), (2, 3),
+    (3, 0), (3, 3), (3, 4),
+    (4, 0), (4, 1), (4, 3), (4, 4)
+]
+
+_ = [ax[plt].tick_params(labelbottom = False) for plt in apagar_ejes]
+
+# Fijar los espacios entre los subplots
+fig.subplots_adjust(hspace=0.4, wspace=0.6)
+
+cols = np.reshape(np.array(categoricas)[:25], dim_panel)
+_ = [sns.countplot(x=cols[i, j], data=casas, ax = ax[i, j]) for i in range(dim_panel[0]) 
+                                                              for j in range(dim_panel[1])]
+```
+
+`Street`, `Utilities`, `Heating` y `RoofMatl` tienen muy poca variación y pueden generar problemas en el modelo.
+
+```{python}
+# Sacar las problematicas
+cat_problemas = ["Street", "Utilities", "Heating", "RoofMatl"] 
+
+#_ = [ categoricas.remove(col) for col in cat_problemas  ]
+
+
+cat_missing = ["MasVnrType",   "GarageType",  
+               #"Electrical",   "MiscFeature",
+               "BsmtFinType1", "BsmtFinType2",
+               "LotConfig",    "Exterior2nd",  "LandSlope", 
+               "Alley",        "Fence" ]
+
+_ = [ categoricas.remove(col) for col in cat_missing  ]
+```
+
+
+## Variables Categóricas Ordinales
+
+El último tipo de columna son las variables categóricas ordinales (ej: calidad de la piscina). En estos casos, la variable aparece como texto, pero en realidad queremos modelarla como numérica, porque Calidad = 2 es más que Calidad  = 1. Para eso tenemos que recodificar las columnas. 
+
+```{python}
+ordinales = ["OverallQual",  "OverallCond", "ExterQual",
+             "ExterCond",    "BsmtQual",    "BsmtCond",
+             "BsmtExposure", "HeatingQC",   "KitchenQual",
+             "Functional",   "FireplaceQu", "PoolQC",
+             "GarageFinish", "GarageCond",  "GarageQual",
+             "Fence"] 
+```
+
+
+Llevamos las que tienen escalas de calidad (Ex, Gd, Fa, Po) a una escala común. Por ejemplo,cuando es _missing_ la dejamos en 0. Si la calidad de la piscina es missing, es porque la propiedad no tiene piscina y está bien que quede en 0.
+
+```{python}
+def cambiar_escala(df, col, escala):
+  print(f'\n{col}\n')
+  print(casas[col].value_counts(dropna = False))
+  # reemplazar missings
+  casas[col].fillna("MISSING", inplace = True)
+  # aplicar escala_ordinal
+  casas[col].replace(escala, inplace = True)
+  print(casas[col].value_counts(dropna = False))
+  print("-" * 20)
+```
+
+```{python}
+# Po < Fa < TA < Gd < Ex
+ESCALA_ORDINAL = { "MISSING": 0, "Po" : 1, "Fa" : 2, 
+                   "TA" : 3,     "Gd" : 4, "Ex" : 5}
+
+ordinales_escala_comun = [ "ExterQual",   "ExterCond",   
+                           "BsmtQual",    "BsmtCond",     
+                           "HeatingQC",   "KitchenQual",  
+                           "FireplaceQu", "PoolQC",       
+                           "GarageCond"  ]
+
+# cambiar casas inplace
+_ = [ cambiar_escala(casas, col, ESCALA_ORDINAL) for col in ordinales_escala_comun]
+```
+
+```{python}
+ESCALA_FUNCTIONAL = { "Sal" : 0, "Sev" : 1,
+                      "Maj2": 2, "Maj1": 3,
+                      "Mod" : 4, "Min2": 5,
+                      "Min1": 6, "Typ": 7
+                    }
+
+cambiar_escala(casas, "Functional", escala = ESCALA_FUNCTIONAL)
+```
+

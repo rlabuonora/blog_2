@@ -6,10 +6,28 @@
        <description>Recent content in Tags on Rafael La Buonora</description>
        <generator>Hugo -- gohugo.io</generator>
        <copyright>Copyright &amp;copy; 2019 - Rafael La Buonora</copyright>
-       <lastBuildDate>Sat, 13 Apr 2019 00:00:00 +0000</lastBuildDate>
+       <lastBuildDate>Sun, 16 Jun 2019 00:00:00 +0000</lastBuildDate>
        
            <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
        
+       
+       <item>
+         <title>python</title>
+         <link>/tags/python/</link>
+         <pubDate>Sun, 16 Jun 2019 00:00:00 +0000</pubDate>
+         
+         <guid>/tags/python/</guid>
+         <description></description>
+       </item>
+       
+       <item>
+         <title>scikit-learn</title>
+         <link>/tags/scikit-learn/</link>
+         <pubDate>Sun, 16 Jun 2019 00:00:00 +0000</pubDate>
+         
+         <guid>/tags/scikit-learn/</guid>
+         <description></description>
+       </item>
        
        <item>
          <title>R</title>
