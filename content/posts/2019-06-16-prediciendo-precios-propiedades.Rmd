@@ -1,5 +1,5 @@
 ---
-title: Prediciendo Precios de Propiedades con scikit-learn
+title: Prediciendo Precios de Propiedades
 author: Rafa
 date: '2019-06-16'
 slug: predicting-house-prices
@@ -13,14 +13,10 @@ library(reticulate)
 library(knitr)
 ```
 
-En este post armo un modelo de regresión para predecir el precio de venta de una propiedad inmobiliaria. Las columnas disponibles incluyen 80 columnas con información sobre la localización de las propiedades, su estructura y estado de conservación, su localización y la fecha y condiciones de la venta.  
+En este post estimo tres modelos de regresión para predecir el precio de venta de una propiedad inmobiliaria usando `scikit-learn`. Las columnas disponibles incluyen 80 columnas con información sobre la localización de las propiedades, su estructura y estado de conservación, su localización y la fecha y condiciones de la venta.  
 
-En la primera parte importo y describo las columnas disponibles, identifico outliers en algunas variables importantes e implemento algunas correcciones. 
-
-Luego estimo tres modelos para predecir la variable objetivo: el precio de venta de la propiedad. Dado que la variables es continua, uso 3 modelos de regresión: regresión lineal sin regularización, regresión Ridge y regresión Lasso. 
-
-En la última parte analizo la performance del modelo y algunas posibles líneas para mejorarlo. 
-
+Dado que la variable objetivo es continua, uso 3 modelos de regresión: regresión lineal sin regularización, regresión Ridge y regresión Lasso. 
+ 
 ```{python}
 # Importar módulos
 import pandas as pd
@@ -37,37 +33,56 @@ Cantidad de filas y columnas:
 print(casas.shape)
 ```
 
-Columnas con datos faltantes
+## Datos faltantes
+
+Los datos faltantes son un problema habitual en este tipo de tarea. El primer paso para analizarlo es cuantificar cuantos casos tienen datos faltantes en cada columna:
+
 ```{python}
 print(casas.isnull().any().sum())
 ```
 
-Columnas numéricas con datos faltantes:
-```{python}
-# Seleccionar numéricas
-numericas = casas.select_dtypes(include = [np.number])
-# Columnas numéricas con faltantes
-print(casas[numericas.columns[numericas.isnull().any()]].isnull().sum().sort_values(ascending = False))
-```
+<!-- Columnas numéricas con datos faltantes: -->
+<!-- ```{python} -->
+<!-- # Seleccionar numéricas -->
+<!-- numericas = casas.select_dtypes(include = [np.number]) -->
+<!-- # Columnas numéricas con faltantes -->
+<!-- print(casas[numericas.columns[numericas.isnull().any()]].isnull().sum().sort_values(ascending = False)) -->
+<!-- ``` -->
 
 ```{python}
-# Columnas categóricas
-categoricas = casas.select_dtypes(include=[object])
-
-# Columnas categóricas con faltantes
-print(casas[categoricas.columns[categoricas.isnull().any()]].isnull().sum().sort_values(ascending = False))
-
+continuas = ["LotArea",      "GrLivArea",   "GarageArea",
+             "WoodDeckSF",   "OpenPorchSF", "EnclosedPorch",
+             "3SsnPorch",    "ScreenPorch",
+             "LowQualFinSF", "LotFrontage",
+             "1stFlrSF",     "2ndFlrSF"]
 ```
+
+
+<!-- ```{python} -->
+<!-- # Columnas categóricas -->
+<!-- categoricas = casas.select_dtypes(include=[object]) -->
+
+<!-- # Columnas categóricas con faltantes -->
+<!-- print(casas[categoricas.columns[categoricas.isnull().any()]].isnull().sum().sort_values(ascending = False)) -->
+
+<!-- ``` -->
 
 
 # Variable objetivo: SalePrice
 
-Es el precio de venta de la propiedad. Es continua y no tiene missings. La propiedad promedio se vendió en $ 180.920, la más barata salió $ 34.900 y la más cara $755.000. Tiene distribución asimétrica, con la cola larga a la derecha (es más probable que una casa sea más cara que más barata que el promedio). Esta asimetría hace que sea conveniente normalizarla para modelarla.
+La variable a predecir es el precio de venta de la propiedad. Es continua y no tiene missings. La propiedad promedio se vendió en $ 180.920, la más barata salió $ 34.900 y la más cara $755.000. 
 
 ```{python}
 casas[["SalePrice"]].describe()
 ```
 
+
+
+
+
+Tiene distribución asimétrica, con la cola larga a la derecha (es más probable que una casa sea más cara que más barata que el promedio). Esta asimetría hace que sea conveniente normalizarla para modelarla.
+
+Defino una función `helper_curtosis` para anotar los gráficos de asimetría:
 ```{python}
 def helper_curtosis(x):
   # Texto sobre la curtosis de x
@@ -77,7 +92,6 @@ def helper_curtosis(x):
   return f'Curtosis:\n{sk:.2f} ({sk_pval:.3f})'
 ```
 
-Es asimética:
 
 ```{python}
 import matplotlib.pyplot as plt
@@ -102,6 +116,7 @@ ax[1].set_xlabel("log(1+SalePrice)")
 _ = fig.suptitle("La transformación x = log(1+x) corrige la asimetría en SalePrice", fontsize=16)
 
 ```
+
 El [test de curtosis](https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.skewtest.html#scipy.stats.skewtest) es una prueba estadística para determinar si la distibución es simétrica. En la variable original rechazamos que la distribución sea simétrica y en la transformada con `log(1+x)` no rechazamos la hipótesis nula de que la distribución es simétrica. 
 
 ## Correlaciones con otras columnas
@@ -119,6 +134,10 @@ Calculamos las correlaciones de la variables objetivo con el resto de las variab
 
 La calidad de la casa (`OverallQual`), el metraje (`GrLivArea`), la cantidad de autos que entran en el garage (`GarageCars`) y el metraje del garage (`GarageArea`) son las variables continuas más importantes.
 
+## Outliers
+
+Hay dos propiedades que tienen valores atípicos.
+
 ```{python}
 # Marcar outlier
 casas["outlier"] = np.logical_and(casas["GrLivArea"] > 4000, 
@@ -127,11 +146,11 @@ casas["outlier"] = np.logical_and(casas["GrLivArea"] > 4000,
 # Scatterplot
 
 fig, ax = plt.subplots(1, 2, figsize=(12,4))
-sns.scatterplot(x="GrLivArea", y="SalePrice", hue="outlier", data=casas, ax = ax[0])
+_ = sns.scatterplot(x="GrLivArea", y="SalePrice", hue="outlier", data=casas, ax = ax[0])
 plt.title("Dos propiedades baratas para su tamaño", fontsize = 16)
 ax[1].set(xscale="log", yscale="log")
 ax[1].set_xlabel("log") #, ylabel = "log")
-sns.scatterplot(x="GrLivArea", y="SalePrice", hue="outlier", data=casas, ax = ax[1])
+_ = sns.scatterplot(x="GrLivArea", y="SalePrice", hue="outlier", data=casas, ax = ax[1])
 _ = plt.title("Transformación logarítmica", fontsize = 16)
 
 
@@ -159,7 +178,7 @@ cols = np.reshape(np.array(cuentas)[:8], dim_panel) # tomo los primeros 6 para q
             
 _ = [sns.countplot(x=cols[i, j], data=casas, ax = ax[i, j]) for i in range(dim_panel[0]) 
                                                               for j in range(dim_panel[1])]
-        
+plt.show()
 ```
 
 
@@ -177,9 +196,6 @@ categoricas = ["LotShape",     "LandContour",   "BldgType",   "Foundation",
                "Alley",        "Electrical",   "BsmtFinType1", "BsmtFinType2",  # Tienen Nan
                "GarageType",   "MiscFeature",   "MasVnrType",  "Fence"          # Tienen Nan
               ]
-
-
-
 
 dim_panel = (5, 5)
 fig, ax = plt.subplots(dim_panel[0], dim_panel[1], figsize=(12,16))
@@ -201,6 +217,8 @@ fig.subplots_adjust(hspace=0.4, wspace=0.6)
 cols = np.reshape(np.array(categoricas)[:25], dim_panel)
 _ = [sns.countplot(x=cols[i, j], data=casas, ax = ax[i, j]) for i in range(dim_panel[0]) 
                                                               for j in range(dim_panel[1])]
+                                                              
+plt.show()
 ```
 
 `Street`, `Utilities`, `Heating` y `RoofMatl` tienen muy poca variación y pueden generar problemas en el modelo.
@@ -240,14 +258,10 @@ Llevamos las que tienen escalas de calidad (Ex, Gd, Fa, Po) a una escala común.
 
 ```{python}
 def cambiar_escala(df, col, escala):
-  print(f'\n{col}\n')
-  print(casas[col].value_counts(dropna = False))
   # reemplazar missings
   casas[col].fillna("MISSING", inplace = True)
   # aplicar escala_ordinal
   casas[col].replace(escala, inplace = True)
-  print(casas[col].value_counts(dropna = False))
-  print("-" * 20)
 ```
 
 ```{python}
@@ -275,3 +289,189 @@ ESCALA_FUNCTIONAL = { "Sal" : 0, "Sev" : 1,
 cambiar_escala(casas, "Functional", escala = ESCALA_FUNCTIONAL)
 ```
 
+```{python}
+# Panel con las variables ordinales
+# TODO refactorear a una funcion con las de las cuentas
+dim_panel = (4, 4)
+fig, ax = plt.subplots(dim_panel[0], dim_panel[1], figsize=(16,18))
+
+
+# Fijar los espacios entre los subplots
+fig.subplots_adjust(hspace=0.3, wspace=0.6)
+
+cols = np.reshape(np.array(ordinales), dim_panel)
+_ = [sns.countplot(x=cols[i, j], data=casas, ax = ax[i, j]) for i in range(dim_panel[0]) 
+                                                              for j in range(dim_panel[1])]
+
+```
+
+Posibles problemas con `PoolQC` y `Functional`. `BsmtCond` y  `GarageCond`.
+
+Missing en `PoolQC` (1453) , `FireplaceQu` (690) , `GarageCond` (81) , `GarageQual`  (81), `GarageFinish` (81), `GarageType`(81), `BsmtExposure` (38) , `BsmtFinType1` (37), `BsmtCond` (37),  `BsmtQual` (37).
+
+```{python}
+ordinales_missing = ["PoolQC",       "FireplaceQu", "GarageCond",
+                     "GarageQual",    
+                     "BsmtCond",
+                     "BsmtQual"]     
+ordinales_problemas = []   # Problematicas
+ordinales_escala    = ["Fence", "BsmtExposure", "GarageFinish", "ExterCond"]   # Estos los saco pq no arme la escala
+
+_ = [ ordinales.remove(col) for col in ordinales_escala + ordinales_missing]
+
+```
+
+Para evitar problemas de multicolinealidad nos quedamos sólo con `TotalBsmtSF`
+
+```{python}
+# Extraer X e y como arrays
+y = casas["SalePrice"]
+X = casas[ordinales + categoricas + continuas + cuentas ]
+columnas_con_missing = X.columns[X.isnull().any()]
+
+print(f'Columnas con missings para imputar: {columnas_con_missing}')
+
+```
+
+
+```{python}
+
+from sklearn.impute import SimpleImputer
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, RidgeCV, LassoCV
+from sklearn.compose import TransformedTargetRegressor
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import make_scorer, mean_absolute_error
+from sklearn.model_selection import cross_val_score
+
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler, OrdinalEncoder, RobustScaler, FunctionTransformer, PolynomialFeatures
+
+transform_categoricas = Pipeline(steps=[
+    # Imputar faltantes con el valor mas comun y despues hacer dummies
+    ('imp', SimpleImputer(strategy="most_frequent")),
+    ('onehot', OneHotEncoder(handle_unknown="ignore"))                                                 
+])
+
+transform_continuas = Pipeline(steps = [
+    ('imp_cont', SimpleImputer(strategy='mean')),
+    ('trans', FunctionTransformer(np.log1p, validate=True)),
+    ('scale', StandardScaler())
+])
+
+transform_ordinales = Pipeline(steps = [
+   ('ord', OrdinalEncoder())
+])
+
+
+transform_polys = Pipeline(steps = [
+   ('polys', PolynomialFeatures(2))
+])
+
+
+# ColumnTransformer aplica las pipelines en paralelo y concatena las columnas resultantes
+preprocesador = ColumnTransformer(
+  transformers=[
+#     ('polys', transform_polys, ["GrLivArea"]),
+      ('cat', transform_categoricas, categoricas),
+      ('num', transform_continuas, continuas + cuentas),
+      ('ord',   transform_ordinales, ordinales)
+#     ('cnts', 'passthrough', cuentas ) 
+  ]
+)
+```
+
+# Modelos 
+
+Estimamos tres modelos: regresión lineal estándar, regresión Ridge y regresión Lasso. La diferencia entre los tres modelos es la forma de regularizar los coeficientes. En el caso de la regresión estándar, se minimiza la suma de cuadrados de los residuos:  $\sum (y - \hat{y})^2$. Ridge y Lasso penalizan la norma del vector de coeficientes $\theta$. Esto evita el _ovefitting_ a los datos que usamos para entrenar el modelo.
+
+En el caso de la regresión Ridge, se agrega un término a la función de costos un término que incluye la norma $L_2$  del vector de coeficientes estimados. La regresión Lasso penaliza la norma $L_1$. Ambos métodos incluyen un parámetro $\alpha$ que pondera el costo de la norma del vector de coeficientes en la función de costos del modelo. Para determinar el valor de este parámetro, uso Cross-Validation con 5 folds.
+
+Hay dos métricas posibles para evaluar los modelos de regresión: [Mean Absolute](https://en.wikipedia.org/wiki/Mean_absolute_error) y [Mean Squared Error](https://en.wikipedia.org/wiki/Mean_squared_error). El MSE penaliza más los outliers, pero no está medido en la misma unidad que la variable objetivo, por lo que vamos a usar el MAE, que si se mide en la unidad de la variable de destino (en este caso son dólares) 
+
+```{python}
+scorer = make_scorer(mean_absolute_error)
+X_prep = preprocesador.fit_transform(X) # TODO: este paso debería estar adentro del 
+                                        #       pipeline pero no funciona 
+
+```
+
+## Regresión sin Regularización
+```{python}
+reg = TransformedTargetRegressor(regressor=LinearRegression(),
+                                        func=np.log1p,
+                                        inverse_func=np.expm1)
+
+cv_linreg = cross_val_score(reg, X_prep, y, cv = 5, scoring = scorer)
+print(f'MAE Sin Reg: ${cv_linreg.mean():.2f}')
+```
+
+## Lasso
+
+```{python}
+
+lassoCV = TransformedTargetRegressor(regressor=LassoCV(cv = 5),
+                                        func=np.log1p,
+                                        inverse_func=np.expm1)
+
+lassoCV_score = cross_val_score(lassoCV, X_prep, y, cv = 5, scoring = scorer)
+
+print(f'MAE Lasso: ${lassoCV_score.mean():.2f}')
+
+lassoCV.fit(X_prep, y)
+print(f'Mejor Alpha: {lassoCV.regressor_.alpha_:.2f}')
+
+
+
+```
+
+## Ridge
+
+```{python}
+
+ridgeCV = TransformedTargetRegressor(regressor=RidgeCV(cv = 5),
+                                        func=np.log1p,
+                                        inverse_func=np.expm1)
+
+ridgeCV_score = cross_val_score(ridgeCV, X_prep, y, cv = 5, scoring = scorer)
+print(f'MAE Ridge: ${ridgeCV_score.mean():.2f}')
+
+ridgeCV.fit(X_prep, y)
+print(f'Mejor Alpha: {ridgeCV.regressor_.alpha_}')
+
+
+```
+
+## Errores
+
+```{python}
+fig, ax = plt.subplots(1, 3, figsize=(16, 4))
+reg.fit(X_prep, y)
+
+preds = reg.predict(X_prep)
+preds = pd.DataFrame({"preds":preds, "true":y})
+preds["residuals"] = preds["true"] - preds["preds"]
+_ = preds.plot(x = "preds", y = "residuals", kind = "scatter", ax = ax[0])
+_ = ax[0].set_title("Sin Regularización")
+
+preds = lassoCV.predict(X_prep)
+preds = pd.DataFrame({"preds":preds, "true":y})
+preds["residuals"] = preds["true"] - preds["preds"]
+_ = preds.plot(x = "preds", y = "residuals", kind = "scatter", ax = ax[1])
+_ = ax[1].set_title("Lasso")
+
+
+preds = ridgeCV.predict(X_prep)
+preds = pd.DataFrame({"preds":preds, "true":y})
+preds["residuals"] = preds["true"] - preds["preds"]
+_ = preds.plot(x = "preds", y = "residuals", kind = "scatter", ax = ax[2])
+_ = ax[2].set_title("Ridge")
+```
+
+
+Los errores de los tres modelos muestran que hay margen para mejora porque los errores de predicción son sistemáticamente altos para valores alto de la predicción. Agregar cuadrados de los features podría mejorar los resultados.
+
+# Conclusiones
+
+Entrenamos 3 modelos y elegimos los hiperparámetros con un esquema de Cross-Validation con 5 _folds_. El mejor modelo es la regresión Lasso con $\alpha = 0.00045$, que permite predecir el precio de una vivienda con un error promedio de aproximadamente \$ 15.100, menos del 10% de la media  de la variable objetivo (\$181.000). Dada la alta cantidad de columnas colineales en los regresores, era de esperar que Lasso funcionara mejor, porque tiende a hace que muchos de los coeficientes $\theta$ estimados sean 0.

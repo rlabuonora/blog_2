@@ -65,7 +65,7 @@
 
 <article>
 
-    <h1>Prediciendo Precios de Propiedades con scikit-learn</h1>
+    <h1>Prediciendo Precios de Propiedades</h1>
 
     
         <aside>
@@ -89,7 +89,7 @@
         </li>
         
 
-        <li>9 minutes read</li>
+        <li>10 minutes read</li>
     </ul>
 </aside>
 
@@ -98,10 +98,8 @@
     
 
 
-<p>En este post armo un modelo de regresión para predecir el precio de venta de una propiedad inmobiliaria. Las columnas disponibles incluyen 80 columnas con información sobre la localización de las propiedades, su estructura y estado de conservación, su localización y la fecha y condiciones de la venta.</p>
-<p>En la primera parte importo y describo las columnas disponibles, identifico outliers en algunas variables importantes e implemento algunas correcciones.</p>
-<p>Luego estimo tres modelos para predecir la variable objetivo: el precio de venta de la propiedad. Dado que la variables es continua, uso 3 modelos de regresión: regresión lineal sin regularización, regresión Ridge y regresión Lasso.</p>
-<p>En la última parte analizo la performance del modelo y algunas posibles líneas para mejorarlo.</p>
+<p>En este post estimo tres modelos de regresión para predecir el precio de venta de una propiedad inmobiliaria usando <code>scikit-learn</code>. Las columnas disponibles incluyen 80 columnas con información sobre la localización de las propiedades, su estructura y estado de conservación, su localización y la fecha y condiciones de la venta.</p>
+<p>Dado que la variable objetivo es continua, uso 3 modelos de regresión: regresión lineal sin regularización, regresión Ridge y regresión Lasso.</p>
 <pre class="python"><code># Importar módulos
 import pandas as pd
 import numpy as np
@@ -121,43 +119,33 @@ print(casas.head())</code></pre>
 <p>Cantidad de filas y columnas:</p>
 <pre class="python"><code>print(casas.shape)</code></pre>
 <pre><code>## (1460, 81)</code></pre>
-<p>Columnas con datos faltantes</p>
+<div id="datos-faltantes" class="section level2">
+<h2>Datos faltantes</h2>
+<p>Los datos faltantes son un problema habitual en este tipo de tarea. El primer paso para analizarlo es cuantificar cuantos casos tienen datos faltantes en cada columna:</p>
 <pre class="python"><code>print(casas.isnull().any().sum())</code></pre>
 <pre><code>## 19</code></pre>
-<p>Columnas numéricas con datos faltantes:</p>
-<pre class="python"><code># Seleccionar numéricas
-numericas = casas.select_dtypes(include = [np.number])
-# Columnas numéricas con faltantes
-print(casas[numericas.columns[numericas.isnull().any()]].isnull().sum().sort_values(ascending = False))</code></pre>
-<pre><code>## LotFrontage    259
-## GarageYrBlt     81
-## MasVnrArea       8
-## dtype: int64</code></pre>
-<pre class="python"><code># Columnas categóricas
-categoricas = casas.select_dtypes(include=[object])
-
-# Columnas categóricas con faltantes
-print(casas[categoricas.columns[categoricas.isnull().any()]].isnull().sum().sort_values(ascending = False))</code></pre>
-<pre><code>## PoolQC          1453
-## MiscFeature     1406
-## Alley           1369
-## Fence           1179
-## FireplaceQu      690
-## GarageCond        81
-## GarageQual        81
-## GarageFinish      81
-## GarageType        81
-## BsmtFinType2      38
-## BsmtExposure      38
-## BsmtFinType1      37
-## BsmtCond          37
-## BsmtQual          37
-## MasVnrType         8
-## Electrical         1
-## dtype: int64</code></pre>
+<!-- Columnas numéricas con datos faltantes: -->
+<!-- ```{python} -->
+<!-- # Seleccionar numéricas -->
+<!-- numericas = casas.select_dtypes(include = [np.number]) -->
+<!-- # Columnas numéricas con faltantes -->
+<!-- print(casas[numericas.columns[numericas.isnull().any()]].isnull().sum().sort_values(ascending = False)) -->
+<!-- ``` -->
+<pre class="python"><code>continuas = [&quot;LotArea&quot;,      &quot;GrLivArea&quot;,   &quot;GarageArea&quot;,
+             &quot;WoodDeckSF&quot;,   &quot;OpenPorchSF&quot;, &quot;EnclosedPorch&quot;,
+             &quot;3SsnPorch&quot;,    &quot;ScreenPorch&quot;,
+             &quot;LowQualFinSF&quot;, &quot;LotFrontage&quot;,
+             &quot;1stFlrSF&quot;,     &quot;2ndFlrSF&quot;]</code></pre>
+<!-- ```{python} -->
+<!-- # Columnas categóricas -->
+<!-- categoricas = casas.select_dtypes(include=[object]) -->
+<!-- # Columnas categóricas con faltantes -->
+<!-- print(casas[categoricas.columns[categoricas.isnull().any()]].isnull().sum().sort_values(ascending = False)) -->
+<!-- ``` -->
+</div>
 <div id="variable-objetivo-saleprice" class="section level1">
 <h1>Variable objetivo: SalePrice</h1>
-<p>Es el precio de venta de la propiedad. Es continua y no tiene missings. La propiedad promedio se vendió en $ 180.920, la más barata salió $ 34.900 y la más cara $755.000. Tiene distribución asimétrica, con la cola larga a la derecha (es más probable que una casa sea más cara que más barata que el promedio). Esta asimetría hace que sea conveniente normalizarla para modelarla.</p>
+<p>La variable a predecir es el precio de venta de la propiedad. Es continua y no tiene missings. La propiedad promedio se vendió en $ 180.920, la más barata salió $ 34.900 y la más cara $755.000.</p>
 <pre class="python"><code>casas[[&quot;SalePrice&quot;]].describe()</code></pre>
 <pre><code>##            SalePrice
 ## count    1460.000000
@@ -168,13 +156,14 @@ print(casas[categoricas.columns[categoricas.isnull().any()]].isnull().sum().sort
 ## 50%    163000.000000
 ## 75%    214000.000000
 ## max    755000.000000</code></pre>
+<p>Tiene distribución asimétrica, con la cola larga a la derecha (es más probable que una casa sea más cara que más barata que el promedio). Esta asimetría hace que sea conveniente normalizarla para modelarla.</p>
+<p>Defino una función <code>helper_curtosis</code> para anotar los gráficos de asimetría:</p>
 <pre class="python"><code>def helper_curtosis(x):
   # Texto sobre la curtosis de x
   # para agregar al gráfico
   sk = skew(x)
   sk_pval = skewtest(x)[0]
   return f&#39;Curtosis:\n{sk:.2f} ({sk_pval:.3f})&#39;</code></pre>
-<p>Es asimética:</p>
 <pre class="python"><code>import matplotlib.pyplot as plt
 import seaborn as sns
 import scipy.stats as stats
@@ -195,8 +184,8 @@ ax[1].text(12.6, 0.6, helper_curtosis(log1_x), fontsize = 14)
 ax[1].set_xlabel(&quot;log(1+SalePrice)&quot;)
 
 _ = fig.suptitle(&quot;La transformación x = log(1+x) corrige la asimetría en SalePrice&quot;, fontsize=16)</code></pre>
-<p><img src="/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-8-1.png" width="1152" />
-El <a href="https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.skewtest.html#scipy.stats.skewtest">test de curtosis</a> es una prueba estadística para determinar si la distibución es simétrica. En la variable original rechazamos que la distribución sea simétrica y en la transformada con <code>log(1+x)</code> no rechazamos la hipótesis nula de que la distribución es simétrica.</p>
+<p><img src="/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-7-1.png" width="1152" /></p>
+<p>El <a href="https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.skewtest.html#scipy.stats.skewtest">test de curtosis</a> es una prueba estadística para determinar si la distibución es simétrica. En la variable original rechazamos que la distribución sea simétrica y en la transformada con <code>log(1+x)</code> no rechazamos la hipótesis nula de que la distribución es simétrica.</p>
 <div id="correlaciones-con-otras-columnas" class="section level2">
 <h2>Correlaciones con otras columnas</h2>
 <pre class="python"><code># Correlaciones con SalePrice
@@ -222,6 +211,10 @@ print(corrs_altas)</code></pre>
 ## Name: SalePrice, dtype: float64</code></pre>
 <p>Calculamos las correlaciones de la variables objetivo con el resto de las variables para determinar en qué variables enfocarnos:</p>
 <p>La calidad de la casa (<code>OverallQual</code>), el metraje (<code>GrLivArea</code>), la cantidad de autos que entran en el garage (<code>GarageCars</code>) y el metraje del garage (<code>GarageArea</code>) son las variables continuas más importantes.</p>
+</div>
+<div id="outliers" class="section level2">
+<h2>Outliers</h2>
+<p>Hay dos propiedades que tienen valores atípicos.</p>
 <pre class="python"><code># Marcar outlier
 casas[&quot;outlier&quot;] = np.logical_and(casas[&quot;GrLivArea&quot;] &gt; 4000, 
                                   casas[&quot;SalePrice&quot;] &lt; 300000)
@@ -229,19 +222,17 @@ casas[&quot;outlier&quot;] = np.logical_and(casas[&quot;GrLivArea&quot;] &gt; 40
 # Scatterplot
 
 fig, ax = plt.subplots(1, 2, figsize=(12,4))
-sns.scatterplot(x=&quot;GrLivArea&quot;, y=&quot;SalePrice&quot;, hue=&quot;outlier&quot;, data=casas, ax = ax[0])</code></pre>
-<pre><code>## &lt;matplotlib.axes._subplots.AxesSubplot object at 0x1a28d505c0&gt;</code></pre>
-<pre class="python"><code>plt.title(&quot;Dos propiedades baratas para su tamaño&quot;, fontsize = 16)</code></pre>
+_ = sns.scatterplot(x=&quot;GrLivArea&quot;, y=&quot;SalePrice&quot;, hue=&quot;outlier&quot;, data=casas, ax = ax[0])
+plt.title(&quot;Dos propiedades baratas para su tamaño&quot;, fontsize = 16)</code></pre>
 <pre><code>## Text(0.5, 1.0, &#39;Dos propiedades baratas para su tamaño&#39;)</code></pre>
 <pre class="python"><code>ax[1].set(xscale=&quot;log&quot;, yscale=&quot;log&quot;)</code></pre>
 <pre><code>## [None, None]</code></pre>
 <pre class="python"><code>ax[1].set_xlabel(&quot;log&quot;) #, ylabel = &quot;log&quot;)</code></pre>
 <pre><code>## Text(0.5, 0, &#39;log&#39;)</code></pre>
-<pre class="python"><code>sns.scatterplot(x=&quot;GrLivArea&quot;, y=&quot;SalePrice&quot;, hue=&quot;outlier&quot;, data=casas, ax = ax[1])</code></pre>
-<pre><code>## &lt;matplotlib.axes._subplots.AxesSubplot object at 0x1a299c5f28&gt;</code></pre>
-<pre class="python"><code>_ = plt.title(&quot;Transformación logarítmica&quot;, fontsize = 16)
+<pre class="python"><code>_ = sns.scatterplot(x=&quot;GrLivArea&quot;, y=&quot;SalePrice&quot;, hue=&quot;outlier&quot;, data=casas, ax = ax[1])
+_ = plt.title(&quot;Transformación logarítmica&quot;, fontsize = 16)
 </code></pre>
-<p><img src="/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-10-1.png" width="1152" /></p>
+<p><img src="/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-9-1.png" width="1152" /></p>
 </div>
 <div id="variables-numericas-discontinuas" class="section level2">
 <h2>Variables numéricas discontinuas</h2>
@@ -263,7 +254,8 @@ cols = np.reshape(np.array(cuentas)[:8], dim_panel) # tomo los primeros 6 para q
             
 _ = [sns.countplot(x=cols[i, j], data=casas, ax = ax[i, j]) for i in range(dim_panel[0]) 
                                                               for j in range(dim_panel[1])]
-        </code></pre>
+plt.show()</code></pre>
+<p><img src="/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-10-1.png" width="1152" /></p>
 </div>
 <div id="variables-categoricas" class="section level2">
 <h2>Variables categóricas</h2>
@@ -277,9 +269,6 @@ _ = [sns.countplot(x=cols[i, j], data=casas, ax = ax[i, j]) for i in range(dim_p
                &quot;Alley&quot;,        &quot;Electrical&quot;,   &quot;BsmtFinType1&quot;, &quot;BsmtFinType2&quot;,  # Tienen Nan
                &quot;GarageType&quot;,   &quot;MiscFeature&quot;,   &quot;MasVnrType&quot;,  &quot;Fence&quot;          # Tienen Nan
               ]
-
-
-
 
 dim_panel = (5, 5)
 fig, ax = plt.subplots(dim_panel[0], dim_panel[1], figsize=(12,16))
@@ -300,7 +289,10 @@ fig.subplots_adjust(hspace=0.4, wspace=0.6)
 
 cols = np.reshape(np.array(categoricas)[:25], dim_panel)
 _ = [sns.countplot(x=cols[i, j], data=casas, ax = ax[i, j]) for i in range(dim_panel[0]) 
-                                                              for j in range(dim_panel[1])]</code></pre>
+                                                              for j in range(dim_panel[1])]
+                                                              
+plt.show()</code></pre>
+<p><img src="/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-11-1.png" width="1152" /></p>
 <p><code>Street</code>, <code>Utilities</code>, <code>Heating</code> y <code>RoofMatl</code> tienen muy poca variación y pueden generar problemas en el modelo.</p>
 <pre class="python"><code># Sacar las problematicas
 cat_problemas = [&quot;Street&quot;, &quot;Utilities&quot;, &quot;Heating&quot;, &quot;RoofMatl&quot;] 
@@ -327,14 +319,10 @@ _ = [ categoricas.remove(col) for col in cat_missing  ]</code></pre>
              &quot;Fence&quot;] </code></pre>
 <p>Llevamos las que tienen escalas de calidad (Ex, Gd, Fa, Po) a una escala común. Por ejemplo,cuando es <em>missing</em> la dejamos en 0. Si la calidad de la piscina es missing, es porque la propiedad no tiene piscina y está bien que quede en 0.</p>
 <pre class="python"><code>def cambiar_escala(df, col, escala):
-  print(f&#39;\n{col}\n&#39;)
-  print(casas[col].value_counts(dropna = False))
   # reemplazar missings
   casas[col].fillna(&quot;MISSING&quot;, inplace = True)
   # aplicar escala_ordinal
-  casas[col].replace(escala, inplace = True)
-  print(casas[col].value_counts(dropna = False))
-  print(&quot;-&quot; * 20)</code></pre>
+  casas[col].replace(escala, inplace = True)</code></pre>
 <pre class="python"><code># Po &lt; Fa &lt; TA &lt; Gd &lt; Ex
 ESCALA_ORDINAL = { &quot;MISSING&quot;: 0, &quot;Po&quot; : 1, &quot;Fa&quot; : 2, 
                    &quot;TA&quot; : 3,     &quot;Gd&quot; : 4, &quot;Ex&quot; : 5}
@@ -347,148 +335,6 @@ ordinales_escala_comun = [ &quot;ExterQual&quot;,   &quot;ExterCond&quot;,
 
 # cambiar casas inplace
 _ = [ cambiar_escala(casas, col, ESCALA_ORDINAL) for col in ordinales_escala_comun]</code></pre>
-<pre><code>## 
-## ExterQual
-## 
-## TA    906
-## Gd    488
-## Ex     52
-## Fa     14
-## Name: ExterQual, dtype: int64
-## 3    906
-## 4    488
-## 5     52
-## 2     14
-## Name: ExterQual, dtype: int64
-## --------------------
-## 
-## ExterCond
-## 
-## TA    1282
-## Gd     146
-## Fa      28
-## Ex       3
-## Po       1
-## Name: ExterCond, dtype: int64
-## 3    1282
-## 4     146
-## 2      28
-## 5       3
-## 1       1
-## Name: ExterCond, dtype: int64
-## --------------------
-## 
-## BsmtQual
-## 
-## TA     649
-## Gd     618
-## Ex     121
-## NaN     37
-## Fa      35
-## Name: BsmtQual, dtype: int64
-## 3    649
-## 4    618
-## 5    121
-## 0     37
-## 2     35
-## Name: BsmtQual, dtype: int64
-## --------------------
-## 
-## BsmtCond
-## 
-## TA     1311
-## Gd       65
-## Fa       45
-## NaN      37
-## Po        2
-## Name: BsmtCond, dtype: int64
-## 3    1311
-## 4      65
-## 2      45
-## 0      37
-## 1       2
-## Name: BsmtCond, dtype: int64
-## --------------------
-## 
-## HeatingQC
-## 
-## Ex    741
-## TA    428
-## Gd    241
-## Fa     49
-## Po      1
-## Name: HeatingQC, dtype: int64
-## 5    741
-## 3    428
-## 4    241
-## 2     49
-## 1      1
-## Name: HeatingQC, dtype: int64
-## --------------------
-## 
-## KitchenQual
-## 
-## TA    735
-## Gd    586
-## Ex    100
-## Fa     39
-## Name: KitchenQual, dtype: int64
-## 3    735
-## 4    586
-## 5    100
-## 2     39
-## Name: KitchenQual, dtype: int64
-## --------------------
-## 
-## FireplaceQu
-## 
-## NaN    690
-## Gd     380
-## TA     313
-## Fa      33
-## Ex      24
-## Po      20
-## Name: FireplaceQu, dtype: int64
-## 0    690
-## 4    380
-## 3    313
-## 2     33
-## 5     24
-## 1     20
-## Name: FireplaceQu, dtype: int64
-## --------------------
-## 
-## PoolQC
-## 
-## NaN    1453
-## Gd        3
-## Fa        2
-## Ex        2
-## Name: PoolQC, dtype: int64
-## 0    1453
-## 4       3
-## 5       2
-## 2       2
-## Name: PoolQC, dtype: int64
-## --------------------
-## 
-## GarageCond
-## 
-## TA     1326
-## NaN      81
-## Fa       35
-## Gd        9
-## Po        7
-## Ex        2
-## Name: GarageCond, dtype: int64
-## 3    1326
-## 0      81
-## 2      35
-## 4       9
-## 1       7
-## 5       2
-## Name: GarageCond, dtype: int64
-## --------------------</code></pre>
 <pre class="python"><code>ESCALA_FUNCTIONAL = { &quot;Sal&quot; : 0, &quot;Sev&quot; : 1,
                       &quot;Maj2&quot;: 2, &quot;Maj1&quot;: 3,
                       &quot;Mod&quot; : 4, &quot;Min2&quot;: 5,
@@ -496,27 +342,178 @@ _ = [ cambiar_escala(casas, col, ESCALA_ORDINAL) for col in ordinales_escala_com
                     }
 
 cambiar_escala(casas, &quot;Functional&quot;, escala = ESCALA_FUNCTIONAL)</code></pre>
-<pre><code>## 
-## Functional
-## 
-## Typ     1360
-## Min2      34
-## Min1      31
-## Mod       15
-## Maj1      14
-## Maj2       5
-## Sev        1
-## Name: Functional, dtype: int64
-## 7    1360
-## 5      34
-## 6      31
-## 4      15
-## 3      14
-## 2       5
-## 1       1
-## Name: Functional, dtype: int64
-## --------------------</code></pre>
+<pre class="python"><code># Panel con las variables ordinales
+# TODO refactorear a una funcion con las de las cuentas
+dim_panel = (4, 4)
+fig, ax = plt.subplots(dim_panel[0], dim_panel[1], figsize=(16,18))
+
+
+# Fijar los espacios entre los subplots
+fig.subplots_adjust(hspace=0.3, wspace=0.6)
+
+cols = np.reshape(np.array(ordinales), dim_panel)
+_ = [sns.countplot(x=cols[i, j], data=casas, ax = ax[i, j]) for i in range(dim_panel[0]) 
+                                                              for j in range(dim_panel[1])]</code></pre>
+<p>Posibles problemas con <code>PoolQC</code> y <code>Functional</code>. <code>BsmtCond</code> y <code>GarageCond</code>.</p>
+<p>Missing en <code>PoolQC</code> (1453) , <code>FireplaceQu</code> (690) , <code>GarageCond</code> (81) , <code>GarageQual</code> (81), <code>GarageFinish</code> (81), <code>GarageType</code>(81), <code>BsmtExposure</code> (38) , <code>BsmtFinType1</code> (37), <code>BsmtCond</code> (37), <code>BsmtQual</code> (37).</p>
+<pre class="python"><code>ordinales_missing = [&quot;PoolQC&quot;,       &quot;FireplaceQu&quot;, &quot;GarageCond&quot;,
+                     &quot;GarageQual&quot;,    
+                     &quot;BsmtCond&quot;,
+                     &quot;BsmtQual&quot;]     
+ordinales_problemas = []   # Problematicas
+ordinales_escala    = [&quot;Fence&quot;, &quot;BsmtExposure&quot;, &quot;GarageFinish&quot;, &quot;ExterCond&quot;]   # Estos los saco pq no arme la escala
+
+_ = [ ordinales.remove(col) for col in ordinales_escala + ordinales_missing]</code></pre>
+<p>Para evitar problemas de multicolinealidad nos quedamos sólo con <code>TotalBsmtSF</code></p>
+<pre class="python"><code># Extraer X e y como arrays
+y = casas[&quot;SalePrice&quot;]
+X = casas[ordinales + categoricas + continuas + cuentas ]
+columnas_con_missing = X.columns[X.isnull().any()]
+
+print(f&#39;Columnas con missings para imputar: {columnas_con_missing}&#39;)</code></pre>
+<pre><code>## Columnas con missings para imputar: Index([&#39;Electrical&#39;, &#39;MiscFeature&#39;, &#39;LotFrontage&#39;], dtype=&#39;object&#39;)</code></pre>
+<pre class="python"><code>
+from sklearn.impute import SimpleImputer
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, RidgeCV, LassoCV
+from sklearn.compose import TransformedTargetRegressor
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import make_scorer, mean_absolute_error
+from sklearn.model_selection import cross_val_score
+
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler, OrdinalEncoder, RobustScaler, FunctionTransformer, PolynomialFeatures
+
+transform_categoricas = Pipeline(steps=[
+    # Imputar faltantes con el valor mas comun y despues hacer dummies
+    (&#39;imp&#39;, SimpleImputer(strategy=&quot;most_frequent&quot;)),
+    (&#39;onehot&#39;, OneHotEncoder(handle_unknown=&quot;ignore&quot;))                                                 
+])
+
+transform_continuas = Pipeline(steps = [
+    (&#39;imp_cont&#39;, SimpleImputer(strategy=&#39;mean&#39;)),
+    (&#39;trans&#39;, FunctionTransformer(np.log1p, validate=True)),
+    (&#39;scale&#39;, StandardScaler())
+])
+
+transform_ordinales = Pipeline(steps = [
+   (&#39;ord&#39;, OrdinalEncoder())
+])
+
+
+transform_polys = Pipeline(steps = [
+   (&#39;polys&#39;, PolynomialFeatures(2))
+])
+
+
+# ColumnTransformer aplica las pipelines en paralelo y concatena las columnas resultantes
+preprocesador = ColumnTransformer(
+  transformers=[
+#     (&#39;polys&#39;, transform_polys, [&quot;GrLivArea&quot;]),
+      (&#39;cat&#39;, transform_categoricas, categoricas),
+      (&#39;num&#39;, transform_continuas, continuas + cuentas),
+      (&#39;ord&#39;,   transform_ordinales, ordinales)
+#     (&#39;cnts&#39;, &#39;passthrough&#39;, cuentas ) 
+  ]
+)</code></pre>
 </div>
+</div>
+<div id="modelos" class="section level1">
+<h1>Modelos</h1>
+<p>Estimamos tres modelos: regresión lineal estándar, regresión Ridge y regresión Lasso. La diferencia entre los tres modelos es la forma de regularizar los coeficientes. En el caso de la regresión estándar, se minimiza la suma de cuadrados de los residuos: <span class="math inline">\(\sum (y - \hat{y})^2\)</span>. Ridge y Lasso penalizan la norma del vector de coeficientes <span class="math inline">\(\theta\)</span>. Esto evita el <em>ovefitting</em> a los datos que usamos para entrenar el modelo.</p>
+<p>En el caso de la regresión Ridge, se agrega un término a la función de costos un término que incluye la norma <span class="math inline">\(L_2\)</span> del vector de coeficientes estimados. La regresión Lasso penaliza la norma <span class="math inline">\(L_1\)</span>. Ambos métodos incluyen un parámetro <span class="math inline">\(\alpha\)</span> que pondera el costo de la norma del vector de coeficientes en la función de costos del modelo. Para determinar el valor de este parámetro, uso Cross-Validation con 5 folds.</p>
+<p>Hay dos métricas posibles para evaluar los modelos de regresión: <a href="https://en.wikipedia.org/wiki/Mean_absolute_error">Mean Absolute</a> y <a href="https://en.wikipedia.org/wiki/Mean_squared_error">Mean Squared Error</a>. El MSE penaliza más los outliers, pero no está medido en la misma unidad que la variable objetivo, por lo que vamos a usar el MAE, que si se mide en la unidad de la variable de destino (en este caso son dólares)</p>
+<pre class="python"><code>scorer = make_scorer(mean_absolute_error)
+X_prep = preprocesador.fit_transform(X) # TODO: este paso debería estar adentro del 
+                                        #       pipeline pero no funciona </code></pre>
+<div id="regresion-sin-regularizacion" class="section level2">
+<h2>Regresión sin Regularización</h2>
+<pre class="python"><code>reg = TransformedTargetRegressor(regressor=LinearRegression(),
+                                        func=np.log1p,
+                                        inverse_func=np.expm1)
+
+cv_linreg = cross_val_score(reg, X_prep, y, cv = 5, scoring = scorer)
+print(f&#39;MAE Sin Reg: ${cv_linreg.mean():.2f}&#39;)</code></pre>
+<pre><code>## MAE Sin Reg: $16604.95</code></pre>
+</div>
+<div id="lasso" class="section level2">
+<h2>Lasso</h2>
+<pre class="python"><code>
+lassoCV = TransformedTargetRegressor(regressor=LassoCV(cv = 5),
+                                        func=np.log1p,
+                                        inverse_func=np.expm1)
+
+lassoCV_score = cross_val_score(lassoCV, X_prep, y, cv = 5, scoring = scorer)
+
+print(f&#39;MAE Lasso: ${lassoCV_score.mean():.2f}&#39;)</code></pre>
+<pre><code>## MAE Lasso: $15978.56</code></pre>
+<pre class="python"><code>lassoCV.fit(X_prep, y)</code></pre>
+<pre><code>## TransformedTargetRegressor(check_inverse=True, func=&lt;ufunc &#39;log1p&#39;&gt;,
+##               inverse_func=&lt;ufunc &#39;expm1&#39;&gt;,
+##               regressor=LassoCV(alphas=None, copy_X=True, cv=5, eps=0.001, fit_intercept=True,
+##     max_iter=1000, n_alphas=100, n_jobs=None, normalize=False,
+##     positive=False, precompute=&#39;auto&#39;, random_state=None,
+##     selection=&#39;cyclic&#39;, tol=0.0001, verbose=False),
+##               transformer=None)</code></pre>
+<pre class="python"><code>print(f&#39;Mejor Alpha: {lassoCV.regressor_.alpha_:.2f}&#39;)
+</code></pre>
+<pre><code>## Mejor Alpha: 0.00</code></pre>
+</div>
+<div id="ridge" class="section level2">
+<h2>Ridge</h2>
+<pre class="python"><code>
+ridgeCV = TransformedTargetRegressor(regressor=RidgeCV(cv = 5),
+                                        func=np.log1p,
+                                        inverse_func=np.expm1)
+
+ridgeCV_score = cross_val_score(ridgeCV, X_prep, y, cv = 5, scoring = scorer)
+print(f&#39;MAE Ridge: ${ridgeCV_score.mean():.2f}&#39;)</code></pre>
+<pre><code>## MAE Ridge: $16463.16</code></pre>
+<pre class="python"><code>ridgeCV.fit(X_prep, y)</code></pre>
+<pre><code>## TransformedTargetRegressor(check_inverse=True, func=&lt;ufunc &#39;log1p&#39;&gt;,
+##               inverse_func=&lt;ufunc &#39;expm1&#39;&gt;,
+##               regressor=RidgeCV(alphas=array([ 0.1,  1. , 10. ]), cv=5, fit_intercept=True,
+##     gcv_mode=None, normalize=False, scoring=None, store_cv_values=False),
+##               transformer=None)</code></pre>
+<pre class="python"><code>print(f&#39;Mejor Alpha: {ridgeCV.regressor_.alpha_}&#39;)
+</code></pre>
+<pre><code>## Mejor Alpha: 10.0</code></pre>
+</div>
+<div id="errores" class="section level2">
+<h2>Errores</h2>
+<pre class="python"><code>fig, ax = plt.subplots(1, 3, figsize=(16, 4))
+reg.fit(X_prep, y)</code></pre>
+<pre><code>## TransformedTargetRegressor(check_inverse=True, func=&lt;ufunc &#39;log1p&#39;&gt;,
+##               inverse_func=&lt;ufunc &#39;expm1&#39;&gt;,
+##               regressor=LinearRegression(copy_X=True, fit_intercept=True, n_jobs=None,
+##          normalize=False),
+##               transformer=None)</code></pre>
+<pre class="python"><code>preds = reg.predict(X_prep)
+preds = pd.DataFrame({&quot;preds&quot;:preds, &quot;true&quot;:y})
+preds[&quot;residuals&quot;] = preds[&quot;true&quot;] - preds[&quot;preds&quot;]
+_ = preds.plot(x = &quot;preds&quot;, y = &quot;residuals&quot;, kind = &quot;scatter&quot;, ax = ax[0])
+_ = ax[0].set_title(&quot;Sin Regularización&quot;)
+
+preds = lassoCV.predict(X_prep)
+preds = pd.DataFrame({&quot;preds&quot;:preds, &quot;true&quot;:y})
+preds[&quot;residuals&quot;] = preds[&quot;true&quot;] - preds[&quot;preds&quot;]
+_ = preds.plot(x = &quot;preds&quot;, y = &quot;residuals&quot;, kind = &quot;scatter&quot;, ax = ax[1])
+_ = ax[1].set_title(&quot;Lasso&quot;)
+
+
+preds = ridgeCV.predict(X_prep)
+preds = pd.DataFrame({&quot;preds&quot;:preds, &quot;true&quot;:y})
+preds[&quot;residuals&quot;] = preds[&quot;true&quot;] - preds[&quot;preds&quot;]
+_ = preds.plot(x = &quot;preds&quot;, y = &quot;residuals&quot;, kind = &quot;scatter&quot;, ax = ax[2])
+_ = ax[2].set_title(&quot;Ridge&quot;)</code></pre>
+<p><img src="/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-25-1.png" width="1536" /></p>
+<p>Los errores de los tres modelos muestran que hay margen para mejora porque los errores de predicción son sistemáticamente altos para valores alto de la predicción. Agregar cuadrados de los features podría mejorar los resultados.</p>
+</div>
+</div>
+<div id="conclusiones" class="section level1">
+<h1>Conclusiones</h1>
+<p>Entrenamos 3 modelos y elegimos los hiperparámetros con un esquema de Cross-Validation con 5 <em>folds</em>. El mejor modelo es la regresión Lasso con <span class="math inline">\(\alpha = 0.00045\)</span>, que permite predecir el precio de una vivienda con un error promedio de aproximadamente $ 15.100, menos del 10% de la media de la variable objetivo ($181.000). Dada la alta cantidad de columnas colineales en los regresores, era de esperar que Lasso funcionara mejor, porque tiende a hace que muchos de los coeficientes <span class="math inline">\(\theta\)</span> estimados sean 0.</p>
 </div>
 
 
