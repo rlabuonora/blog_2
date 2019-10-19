@@ -380,7 +380,7 @@ ridgeCV = TransformedTargetRegressor(regressor=RidgeCV(cv = 5),
 
 ridgeCV_score = cross_val_score(ridgeCV, X_prep, y, cv = 5, scoring = scorer)
 print(f&#39;MAE Ridge: ${ridgeCV_score.mean():.2f}&#39;)</code></pre>
-<pre><code>## MAE Ridge: $16462.89</code></pre>
+<pre><code>## MAE Ridge: $16462.74</code></pre>
 <pre class="python"><code>ridgeCV.fit(X_prep, y)</code></pre>
 <pre><code>## TransformedTargetRegressor(check_inverse=True, func=&lt;ufunc &#39;log1p&#39;&gt;,
 ##               inverse_func=&lt;ufunc &#39;expm1&#39;&gt;,
