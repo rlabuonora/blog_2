@@ -145,13 +145,10 @@ casas[&amp;quot;outlier&amp;quot;] = np.logical_and(casas[&amp;quot;GrLivArea&am
 
 fig, ax = plt.subplots(1, 2, figsize=(12,4))
 _ = sns.scatterplot(x=&amp;quot;GrLivArea&amp;quot;, y=&amp;quot;SalePrice&amp;quot;, hue=&amp;quot;outlier&amp;quot;, data=casas, ax = ax[0])
-plt.title(&amp;quot;Dos propiedades baratas para su tamaño&amp;quot;, fontsize = 16)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Text(0.5, 1.0, &amp;#39;Dos propiedades baratas para su tamaño&amp;#39;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&#34;python&#34;&gt;&lt;code&gt;ax[1].set(xscale=&amp;quot;log&amp;quot;, yscale=&amp;quot;log&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## [None, None]&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&#34;python&#34;&gt;&lt;code&gt;ax[1].set_xlabel(&amp;quot;log&amp;quot;) #, ylabel = &amp;quot;log&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Text(0.5, 0, &amp;#39;log&amp;#39;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&#34;python&#34;&gt;&lt;code&gt;_ = sns.scatterplot(x=&amp;quot;GrLivArea&amp;quot;, y=&amp;quot;SalePrice&amp;quot;, hue=&amp;quot;outlier&amp;quot;, data=casas, ax = ax[1])
+_ = plt.title(&amp;quot;Dos propiedades baratas para su tamaño&amp;quot;, fontsize = 16)
+_ = ax[1].set(xscale=&amp;quot;log&amp;quot;, yscale=&amp;quot;log&amp;quot;)
+_ = ax[1].set_xlabel(&amp;quot;log&amp;quot;) #, ylabel = &amp;quot;log&amp;quot;)
+_ = sns.scatterplot(x=&amp;quot;GrLivArea&amp;quot;, y=&amp;quot;SalePrice&amp;quot;, hue=&amp;quot;outlier&amp;quot;, data=casas, ax = ax[1])
 _ = plt.title(&amp;quot;Transformación logarítmica&amp;quot;, fontsize = 16)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-9-1.png&#34; width=&#34;1152&#34; /&gt;&lt;/p&gt;
@@ -275,7 +272,10 @@ fig.subplots_adjust(hspace=0.3, wspace=0.6)
 
 cols = np.reshape(np.array(ordinales), dim_panel)
 _ = [sns.countplot(x=cols[i, j], data=casas, ax = ax[i, j]) for i in range(dim_panel[0]) 
-                                                              for j in range(dim_panel[1])]&lt;/code&gt;&lt;/pre&gt;
+                                                              for j in range(dim_panel[1])]
+
+plt.show()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-17-1.png&#34; width=&#34;1536&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Posibles problemas con &lt;code&gt;PoolQC&lt;/code&gt; y &lt;code&gt;Functional&lt;/code&gt;. &lt;code&gt;BsmtCond&lt;/code&gt; y &lt;code&gt;GarageCond&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;Missing en &lt;code&gt;PoolQC&lt;/code&gt; (1453) , &lt;code&gt;FireplaceQu&lt;/code&gt; (690) , &lt;code&gt;GarageCond&lt;/code&gt; (81) , &lt;code&gt;GarageQual&lt;/code&gt; (81), &lt;code&gt;GarageFinish&lt;/code&gt; (81), &lt;code&gt;GarageType&lt;/code&gt;(81), &lt;code&gt;BsmtExposure&lt;/code&gt; (38) , &lt;code&gt;BsmtFinType1&lt;/code&gt; (37), &lt;code&gt;BsmtCond&lt;/code&gt; (37), &lt;code&gt;BsmtQual&lt;/code&gt; (37).&lt;/p&gt;
 &lt;pre class=&#34;python&#34;&gt;&lt;code&gt;ordinales_missing = [&amp;quot;PoolQC&amp;quot;,       &amp;quot;FireplaceQu&amp;quot;, &amp;quot;GarageCond&amp;quot;,
@@ -391,7 +391,7 @@ ridgeCV = TransformedTargetRegressor(regressor=RidgeCV(cv = 5),
 
 ridgeCV_score = cross_val_score(ridgeCV, X_prep, y, cv = 5, scoring = scorer)
 print(f&amp;#39;MAE Ridge: ${ridgeCV_score.mean():.2f}&amp;#39;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## MAE Ridge: $16463.16&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## MAE Ridge: $16462.89&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&#34;python&#34;&gt;&lt;code&gt;ridgeCV.fit(X_prep, y)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## TransformedTargetRegressor(check_inverse=True, func=&amp;lt;ufunc &amp;#39;log1p&amp;#39;&amp;gt;,
 ##               inverse_func=&amp;lt;ufunc &amp;#39;expm1&amp;#39;&amp;gt;,

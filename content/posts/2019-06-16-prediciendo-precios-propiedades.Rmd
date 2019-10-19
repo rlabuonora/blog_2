@@ -147,9 +147,9 @@ casas["outlier"] = np.logical_and(casas["GrLivArea"] > 4000,
 
 fig, ax = plt.subplots(1, 2, figsize=(12,4))
 _ = sns.scatterplot(x="GrLivArea", y="SalePrice", hue="outlier", data=casas, ax = ax[0])
-plt.title("Dos propiedades baratas para su tamaño", fontsize = 16)
-ax[1].set(xscale="log", yscale="log")
-ax[1].set_xlabel("log") #, ylabel = "log")
+_ = plt.title("Dos propiedades baratas para su tamaño", fontsize = 16)
+_ = ax[1].set(xscale="log", yscale="log")
+_ = ax[1].set_xlabel("log") #, ylabel = "log")
 _ = sns.scatterplot(x="GrLivArea", y="SalePrice", hue="outlier", data=casas, ax = ax[1])
 _ = plt.title("Transformación logarítmica", fontsize = 16)
 
@@ -302,6 +302,8 @@ fig.subplots_adjust(hspace=0.3, wspace=0.6)
 cols = np.reshape(np.array(ordinales), dim_panel)
 _ = [sns.countplot(x=cols[i, j], data=casas, ax = ax[i, j]) for i in range(dim_panel[0]) 
                                                               for j in range(dim_panel[1])]
+
+plt.show()
 
 ```
 

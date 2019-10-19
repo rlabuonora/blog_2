@@ -223,13 +223,10 @@ casas[&quot;outlier&quot;] = np.logical_and(casas[&quot;GrLivArea&quot;] &gt; 40
 
 fig, ax = plt.subplots(1, 2, figsize=(12,4))
 _ = sns.scatterplot(x=&quot;GrLivArea&quot;, y=&quot;SalePrice&quot;, hue=&quot;outlier&quot;, data=casas, ax = ax[0])
-plt.title(&quot;Dos propiedades baratas para su tamaño&quot;, fontsize = 16)</code></pre>
-<pre><code>## Text(0.5, 1.0, &#39;Dos propiedades baratas para su tamaño&#39;)</code></pre>
-<pre class="python"><code>ax[1].set(xscale=&quot;log&quot;, yscale=&quot;log&quot;)</code></pre>
-<pre><code>## [None, None]</code></pre>
-<pre class="python"><code>ax[1].set_xlabel(&quot;log&quot;) #, ylabel = &quot;log&quot;)</code></pre>
-<pre><code>## Text(0.5, 0, &#39;log&#39;)</code></pre>
-<pre class="python"><code>_ = sns.scatterplot(x=&quot;GrLivArea&quot;, y=&quot;SalePrice&quot;, hue=&quot;outlier&quot;, data=casas, ax = ax[1])
+_ = plt.title(&quot;Dos propiedades baratas para su tamaño&quot;, fontsize = 16)
+_ = ax[1].set(xscale=&quot;log&quot;, yscale=&quot;log&quot;)
+_ = ax[1].set_xlabel(&quot;log&quot;) #, ylabel = &quot;log&quot;)
+_ = sns.scatterplot(x=&quot;GrLivArea&quot;, y=&quot;SalePrice&quot;, hue=&quot;outlier&quot;, data=casas, ax = ax[1])
 _ = plt.title(&quot;Transformación logarítmica&quot;, fontsize = 16)
 </code></pre>
 <p><img src="/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-9-1.png" width="1152" /></p>
@@ -353,7 +350,10 @@ fig.subplots_adjust(hspace=0.3, wspace=0.6)
 
 cols = np.reshape(np.array(ordinales), dim_panel)
 _ = [sns.countplot(x=cols[i, j], data=casas, ax = ax[i, j]) for i in range(dim_panel[0]) 
-                                                              for j in range(dim_panel[1])]</code></pre>
+                                                              for j in range(dim_panel[1])]
+
+plt.show()</code></pre>
+<p><img src="/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-17-1.png" width="1536" /></p>
 <p>Posibles problemas con <code>PoolQC</code> y <code>Functional</code>. <code>BsmtCond</code> y <code>GarageCond</code>.</p>
 <p>Missing en <code>PoolQC</code> (1453) , <code>FireplaceQu</code> (690) , <code>GarageCond</code> (81) , <code>GarageQual</code> (81), <code>GarageFinish</code> (81), <code>GarageType</code>(81), <code>BsmtExposure</code> (38) , <code>BsmtFinType1</code> (37), <code>BsmtCond</code> (37), <code>BsmtQual</code> (37).</p>
 <pre class="python"><code>ordinales_missing = [&quot;PoolQC&quot;,       &quot;FireplaceQu&quot;, &quot;GarageCond&quot;,
@@ -469,7 +469,7 @@ ridgeCV = TransformedTargetRegressor(regressor=RidgeCV(cv = 5),
 
 ridgeCV_score = cross_val_score(ridgeCV, X_prep, y, cv = 5, scoring = scorer)
 print(f&#39;MAE Ridge: ${ridgeCV_score.mean():.2f}&#39;)</code></pre>
-<pre><code>## MAE Ridge: $16463.16</code></pre>
+<pre><code>## MAE Ridge: $16462.89</code></pre>
 <pre class="python"><code>ridgeCV.fit(X_prep, y)</code></pre>
 <pre><code>## TransformedTargetRegressor(check_inverse=True, func=&lt;ufunc &#39;log1p&#39;&gt;,
 ##               inverse_func=&lt;ufunc &#39;expm1&#39;&gt;,
