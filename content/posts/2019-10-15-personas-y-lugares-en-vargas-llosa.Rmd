@@ -5,10 +5,10 @@ date: '2019-10-15'
 slug: personas-y-lugares-vargas-llosa
 categories: []
 tags: ["nlp", "R", "spacyR"]
-description: "Uso spacyR para visualizar los personajes y los lugares con más menciones en dos novelas de Mario Vargas Llosa."
+description: "Uso spacyR para visualizar los personajes y los lugares con más menciones en una novela de Mario Vargas Llosa."
 ---
 
-`spacyR` es una interfaz para usar una librería de NLP de python -spacy- desde R. En este post exploro un poco como detectar nombres de personas y de lugares usando esta librería para analizar cuáles son los personajes principales en cada capítulo de una novela, y donde se desarrolla cada capítulo.
+`spacyR` es una interfaz para usar una librería de NLP de python -spacy- desde R. En este post exploro un poco como detectar nombres de personas y de lugares usando esta librería para analizar cuáles son los personajes principales y los lugares más mencionados en cada capítulo de Las Travesuras de la Niña Mala.
 
 ```{r results='hide', warning=FALSE, message=FALSE, echo = FALSE}
 # usar el ejecutable correcto de python

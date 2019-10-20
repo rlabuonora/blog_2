@@ -20,7 +20,7 @@
          <description>
 
 
-&lt;p&gt;&lt;code&gt;spacyR&lt;/code&gt; es una interfaz para usar una librería de NLP de python -spacy- desde R. En este post exploro un poco como detectar nombres de personas y de lugares usando esta librería para analizar cuáles son los personajes principales en cada capítulo de una novela, y donde se desarrolla cada capítulo.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;spacyR&lt;/code&gt; es una interfaz para usar una librería de NLP de python -spacy- desde R. En este post exploro un poco como detectar nombres de personas y de lugares usando esta librería para analizar cuáles son los personajes principales y los lugares más mencionados en cada capítulo de Las Travesuras de la Niña Mala.&lt;/p&gt;
 &lt;div id=&#34;corpus&#34; class=&#34;section level2&#34;&gt;
 &lt;h2&gt;Corpus&lt;/h2&gt;
 &lt;p&gt;A partir del texto de las novelas (en inglés), creo un data frame con una línea por fila y columnas con el texto y el capítulo al que corresponde cada línea.&lt;/p&gt;
