@@ -19,6 +19,25 @@
          <guid>/posts/predicting-house-prices/</guid>
          <description>
 
+&lt;div id=&#34;TOC&#34;&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;#datos-faltantes&#34;&gt;Datos faltantes&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#variable-objetivo-saleprice&#34;&gt;Variable objetivo: SalePrice&lt;/a&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;#correlaciones-con-otras-columnas&#34;&gt;Correlaciones con otras columnas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#outliers&#34;&gt;Outliers&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#variables-numericas-discontinuas&#34;&gt;Variables numéricas discontinuas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#variables-categoricas&#34;&gt;Variables categóricas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#variables-categoricas-ordinales&#34;&gt;Variables Categóricas Ordinales&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#modelos&#34;&gt;Modelos&lt;/a&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;#regresion-sin-regularizacion&#34;&gt;Regresión sin Regularización&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#lasso&#34;&gt;Lasso&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#ridge&#34;&gt;Ridge&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#errores&#34;&gt;Errores&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#conclusiones&#34;&gt;Conclusiones&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
 
 &lt;p&gt;En este post estimo tres modelos de regresión para predecir el precio de venta de una propiedad inmobiliaria usando &lt;code&gt;scikit-learn&lt;/code&gt;. Las columnas disponibles incluyen 80 columnas con información sobre la localización de las propiedades, su estructura y estado de conservación, su localización y la fecha y condiciones de la venta.&lt;/p&gt;
 &lt;p&gt;Dado que la variable objetivo es continua, uso 3 modelos de regresión: regresión lineal sin regularización, regresión Ridge y regresión Lasso.&lt;/p&gt;
@@ -391,7 +410,7 @@ ridgeCV = TransformedTargetRegressor(regressor=RidgeCV(cv = 5),
 
 ridgeCV_score = cross_val_score(ridgeCV, X_prep, y, cv = 5, scoring = scorer)
 print(f&amp;#39;MAE Ridge: ${ridgeCV_score.mean():.2f}&amp;#39;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## MAE Ridge: $16462.74&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## MAE Ridge: $16462.56&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&#34;python&#34;&gt;&lt;code&gt;ridgeCV.fit(X_prep, y)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## TransformedTargetRegressor(check_inverse=True, func=&amp;lt;ufunc &amp;#39;log1p&amp;#39;&amp;gt;,
 ##               inverse_func=&amp;lt;ufunc &amp;#39;expm1&amp;#39;&amp;gt;,

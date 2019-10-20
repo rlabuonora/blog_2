@@ -6,6 +6,7 @@ slug: tidy-vargas-llosa
 categories: []
 tags: ["nlp", "R"]
 draft: false
+description: "Un poco de NLP con las novelas de Mario Vargas Llosa."
 ---
 ```{r echo = FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning=FALSE)

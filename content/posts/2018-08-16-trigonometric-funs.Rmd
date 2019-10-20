@@ -5,6 +5,7 @@ date: '2017-08-16'
 slug: ggplot-geometria
 categories: []
 tags: ["vis", "R", "ggplot"]
+description: "Exploramos algunas funciones geométricas con ggplot"
 ---
 
 
