@@ -71,8 +71,9 @@ continuas = ["LotArea",      "GrLivArea",   "GarageArea",
 
 <!-- ``` -->
 
+# Análisis Exploratorio
 
-# Variable objetivo: SalePrice
+## Variable objetivo: SalePrice
 
 La variable a predecir es el precio de venta de la propiedad. Es continua y no tiene missings. La propiedad promedio se vendió en $ 180.920, la más barata salió $ 34.900 y la más cara $755.000. 
 
@@ -123,7 +124,6 @@ _ = fig.suptitle("La transformación x = log(1+x) corrige la asimetría en SaleP
 
 El [test de curtosis](https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.skewtest.html#scipy.stats.skewtest) es una prueba estadística para determinar si la distibución es simétrica. En la variable original rechazamos que la distribución sea simétrica y en la transformada con `log(1+x)` no rechazamos la hipótesis nula de que la distribución es simétrica. 
 
-## Correlaciones con otras columnas
 ```{python}
 # Correlaciones con SalePrice
 corr_sales_price = casas.corr()["SalePrice"]
@@ -449,7 +449,7 @@ print(f'Mejor Alpha: {ridgeCV.regressor_.alpha_}')
 
 ```
 
-## Errores
+## Análisis de los Errores
 
 ```{python}
 fig, ax = plt.subplots(1, 3, figsize=(16, 4))

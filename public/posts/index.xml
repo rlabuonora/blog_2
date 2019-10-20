@@ -22,8 +22,8 @@
 &lt;div id=&#34;TOC&#34;&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;#datos-faltantes&#34;&gt;Datos faltantes&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;#variable-objetivo-saleprice&#34;&gt;Variable objetivo: SalePrice&lt;/a&gt;&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;#correlaciones-con-otras-columnas&#34;&gt;Correlaciones con otras columnas&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#analisis-exploratorio&#34;&gt;Análisis Exploratorio&lt;/a&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;#variable-objetivo-saleprice&#34;&gt;Variable objetivo: SalePrice&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;#outliers&#34;&gt;Outliers&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;#variables-numericas-discontinuas&#34;&gt;Variables numéricas discontinuas&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;#variables-categoricas&#34;&gt;Variables categóricas&lt;/a&gt;&lt;/li&gt;
@@ -33,7 +33,7 @@
 &lt;li&gt;&lt;a href=&#34;#regresion-sin-regularizacion&#34;&gt;Regresión sin Regularización&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;#lasso&#34;&gt;Lasso&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;#ridge&#34;&gt;Ridge&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;#errores&#34;&gt;Errores&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#analisis-de-los-errores&#34;&gt;Análisis de los Errores&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;#conclusiones&#34;&gt;Conclusiones&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
@@ -84,8 +84,10 @@ print(casas.head())&lt;/code&gt;&lt;/pre&gt;
 &lt;!-- print(casas[categoricas.columns[categoricas.isnull().any()]].isnull().sum().sort_values(ascending = False)) --&gt;
 &lt;!-- ``` --&gt;
 &lt;/div&gt;
-&lt;div id=&#34;variable-objetivo-saleprice&#34; class=&#34;section level1&#34;&gt;
-&lt;h1&gt;Variable objetivo: SalePrice&lt;/h1&gt;
+&lt;div id=&#34;analisis-exploratorio&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Análisis Exploratorio&lt;/h1&gt;
+&lt;div id=&#34;variable-objetivo-saleprice&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Variable objetivo: SalePrice&lt;/h2&gt;
 &lt;p&gt;La variable a predecir es el precio de venta de la propiedad. Es continua y no tiene missings. La propiedad promedio se vendió en $ 180.920, la más barata salió $ 34.900 y la más cara $755.000.&lt;/p&gt;
 &lt;pre class=&#34;python&#34;&gt;&lt;code&gt;casas[[&amp;quot;SalePrice&amp;quot;]].describe()&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;##            SalePrice
@@ -127,8 +129,6 @@ ax[1].set_xlabel(&amp;quot;log(1+SalePrice)&amp;quot;)
 _ = fig.suptitle(&amp;quot;La transformación x = log(1+x) corrige la asimetría en SalePrice&amp;quot;, fontsize=16)&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-7-1.png&#34; width=&#34;1152&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;El &lt;a href=&#34;https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.skewtest.html#scipy.stats.skewtest&#34;&gt;test de curtosis&lt;/a&gt; es una prueba estadística para determinar si la distibución es simétrica. En la variable original rechazamos que la distribución sea simétrica y en la transformada con &lt;code&gt;log(1+x)&lt;/code&gt; no rechazamos la hipótesis nula de que la distribución es simétrica.&lt;/p&gt;
-&lt;div id=&#34;correlaciones-con-otras-columnas&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;Correlaciones con otras columnas&lt;/h2&gt;
 &lt;pre class=&#34;python&#34;&gt;&lt;code&gt;# Correlaciones con SalePrice
 corr_sales_price = casas.corr()[&amp;quot;SalePrice&amp;quot;]
 
@@ -410,7 +410,7 @@ ridgeCV = TransformedTargetRegressor(regressor=RidgeCV(cv = 5),
 
 ridgeCV_score = cross_val_score(ridgeCV, X_prep, y, cv = 5, scoring = scorer)
 print(f&amp;#39;MAE Ridge: ${ridgeCV_score.mean():.2f}&amp;#39;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## MAE Ridge: $16462.56&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## MAE Ridge: $16463.24&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&#34;python&#34;&gt;&lt;code&gt;ridgeCV.fit(X_prep, y)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## TransformedTargetRegressor(check_inverse=True, func=&amp;lt;ufunc &amp;#39;log1p&amp;#39;&amp;gt;,
 ##               inverse_func=&amp;lt;ufunc &amp;#39;expm1&amp;#39;&amp;gt;,
@@ -421,8 +421,8 @@ print(f&amp;#39;MAE Ridge: ${ridgeCV_score.mean():.2f}&amp;#39;)&lt;/code&gt;&lt
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## Mejor Alpha: 10.0&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
-&lt;div id=&#34;errores&#34; class=&#34;section level2&#34;&gt;
-&lt;h2&gt;Errores&lt;/h2&gt;
+&lt;div id=&#34;analisis-de-los-errores&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Análisis de los Errores&lt;/h2&gt;
 &lt;pre class=&#34;python&#34;&gt;&lt;code&gt;fig, ax = plt.subplots(1, 3, figsize=(16, 4))
 reg.fit(X_prep, y)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## TransformedTargetRegressor(check_inverse=True, func=&amp;lt;ufunc &amp;#39;log1p&amp;#39;&amp;gt;,

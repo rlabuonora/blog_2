@@ -100,8 +100,8 @@
 <div id="TOC">
 <ul>
 <li><a href="#datos-faltantes">Datos faltantes</a></li>
-<li><a href="#variable-objetivo-saleprice">Variable objetivo: SalePrice</a><ul>
-<li><a href="#correlaciones-con-otras-columnas">Correlaciones con otras columnas</a></li>
+<li><a href="#analisis-exploratorio">Análisis Exploratorio</a><ul>
+<li><a href="#variable-objetivo-saleprice">Variable objetivo: SalePrice</a></li>
 <li><a href="#outliers">Outliers</a></li>
 <li><a href="#variables-numericas-discontinuas">Variables numéricas discontinuas</a></li>
 <li><a href="#variables-categoricas">Variables categóricas</a></li>
@@ -111,7 +111,7 @@
 <li><a href="#regresion-sin-regularizacion">Regresión sin Regularización</a></li>
 <li><a href="#lasso">Lasso</a></li>
 <li><a href="#ridge">Ridge</a></li>
-<li><a href="#errores">Errores</a></li>
+<li><a href="#analisis-de-los-errores">Análisis de los Errores</a></li>
 </ul></li>
 <li><a href="#conclusiones">Conclusiones</a></li>
 </ul>
@@ -162,8 +162,10 @@ print(casas.head())</code></pre>
 <!-- print(casas[categoricas.columns[categoricas.isnull().any()]].isnull().sum().sort_values(ascending = False)) -->
 <!-- ``` -->
 </div>
-<div id="variable-objetivo-saleprice" class="section level1">
-<h1>Variable objetivo: SalePrice</h1>
+<div id="analisis-exploratorio" class="section level1">
+<h1>Análisis Exploratorio</h1>
+<div id="variable-objetivo-saleprice" class="section level2">
+<h2>Variable objetivo: SalePrice</h2>
 <p>La variable a predecir es el precio de venta de la propiedad. Es continua y no tiene missings. La propiedad promedio se vendió en $ 180.920, la más barata salió $ 34.900 y la más cara $755.000.</p>
 <pre class="python"><code>casas[[&quot;SalePrice&quot;]].describe()</code></pre>
 <pre><code>##            SalePrice
@@ -205,8 +207,6 @@ ax[1].set_xlabel(&quot;log(1+SalePrice)&quot;)
 _ = fig.suptitle(&quot;La transformación x = log(1+x) corrige la asimetría en SalePrice&quot;, fontsize=16)</code></pre>
 <p><img src="/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-7-1.png" width="1152" /></p>
 <p>El <a href="https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.skewtest.html#scipy.stats.skewtest">test de curtosis</a> es una prueba estadística para determinar si la distibución es simétrica. En la variable original rechazamos que la distribución sea simétrica y en la transformada con <code>log(1+x)</code> no rechazamos la hipótesis nula de que la distribución es simétrica.</p>
-<div id="correlaciones-con-otras-columnas" class="section level2">
-<h2>Correlaciones con otras columnas</h2>
 <pre class="python"><code># Correlaciones con SalePrice
 corr_sales_price = casas.corr()[&quot;SalePrice&quot;]
 
@@ -488,7 +488,7 @@ ridgeCV = TransformedTargetRegressor(regressor=RidgeCV(cv = 5),
 
 ridgeCV_score = cross_val_score(ridgeCV, X_prep, y, cv = 5, scoring = scorer)
 print(f&#39;MAE Ridge: ${ridgeCV_score.mean():.2f}&#39;)</code></pre>
-<pre><code>## MAE Ridge: $16462.56</code></pre>
+<pre><code>## MAE Ridge: $16463.24</code></pre>
 <pre class="python"><code>ridgeCV.fit(X_prep, y)</code></pre>
 <pre><code>## TransformedTargetRegressor(check_inverse=True, func=&lt;ufunc &#39;log1p&#39;&gt;,
 ##               inverse_func=&lt;ufunc &#39;expm1&#39;&gt;,
@@ -499,8 +499,8 @@ print(f&#39;MAE Ridge: ${ridgeCV_score.mean():.2f}&#39;)</code></pre>
 </code></pre>
 <pre><code>## Mejor Alpha: 10.0</code></pre>
 </div>
-<div id="errores" class="section level2">
-<h2>Errores</h2>
+<div id="analisis-de-los-errores" class="section level2">
+<h2>Análisis de los Errores</h2>
 <pre class="python"><code>fig, ax = plt.subplots(1, 3, figsize=(16, 4))
 reg.fit(X_prep, y)</code></pre>
 <pre><code>## TransformedTargetRegressor(check_inverse=True, func=&lt;ufunc &#39;log1p&#39;&gt;,
