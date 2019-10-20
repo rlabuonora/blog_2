@@ -20,7 +20,80 @@
          <description>
 
 
+&lt;p&gt;&lt;code&gt;spacyR&lt;/code&gt; es una interfaz para usar una librería de NLP de python -spacy- desde R. En este post exploro un poco como detectar nombres de personas y de lugares usando esta librería para analizar cuáles son los personajes principales en cada capítulo de una novela, y donde se desarrolla cada capítulo.&lt;/p&gt;
+&lt;div id=&#34;corpus&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Corpus&lt;/h2&gt;
+&lt;p&gt;A partir del texto de las novelas (en inglés), creo un data frame con una línea por fila y columnas con el texto y el capítulo al que corresponde cada línea.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bad_girl_url &amp;lt;- &amp;quot;https://raw.githubusercontent.com/rlabuonora/mvll_nlp/master/txt/bad_girl.txt&amp;quot;
+bad_girl_raw &amp;lt;- readLines(bad_girl_url, encoding = &amp;quot;UTF-8&amp;quot;)
 
+bad_girl_lines &amp;lt;- tibble(text = bad_girl_raw) %&amp;gt;%
+  mutate(chapter = str_detect(text, &amp;quot;\\d{1,2}.?$&amp;quot;), # Detect 1, 2, 3 ..7
+         chapter = cumsum(chapter)) %&amp;gt;%  # cumsum o fill
+  tibble::rowid_to_column(var=&amp;quot;doc_id&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;spacy&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Spacy&lt;/h2&gt;
+&lt;p&gt;Una vez que importé el texto de la novela, uso &lt;code&gt;spacy_parse&lt;/code&gt; para detectar las &lt;strong&gt;named entities&lt;/strong&gt;. Una &lt;strong&gt;named entity&lt;/strong&gt; es una entidad que aparece mencionada en el texto.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Spacy&lt;/code&gt; usa un algoritmo para detectar cuáles &lt;em&gt;tokens&lt;/em&gt; en el texto pertenecen a una entidad y de que tipo de entidad se trata.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bad_girl_parsed &amp;lt;- spacy_parse(bad_girl_lines$text, lemma = FALSE, entity = TRUE, nounphrase = TRUE)
+
+ents &amp;lt;- entity_extract(bad_girl_parsed, type = &amp;quot;all&amp;quot;) %&amp;gt;% 
+  mutate(doc_id = as.numeric(str_extract(doc_id, &amp;quot;\\d{1,4}&amp;quot;))) %&amp;gt;% 
+  left_join(select(bad_girl_lines, chapter, doc_id))
+
+head(ents)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##   doc_id sentence_id                  entity entity_type chapter
+## 1      1           1                       1    CARDINAL       1
+## 2     10           1       a_fabulous_summer        DATE       1
+## 3     10           2             Pérez_Prado      PERSON       1
+## 4     10           2                  twelve    CARDINAL       1
+## 5     10           2                Carnival      PERSON       1
+## 6     10           2 the_Lawn_Tennis_of_Lima     PRODUCT       1&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;El data frame &lt;code&gt;ents&lt;/code&gt; tiene un &lt;code&gt;doc_id&lt;/code&gt; que nos permite vincular estos resultados con el input original (donde tenemos a què capítulo pertence cada frase, el nombre de la entidad detectada, y el tipo de entidad detectada.)&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;visualizacion&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Visualización&lt;/h1&gt;
+&lt;p&gt;Para la visualizión del resultado, veamos cuáles son las entidades de tipo &lt;em&gt;persona&lt;/em&gt; y &lt;em&gt;lugar&lt;/em&gt; más nombradas en cada capítulo:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;personas_por_capitulo &amp;lt;- ents %&amp;gt;% 
+  filter(entity_type  == &amp;quot;PERSON&amp;quot;) %&amp;gt;% 
+  filter(!entity %in% c(&amp;quot;’s&amp;quot;)) %&amp;gt;% # sacar entidades mal clasificadas
+  group_by(chapter, entity) %&amp;gt;% 
+  summarize(mentions = n()) %&amp;gt;% 
+  arrange(chapter, -mentions) %&amp;gt;% 
+  top_n(5, mentions) # Los 5 personajes más mencionados
+
+personas_por_capitulo %&amp;gt;% 
+  ggplot(aes(entity, mentions, fill = entity)) +
+  geom_col() +
+  coord_flip() +
+  facet_wrap(~chapter, scales=&amp;quot;free_y&amp;quot;) + 
+  guides(fill=FALSE) +
+  labs(y=&amp;quot;Menciones&amp;quot;, x=&amp;quot;Personajes&amp;quot;, 
+       title = &amp;quot;Travesuras de la Niña Mala&amp;quot;,
+       subtitle=&amp;quot;Personajes más mencionados por capítulo&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-10-15-personas-y-lugares-en-vargas-llosa_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Ahora hacemos lo mismo pero nos quedamos con las entidades de tipo &lt;em&gt;GPE&lt;/em&gt;: (&lt;em&gt;Geopolitical Entity&lt;/em&gt;).&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;lugares_por_capitulo &amp;lt;- ents %&amp;gt;% 
+  filter(entity_type  == &amp;quot;GPE&amp;quot;) %&amp;gt;% # GPE =&amp;gt; Geopolitical Entity
+  filter(!entity %in% c(&amp;quot;Salomón&amp;quot;, &amp;quot;Alberta&amp;quot;, &amp;quot;’s&amp;quot;, 
+                        &amp;quot;Mitsuko&amp;quot;, &amp;quot;Elena&amp;quot;)) %&amp;gt;% # Sacar ents mal clasificadas
+  group_by(chapter, entity) %&amp;gt;% 
+  summarize(mentions = n()) %&amp;gt;% 
+  arrange(chapter, -mentions) %&amp;gt;% 
+  top_n(5, mentions)
+
+lugares_por_capitulo %&amp;gt;% 
+  ggplot(aes(entity, mentions, fill = entity)) +
+  geom_col() +
+  coord_flip() +
+  facet_wrap(~chapter, scales=&amp;quot;free_y&amp;quot;) + 
+  guides(fill=FALSE) +
+  labs(y=&amp;quot;Menciones&amp;quot;, x=&amp;quot;Lugares&amp;quot;, 
+       title = &amp;quot;Travesuras de la Niña Mala&amp;quot;,
+       subtitle=&amp;quot;Lugares más mencionados por capítulo&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-10-15-personas-y-lugares-en-vargas-llosa_files/figure-html/unnamed-chunk-5-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
 </description>
        </item>
        
