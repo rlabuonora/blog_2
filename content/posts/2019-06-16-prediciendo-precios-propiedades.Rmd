@@ -5,6 +5,10 @@ date: '2019-06-16'
 slug: predicting-house-prices
 categories: []
 tags: ["python", "scikit-learn"]
+output:
+  blogdown::html_page:
+      toc: TRUE
+description: "Estimamos tres modelos de regresión para predecir los precios de un data set de propiedades inmobiliarias."
 ---
 
 
