@@ -488,7 +488,7 @@ ridgeCV = TransformedTargetRegressor(regressor=RidgeCV(cv = 5),
 
 ridgeCV_score = cross_val_score(ridgeCV, X_prep, y, cv = 5, scoring = scorer)
 print(f&#39;MAE Ridge: ${ridgeCV_score.mean():.2f}&#39;)</code></pre>
-<pre><code>## MAE Ridge: $16463.24</code></pre>
+<pre><code>## MAE Ridge: $16462.99</code></pre>
 <pre class="python"><code>ridgeCV.fit(X_prep, y)</code></pre>
 <pre><code>## TransformedTargetRegressor(check_inverse=True, func=&lt;ufunc &#39;log1p&#39;&gt;,
 ##               inverse_func=&lt;ufunc &#39;expm1&#39;&gt;,
@@ -546,6 +546,10 @@ _ = ax[2].set_title(&quot;Ridge&quot;)</code></pre>
             <a href="/posts/mapeando-ingresos-en-las-ciudades-de-uruguay/"><i class="fa fa-chevron-circle-left"></i> Barrios ricos y pobres de Montevideo</a>
         </li>
         
+        
+        <li>
+            <a href="/posts/personas-y-lugares-vargas-llosa/">Personas y lugares en las novelas de Mario Vargas Llosa <i class="fa fa-chevron-circle-right"></i> </a>
+        </li>
         
     </ul>
 </section>

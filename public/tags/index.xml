@@ -6,10 +6,37 @@
        <description>Recent content in Tags on Rafael La Buonora</description>
        <generator>Hugo -- gohugo.io</generator>
        <copyright>Copyright &amp;copy; 2019 - Rafael La Buonora</copyright>
-       <lastBuildDate>Sun, 16 Jun 2019 00:00:00 +0000</lastBuildDate>
+       <lastBuildDate>Tue, 15 Oct 2019 00:00:00 +0000</lastBuildDate>
        
            <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
        
+       
+       <item>
+         <title>nlp</title>
+         <link>/tags/nlp/</link>
+         <pubDate>Tue, 15 Oct 2019 00:00:00 +0000</pubDate>
+         
+         <guid>/tags/nlp/</guid>
+         <description></description>
+       </item>
+       
+       <item>
+         <title>R</title>
+         <link>/tags/r/</link>
+         <pubDate>Tue, 15 Oct 2019 00:00:00 +0000</pubDate>
+         
+         <guid>/tags/r/</guid>
+         <description></description>
+       </item>
+       
+       <item>
+         <title>spacyR</title>
+         <link>/tags/spacyr/</link>
+         <pubDate>Tue, 15 Oct 2019 00:00:00 +0000</pubDate>
+         
+         <guid>/tags/spacyr/</guid>
+         <description></description>
+       </item>
        
        <item>
          <title>python</title>
@@ -26,15 +53,6 @@
          <pubDate>Sun, 16 Jun 2019 00:00:00 +0000</pubDate>
          
          <guid>/tags/scikit-learn/</guid>
-         <description></description>
-       </item>
-       
-       <item>
-         <title>R</title>
-         <link>/tags/r/</link>
-         <pubDate>Sat, 13 Apr 2019 00:00:00 +0000</pubDate>
-         
-         <guid>/tags/r/</guid>
          <description></description>
        </item>
        
@@ -71,15 +89,6 @@
          <pubDate>Tue, 17 Jul 2018 00:00:00 +0000</pubDate>
          
          <guid>/tags/leaflet/</guid>
-         <description></description>
-       </item>
-       
-       <item>
-         <title>nlp</title>
-         <link>/tags/nlp/</link>
-         <pubDate>Sat, 20 Jan 2018 00:00:00 +0000</pubDate>
-         
-         <guid>/tags/nlp/</guid>
          <description></description>
        </item>
        

@@ -8,7 +8,7 @@ tags: ["python", "scikit-learn"]
 output:
   blogdown::html_page:
       toc: TRUE
-description: "Estimamos tres modelos de regresión para predecir los precios de un data set de propiedades inmobiliarias."
+description: "Estimamos tres modelos de regresión para predecir los precios de un data set de propiedades inmobiliarias, usando la API de Pipelines en scikit-learn"
 ---
 
 

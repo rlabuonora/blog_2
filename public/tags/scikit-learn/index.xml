@@ -410,7 +410,7 @@ ridgeCV = TransformedTargetRegressor(regressor=RidgeCV(cv = 5),
 
 ridgeCV_score = cross_val_score(ridgeCV, X_prep, y, cv = 5, scoring = scorer)
 print(f&amp;#39;MAE Ridge: ${ridgeCV_score.mean():.2f}&amp;#39;)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## MAE Ridge: $16463.24&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## MAE Ridge: $16462.99&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&#34;python&#34;&gt;&lt;code&gt;ridgeCV.fit(X_prep, y)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## TransformedTargetRegressor(check_inverse=True, func=&amp;lt;ufunc &amp;#39;log1p&amp;#39;&amp;gt;,
 ##               inverse_func=&amp;lt;ufunc &amp;#39;expm1&amp;#39;&amp;gt;,
