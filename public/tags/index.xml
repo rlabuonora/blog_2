@@ -1,15 +1,42 @@
 
    <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
      <channel>
-       <title>Tags on Rafael La Buonora</title>
+       <title>Tags on Rascando la superficie</title>
        <link>/tags/</link>
-       <description>Recent content in Tags on Rafael La Buonora</description>
+       <description>Recent content in Tags on Rascando la superficie</description>
        <generator>Hugo -- gohugo.io</generator>
        <copyright>Copyright &amp;copy; 2019 - Rafael La Buonora</copyright>
-       <lastBuildDate>Tue, 15 Oct 2019 00:00:00 +0000</lastBuildDate>
+       <lastBuildDate>Thu, 28 Nov 2019 00:00:00 +0000</lastBuildDate>
        
            <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
        
+       
+       <item>
+         <title>ggplot</title>
+         <link>/tags/ggplot/</link>
+         <pubDate>Thu, 28 Nov 2019 00:00:00 +0000</pubDate>
+         
+         <guid>/tags/ggplot/</guid>
+         <description></description>
+       </item>
+       
+       <item>
+         <title>R</title>
+         <link>/tags/r/</link>
+         <pubDate>Thu, 28 Nov 2019 00:00:00 +0000</pubDate>
+         
+         <guid>/tags/r/</guid>
+         <description></description>
+       </item>
+       
+       <item>
+         <title>tidytuesday</title>
+         <link>/tags/tidytuesday/</link>
+         <pubDate>Thu, 28 Nov 2019 00:00:00 +0000</pubDate>
+         
+         <guid>/tags/tidytuesday/</guid>
+         <description></description>
+       </item>
        
        <item>
          <title>nlp</title>
@@ -17,15 +44,6 @@
          <pubDate>Tue, 15 Oct 2019 00:00:00 +0000</pubDate>
          
          <guid>/tags/nlp/</guid>
-         <description></description>
-       </item>
-       
-       <item>
-         <title>R</title>
-         <link>/tags/r/</link>
-         <pubDate>Tue, 15 Oct 2019 00:00:00 +0000</pubDate>
-         
-         <guid>/tags/r/</guid>
          <description></description>
        </item>
        
@@ -89,15 +107,6 @@
          <pubDate>Tue, 17 Jul 2018 00:00:00 +0000</pubDate>
          
          <guid>/tags/leaflet/</guid>
-         <description></description>
-       </item>
-       
-       <item>
-         <title>ggplot</title>
-         <link>/tags/ggplot/</link>
-         <pubDate>Wed, 16 Aug 2017 00:00:00 +0000</pubDate>
-         
-         <guid>/tags/ggplot/</guid>
          <description></description>
        </item>
        

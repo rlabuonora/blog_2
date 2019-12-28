@@ -1,23 +1,23 @@
 baseurl = "https://blog.rlabuonora.com/"
-title = "Rafael La Buonora"
+title = "Rascando la superficie"
 copyright = "Copyright &copy; 2019 - Rafael La Buonora"
 canonifyurls = true
 theme = "hugo-kiera"
 ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 
-paginate = 5
+paginate = 10
 
 summaryLength = 30
 enableEmoji = true
 pygmentsCodeFences = true
 
 [author]
-    name = "Rafael La Buonora"
+    name = "Con Rafael La Buonora"
     github = "rlabuonora"
     twitter = "rlabuonora"
 
 [params]
-    tagline = "Data blog"
+    tagline = "Rafael La Buonora"
     favicon = "favicon.png"
     MathJaxCDN = "//cdnjs.cloudflare.com/ajax/libs"
     MathJaxVersion = "2.7.5"
