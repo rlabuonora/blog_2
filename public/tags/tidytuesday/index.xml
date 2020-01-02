@@ -12,7 +12,7 @@
        
        
        <item>
-         <title>Visualizando homicidios, exámenes y sarampiones</title>
+         <title>Visualizando homicidios, exámenes y la vacuna contra el sarampión</title>
          <link>/posts/replicando-visualizaciones/</link>
          <pubDate>Thu, 28 Nov 2019 00:00:00 +0000</pubDate>
          
@@ -245,6 +245,8 @@ nyc_regents &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;&lt;img src=&#34;/posts/2019-12-28-replicando-visualizaciones_files/figure-html/unnamed-chunk-7-5.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&#34;el-efecto-de-la-vacuna-contra-el-sarampión&#34;&gt;El efecto de la vacuna contra el sarampión&lt;/h1&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Measels&lt;/span&gt;
 &lt;span style=&#34;color:#75715e&#34;&gt;# devtools::install_github(&amp;#34;rafalab/dslabs&amp;#34;)&lt;/span&gt;
 &lt;span style=&#34;color:#f92672&#34;&gt;library&lt;/span&gt;(dslabs)
@@ -271,7 +273,7 @@ diseases &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt;
   theme(
     legend.position &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;bottom&amp;#34;&lt;/span&gt;,
   )&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;&lt;img src=&#34;/posts/2019-12-28-replicando-visualizaciones_files/figure-html/unnamed-chunk-7-6.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-12-28-replicando-visualizaciones_files/figure-html/unnamed-chunk-8-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 </description>
        </item>
        

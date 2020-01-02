@@ -1,5 +1,5 @@
 ---
-title: "Visualizando homicidios, exámenes y sarampiones"
+title: "Visualizando homicidios, exámenes y la vacuna contra el sarampión"
 author: ''
 date: '2019-11-28'
 slug: replicando-visualizaciones
@@ -218,6 +218,11 @@ nyc_regents %>%
     axis.text.x = element_text(vjust = 7),
     plot.margin = margin(unit(c(20, 20, 20, 20), "cm")) # 
   )
+
+```
+# El efecto de la vacuna contra el sarampión
+
+```{r}
 
 # Measels
 # devtools::install_github("rafalab/dslabs")

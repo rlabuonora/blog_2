@@ -1,5 +1,5 @@
 ---
-title: "Visualizando homicidios, exámenes y sarampiones"
+title: "Visualizando homicidios, exámenes y la vacuna contra el sarampión"
 author: ''
 date: '2019-11-28'
 slug: replicando-visualizaciones
@@ -294,6 +294,8 @@ nyc_regents %>%
 ```
 
 <img src="/posts/2019-12-28-replicando-visualizaciones_files/figure-html/unnamed-chunk-7-5.png" width="672" />
+# El efecto de la vacuna contra el sarampión
+
 
 ```r
 # Measels
@@ -324,5 +326,5 @@ diseases %>%
   )
 ```
 
-<img src="/posts/2019-12-28-replicando-visualizaciones_files/figure-html/unnamed-chunk-7-6.png" width="672" />
+<img src="/posts/2019-12-28-replicando-visualizaciones_files/figure-html/unnamed-chunk-8-1.png" width="672" />
 
