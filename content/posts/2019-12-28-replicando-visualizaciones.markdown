@@ -1,102 +1,134 @@
 ---
-title: Replicando-visualizaciones
+title: "Visualizando homicidios, exámenes y sarampiones"
 author: ''
 date: '2019-11-28'
 slug: replicando-visualizaciones
 tags: ["R", "ggplot", "tidytuesday"]
 ---
 
-Este es mi primer post sobre tidy tuesday.
 
+Este es mi primer post sobre tidy tuesday. Este proyecto, creado por [Thomas Mock](https://twitter.com/thomas_mock), publica un data set todo los martes y invita a los participantes a postear una visualización usándolo.
+
+Para esta semana se publicaron tres juegos de datos provenientes de [este blog post](https://simplystatistics.org/2019/08/28/you-can-replicate-almost-any-plot-with-ggplot2/). La idea es mostrar el poder de `ggplot` para reproducir visualizaciones que encontró el autor por ahí.
+
+# Homicidios
+
+El primer dataset tiene la tasa de homicidios en 6 países del G-8: 
 
 
 ```r
-library(tidyverse)
+homicidios <- read_csv(here("static", "data", "tidytuesday","international_murders.csv"))
+
+head(homicidios)
 ```
 
 ```
-## ── Attaching packages ──────────────────────────── tidyverse 1.2.1 ──
+## # A tibble: 6 x 4
+##   country count label code 
+##   <chr>   <dbl> <chr> <chr>
+## 1 US       3.2  3.2   us   
+## 2 ITALY    0.71 0.71  it   
+## 3 CANADA   0.5  0.5   ca   
+## 4 UK       0.1  0.1   gb   
+## 5 JAPAN    0    0     jp   
+## 6 GERMANY  0.2  0.2   de
 ```
 
-```
-## ✓ ggplot2 3.2.1     ✓ purrr   0.3.3
-## ✓ tibble  2.1.3     ✓ dplyr   0.8.3
-## ✓ tidyr   1.0.0     ✓ stringr 1.4.0
-## ✓ readr   1.3.1     ✓ forcats 0.4.0
-```
+Este es el gráfico original:
 
-```
-## ── Conflicts ─────────────────────────────── tidyverse_conflicts() ──
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()
-```
+![grafico original](http://abcnews.go.com/images/International/homocides_g8_countries_640x360_wmain.jpg)
 
-```r
-library(here)
-```
+Revisando la fuente de los datos encontré [esta app](https://dataunodc.un.org/GSH_app), sería interesante comparar a Uruguay en estos números, pero los datos no coinciden.
 
-```
-## here() starts at /Users/rlabuonora/Desktop/data_science/work/blog_2
-```
+El diseño del gráfico es un bar chart, pero le agrega las banderas de los países y las tasas sobre las barras. 
 
-```r
-# install_github("rensa/ggflags")
-library(ggflags)
-library(ggthemes)
-
-murders <- read_csv(here("static", "data", "tidytuesday","international_murders.csv"))
-```
-
-```
-## Parsed with column specification:
-## cols(
-##   country = col_character(),
-##   count = col_double(),
-##   label = col_character(),
-##   code = col_character()
-## )
-```
+Este es el gráfico base con títulos:
 
 ```r
 # plot basico
-g <- murders %>% 
+g <- homicidios %>% 
   ggplot(aes(country, count)) +
   geom_col() + 
-  labs(x="", y="# of gun-related homicides \n per 100,000 people", 
-       caption = "Source: \nUNODC Homicide Statistics",
-       title = "Homicide rates in G-8 countries")
+  labs(x="", y="# de homicidios con armas de fuego \n cada 100,000 habitantes", 
+       caption = "Fuente: \nUNODC Homicide Statistics",
+       title = "Tasa de Homicidios en países del G-8.")
+g
+```
+
+<img src="/posts/2019-12-28-replicando-visualizaciones_files/figure-html/unnamed-chunk-3-1.png" width="672" />
+
+Como mapeamos el eje x a una columna de texto, `ggplot` la convierte a un factor. El orden en el que aparecen los países en el eje depende de los niveles del factor, por defecto es alfabético:
 
 
-# fct_inorder is cool
+```r
+levels(factor(homicidios$country))
+```
 
-# agrego texto sobre las columnas con geom_text y nudge_y
+```
+## [1] "CANADA"  "FRANCE"  "GERMANY" "ITALY"   "JAPAN"   "RUSSIA"  "UK"     
+## [8] "US"
+```
+
+Esto es algo que puede confundir a alguien que no tiene experiencia trabajando con factores: el orden de los niveles es independiente del orden en que aparecen en el data frame.
+
+En este caso, el orden del factor es alfabético (Canadá, Francia, etc.), y el data frame está ordenado por la tasa de homicidios (descendente): US, Italia, Canadá.
+
+Para controlar el orden en el que aparecen los países ordenar las etiquetas, usamos una función muy útil de `forcats`: `fct_inorder`. Esta función reordena los niveles del factor para que coincida con el orden en el que aparecen en el data-frame:
 
 
+```r
+homicidios_2 <- homicidios %>% 
+  arrange(-count) %>% 
+  mutate(country_ordenado = fct_inorder(country))
+
+levels(homicidios_2$country_ordenado)
+```
+
+```
+## [1] "US"      "ITALY"   "CANADA"  "GERMANY" "UK"      "FRANCE"  "JAPAN"  
+## [8] "RUSSIA"
+```
+
+Para la versión final, agrego las etiquetas del texto con `geom_text` (nudge_y me permite ajustar el texto un poco para que no toque las barras). 
+
+También descubrí `ggflags`, que nos da una función `geom_flag` con el `aes` country para especificar el país. La coordenada y de todas las banderas la fijo en -.4.
+
+
+```r
+# install_github("rensa/ggflags")
+
+library(ggflags)
+library(ggthemes)
 # theme_economist
-
-murders %>% 
+# agrego texto sobre las columnas con geom_text y nudge_y
+homicidios %>% 
   arrange(-count) %>% 
   mutate(country = fct_inorder(country)) %>% # fct_inorder
   ggplot(aes(country, count)) + 
   geom_col(fill="darkred") + 
-  geom_flag(y = -.5, aes(country = code), size = 12) + # geom_flag
-  geom_text(aes(label = if_else(country == "RUSSIA", "No Data", as.character(count))), 
+  geom_flag(y = -.4, aes(country = code), size = 12) + # geom_flag
+  geom_text(aes(label = if_else(country == "RUSSIA", "S/D", as.character(count))), 
                 nudge_y = .15) + # nudge, label
   scale_x_discrete(labels=NULL) + # remove labels from x-axis
-  labs(x="", y="# of gun-related homicides \n per 100,000 people", 
-       caption = "Source: \nUNODC Homicide Statistics",
-       title = "Homicide rates in G-8 countries") + 
+  labs(x="", y="# de homicidios con armas de fuego \n cada 100,000 habitantes", 
+       caption = "Fuente: \nUNODC Homicide Statistics",
+       title = "Tasa de Homicidios en países del G-8") + 
   theme_economist() +
   theme(
     axis.line.x = element_blank(),
     axis.ticks.x = element_blank(),
-    plot.caption = element_text(vjust = 70) # move caption
+    plot.caption = element_text(vjust = 170) # mover caption
   )
 ```
 
-<img src="/posts/2019-12-28-replicando-visualizaciones_files/figure-html/unnamed-chunk-1-1.png" width="672" />
+<img src="/posts/2019-12-28-replicando-visualizaciones_files/figure-html/unnamed-chunk-6-1.png" width="672" />
 
-# Regents
+
+
+
+# Diplopma Regents
+
+Los exámenes Regents son una serie de tests estándar de temas de secundaria en el estado de Nueva York. Este set de datos muestra las notas de 
 
 
 ```r
@@ -131,8 +163,8 @@ g <- ggplot(nyc_reshape, aes(score, tests)) +
 # Texto
 
 g + 
-  labs(caption = "Source: New York City Department of Education",
-       title = "Scraping By",
+  labs(caption = "Fuente: New York City Department of Education",
+       title = "Salvar Raspando",
        subtitle = "2010 Regents scores on Algebra, \nGlobal History, Biology, English & US History", 
        y = "", x = "")
 ```
@@ -141,7 +173,7 @@ g +
 ## Warning: Removed 1 rows containing missing values (position_stack).
 ```
 
-<img src="/posts/2019-12-28-replicando-visualizaciones_files/figure-html/unnamed-chunk-2-1.png" width="672" />
+<img src="/posts/2019-12-28-replicando-visualizaciones_files/figure-html/unnamed-chunk-7-1.png" width="672" />
 
 ```r
 # Ejes
@@ -151,6 +183,7 @@ g +
 # expand es contraintuitivamente importante
 # labels, breaks, expand
 g + 
+  
   labs(caption = "Source: New York City Department of Education",
        title = "Scraping By",
        subtitle = "2010 Regents scores on Algebra, \nGlobal History, Biology, English & US History", 
@@ -165,14 +198,13 @@ g +
 ## Warning: Removed 1 rows containing missing values (position_stack).
 ```
 
-<img src="/posts/2019-12-28-replicando-visualizaciones_files/figure-html/unnamed-chunk-2-2.png" width="672" />
+<img src="/posts/2019-12-28-replicando-visualizaciones_files/figure-html/unnamed-chunk-7-2.png" width="672" />
 
 ```r
 # Theme
-g + 
-  labs(caption = "Source: New York City Department of Education",
-       title = "Scraping By",
-       subtitle = "2010 Regents scores on Algebra, \nGlobal History, Biology, English & US History", 
+g + labs(caption = "Fuente: New York City Department of Education",
+       title = "Salvar Raspando",
+       subtitle = "Notas 2010 Regents en Álgebra, \nHistoria, Biología, e Inglés",
        y = "", x = "") + 
   scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
   scale_y_continuous(position = "right", 
@@ -193,15 +225,15 @@ g +
 ## Warning: Removed 1 rows containing missing values (position_stack).
 ```
 
-<img src="/posts/2019-12-28-replicando-visualizaciones_files/figure-html/unnamed-chunk-2-3.png" width="672" />
+<img src="/posts/2019-12-28-replicando-visualizaciones_files/figure-html/unnamed-chunk-7-3.png" width="672" />
 
 ```r
 # color a las columnas
 ggplot(nyc_reshape, aes(score, tests)) + 
   geom_col(color = "black", fill = "#C4843C") + 
-  labs(caption = "Source: New York City Department of Education",
-       title = "Scraping By",
-       subtitle = "2010 Regents scores on Algebra, \nGlobal History, Biology, English & US History", 
+  labs(caption = "Fuente: New York City Department of Education",
+       title = "Salvar Raspando",
+       subtitle = "Notas 2010 Regents en Álgebra, \nHistoria, Biología, e Inglés",
        y = "", x = "") + 
   scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
   scale_y_continuous(position = "right", 
@@ -222,7 +254,7 @@ ggplot(nyc_reshape, aes(score, tests)) +
 ## Warning: Removed 1 rows containing missing values (position_stack).
 ```
 
-<img src="/posts/2019-12-28-replicando-visualizaciones_files/figure-html/unnamed-chunk-2-4.png" width="672" />
+<img src="/posts/2019-12-28-replicando-visualizaciones_files/figure-html/unnamed-chunk-7-4.png" width="672" />
 
 ```r
 # Todo junto
@@ -233,7 +265,7 @@ nyc_regents %>%
   ggplot(aes(score, v)) +
   annotate("rect", xmin = 65, xmax=Inf, ymin=0, ymax=Inf, alpha = 0.6, fill = "grey80") + 
   annotate("text", 
-           label = "Miniumum Regents \nDiploma Score",
+           label = "Mìnimo para diploma Regents",
            x = 45, y = 2.5e4) + 
   annotate("segment", arrow=arrow(type = "closed", length = unit(0.2, "cm")), x=50, y=2.8e4, xend=64, yend=3.2e4) + 
   geom_col(color = "black", fill = "#C4843C") + 
@@ -242,9 +274,10 @@ nyc_regents %>%
   scale_y_continuous(position = "right", 
                      labels = scales::number_format(big.mark = ","), # function
                      breaks = c(1e4, 2e4, 3e4)) + 
-  labs(caption = "Source: New York City Department of Education",
-       title = "Scraping By",
-       subtitle = "2010 Regents scores on Algebra, \nGlobal History, Biology, English & US History") + 
+  labs(caption = "Fuente: New York City Department of Education",
+       title = "Salvar Raspando",
+       subtitle = "Notas Regents 2010 en Álgebra, \nHistoria, Biología, e Inglés",
+       y = "", x = "") +
   labs(y = "", x = "") +
   theme(
     panel.grid.major.y = element_line(linetype = "dashed", color = "gray50"),
@@ -260,26 +293,12 @@ nyc_regents %>%
 ## Warning: Removed 1 rows containing missing values (position_stack).
 ```
 
-<img src="/posts/2019-12-28-replicando-visualizaciones_files/figure-html/unnamed-chunk-2-5.png" width="672" />
+<img src="/posts/2019-12-28-replicando-visualizaciones_files/figure-html/unnamed-chunk-7-5.png" width="672" />
 
 ```r
 # Measels
 # devtools::install_github("rafalab/dslabs")
 library(dslabs)
-```
-
-```
-## 
-## Attaching package: 'dslabs'
-```
-
-```
-## The following object is masked _by_ '.GlobalEnv':
-## 
-##     murders
-```
-
-```r
 diseases <- dslabs::us_contagious_diseases
 
 # Research!
@@ -305,5 +324,5 @@ diseases %>%
   )
 ```
 
-<img src="/posts/2019-12-28-replicando-visualizaciones_files/figure-html/unnamed-chunk-2-6.png" width="672" />
+<img src="/posts/2019-12-28-replicando-visualizaciones_files/figure-html/unnamed-chunk-7-6.png" width="672" />
 

@@ -18,11 +18,6 @@
   </url>
   
   <url>
-    <loc>/post/</loc>
-    <lastmod>2019-11-28T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
     <loc>/tags/r/</loc>
     <lastmod>2019-11-28T00:00:00+00:00</lastmod>
   </url>
@@ -33,22 +28,17 @@
   </url>
   
   <url>
-    <loc>/post/replicando-visualizaciones/</loc>
-    <lastmod>2019-11-28T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/posts/replicando-visualizaciones/</loc>
-    <lastmod>2019-11-28T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
     <loc>/tags/</loc>
     <lastmod>2019-11-28T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>/tags/tidytuesday/</loc>
+    <lastmod>2019-11-28T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/posts/replicando-visualizaciones/</loc>
     <lastmod>2019-11-28T00:00:00+00:00</lastmod>
   </url>
   
