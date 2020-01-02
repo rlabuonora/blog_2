@@ -110,7 +110,7 @@ homicidios &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt;
 
 &lt;h1 id=&#34;diplopma-regents&#34;&gt;Diplopma Regents&lt;/h1&gt;
 
-&lt;p&gt;Los exámenes Regents son una serie de tests estándar de temas de secundaria en el estado de Nueva York. Este set de datos muestra las notas de&lt;/p&gt;
+&lt;p&gt;Los exámenes Regents son una serie de tests estándar de temas de secundaria en el estado de Nueva York. Este set de datos muestra las notas de exámenes en varias materias. Lo que llama la atención es que hay un gran número de examenes con 65, la nota mínima de aprobación.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;nyc_regents &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt;  read_csv(here(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;static&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;data&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;tidytuesday&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;nyc_regents.csv&amp;#34;&lt;/span&gt;)
 )&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;pre&gt;&lt;code&gt;## Parsed with column specification:

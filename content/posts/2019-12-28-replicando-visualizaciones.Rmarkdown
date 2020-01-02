@@ -103,7 +103,7 @@ homicidios %>%
 
 # Diplopma Regents
 
-Los exámenes Regents son una serie de tests estándar de temas de secundaria en el estado de Nueva York. Este set de datos muestra las notas de 
+Los exámenes Regents son una serie de tests estándar de temas de secundaria en el estado de Nueva York. Este set de datos muestra las notas de exámenes en varias materias. Lo que llama la atención es que hay un gran número de examenes con 65, la nota mínima de aprobación.
 
 ```{r}
 
