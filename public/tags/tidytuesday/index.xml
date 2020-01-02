@@ -42,7 +42,7 @@
 
 &lt;p&gt;Este es el gráfico original:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;http://abcnews.go.com/images/International/homocides_g8_countries_640x360_wmain.jpg&#34; alt=&#34;grafico original&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://abcnews.go.com/images/International/homocides_g8_countries_640x360_wmain.jpg&#34; alt=&#34;grafico original&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Revisando la fuente de los datos encontré &lt;a href=&#34;https://dataunodc.un.org/GSH_app&#34;&gt;esta app&lt;/a&gt;, sería interesante comparar a Uruguay en estos números, pero los datos no coinciden.&lt;/p&gt;
 

@@ -36,7 +36,7 @@ head(homicidios)
 
 Este es el gráfico original:
 
-![grafico original](http://abcnews.go.com/images/International/homocides_g8_countries_640x360_wmain.jpg)
+![grafico original](https://abcnews.go.com/images/International/homocides_g8_countries_640x360_wmain.jpg)
 
 Revisando la fuente de los datos encontré [esta app](https://dataunodc.un.org/GSH_app), sería interesante comparar a Uruguay en estos números, pero los datos no coinciden.
 
