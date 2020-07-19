@@ -6,4 +6,4 @@ title: Este Blog
 weight: "20"
 ---
 
-Este es mi blog de Data Science.
+Acá escribo sobre los problemas en los que trabajo.
