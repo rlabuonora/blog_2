@@ -1,18 +1,9 @@
 {{ define "main" }}
 
 <section id="home">
-        <ul>
-          {{ range $index, $page := first 10 (where .Site.RegularPages "Section" "in" .Site.Params.mainSections) }}
-          <li {{if eq $index 0}}class="first"{{end}}>
-            <h1><a href="{{ .Permalink }}" title="{{ .Title }}">{{ .Title }}</a></h1> 
-            {{ partial "aside" . }}
-            <p>{{ .Description }}</p>
-            {{ if .Truncated }}
-            <a href="{{ .RelPermalink }}">{{ T "readMore" }}</a>
-            {{ end }}
-          </li>
-          {{ end }}
-        </ul>
-      </section>
+  <img src="images/escher.jpg" />
+  <p>
+      Hola, soy Rafael La Buonora. Me gusta programar, enseñar y escribir. En este sitio está mi <a href="/blog">blog</a>, material de <a href="/cursos">cursos</a> que dicto y algunos <a href="/">proyectos</a> personales.
+  </p>
 
 {{ end }}

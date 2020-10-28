@@ -1,0 +1,42 @@
+---
+title: "Vacunas"
+author: ''
+date: '2019-11-28'
+slug: vacunas
+tags: ["R", "ggplot", "tidytuesday"]
+---
+
+
+
+<p>Este es mi primer post sobre tidy tuesday. Este proyecto, creado por <a href="https://twitter.com/thomas_mock">Thomas Mock</a>, publica un data set todo los martes y invita a los participantes a postear una visualización usándolo.</p>
+<p>Para esta semana se publicaron tres juegos de datos provenientes de <a href="https://simplystatistics.org/2019/08/28/you-can-replicate-almost-any-plot-with-ggplot2/">este blog post</a>. La idea es mostrar el poder de <code>ggplot</code> para reproducir visualizaciones que encontró el autor por ahí.</p>
+<div id="el-efecto-de-la-vacuna-contra-el-sarampión" class="section level1">
+<h1>El efecto de la vacuna contra el sarampión</h1>
+<pre class="r"><code># Measels
+# devtools::install_github(&quot;rafalab/dslabs&quot;)
+library(dslabs)
+diseases &lt;- dslabs::us_contagious_diseases
+
+# Research!
+jet.colors &lt;- colorRampPalette(c(&quot;#F0FFFF&quot;, &quot;cyan&quot;, &quot;#007FFF&quot;, &quot;yellow&quot;, &quot;#FFBF00&quot;, &quot;orange&quot;, &quot;red&quot;, &quot;#7F0000&quot;), bias = 2.25)
+
+
+diseases %&gt;% 
+  filter(disease == &quot;Measles&quot;) %&gt;% 
+  filter(!state %in% c(&quot;Hawaii&quot;, &quot;Alaska&quot;)) %&gt;% 
+  mutate(rate = count / population * 10000 * 52 / weeks_reporting) %&gt;% 
+  mutate(state = reorder(state, desc(state))) %&gt;% 
+  ggplot(aes(year, state, fill=rate)) + 
+  geom_tile(color = &quot;white&quot;) + 
+  scale_fill_gradientn(colors = jet.colors(16), na.value = &quot;white&quot;, name = &quot;Tasa&quot;) + ## research!
+  scale_x_continuous(expand = c(0, 0)) + 
+  labs(x = &quot;&quot;, y = &quot;&quot;, title = &quot;Sarampión&quot;, subtitle = &quot;Enfermos cada 10000 habitantes&quot;) +
+  geom_vline(xintercept = 1963) + 
+  annotate(geom = &quot;text&quot;, x=1970, y = 50, label = &quot;Introducción de la vacuna&quot;) + 
+  theme_minimal() + 
+  coord_cartesian(clip = &#39;off&#39;) + 
+  theme(
+    legend.position = &quot;bottom&quot;,
+  )</code></pre>
+<p><img src="/posts/2019-12-28-vacunas_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+</div>

@@ -1,0 +1,53 @@
+---
+title: "Vacunas"
+author: ''
+date: '2019-11-28'
+slug: vacunas
+tags: ["R", "ggplot", "tidytuesday"]
+---
+```{r, include=FALSE}
+library(tidyverse)
+library(here)
+
+```
+
+Este es mi primer post sobre tidy tuesday. Este proyecto, creado por [Thomas Mock](https://twitter.com/thomas_mock), publica un data set todo los martes y invita a los participantes a postear una visualización usándolo.
+
+Para esta semana se publicaron tres juegos de datos provenientes de [este blog post](https://simplystatistics.org/2019/08/28/you-can-replicate-almost-any-plot-with-ggplot2/). La idea es mostrar el poder de `ggplot` para reproducir visualizaciones que encontró el autor por ahí.
+
+
+# El efecto de la vacuna contra el sarampión
+
+```{r}
+
+# Measels
+# devtools::install_github("rafalab/dslabs")
+library(dslabs)
+diseases <- dslabs::us_contagious_diseases
+
+# Research!
+jet.colors <- colorRampPalette(c("#F0FFFF", "cyan", "#007FFF", "yellow", "#FFBF00", "orange", "red", "#7F0000"), bias = 2.25)
+
+
+diseases %>% 
+  filter(disease == "Measles") %>% 
+  filter(!state %in% c("Hawaii", "Alaska")) %>% 
+  mutate(rate = count / population * 10000 * 52 / weeks_reporting) %>% 
+  mutate(state = reorder(state, desc(state))) %>% 
+  ggplot(aes(year, state, fill=rate)) + 
+  geom_tile(color = "white") + 
+  scale_fill_gradientn(colors = jet.colors(16), na.value = "white", name = "Tasa") + ## research!
+  scale_x_continuous(expand = c(0, 0)) + 
+  labs(x = "", y = "", title = "Sarampión", subtitle = "Enfermos cada 10000 habitantes") +
+  geom_vline(xintercept = 1963) + 
+  annotate(geom = "text", x=1970, y = 50, label = "Introducción de la vacuna") + 
+  theme_minimal() + 
+  coord_cartesian(clip = 'off') + 
+  theme(
+    legend.position = "bottom",
+  )
+```
+
+
+
+

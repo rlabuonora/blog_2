@@ -1,0 +1,182 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+  <title>rlabuonora.com</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="The HTML5 Herald" />
+  <meta name="author" content="Rafael La Buonora" /><meta name="generator" content="Hugo 0.65.3" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" />
+  <script src="https://kit.fontawesome.com/b76b73e8e8.js" crossorigin="anonymous"></script>
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab|Ruda" />
+  <link rel="stylesheet" type="text/css" href="/css/styles.css" />
+  <link rel="stylesheet" type="text/css" href="/custom.css" /><link rel="icon" type="image/png" href="./favicon.png">
+
+</head>
+
+<body>
+  <div id="container">
+    <header>
+      <h1>
+                <a href="/">rlabuonora.com</a>
+            </h1>
+
+      <ul id="social-media">
+        
+        
+        
+        <li><a href="https://twitter.com/rlabuonora"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+          
+        <li><a href="https://github.com/rlabuonora"><i class="fab fa-github fa-lg" aria-hidden="true"></i></a></li>
+           
+        <li><a href="http://cv.rlabuonora.com"><i class="fas fa-file-alt" aria-hidden="true"></i></a></li>
+        
+      </ul>
+      
+    </header>
+
+    
+<nav>
+    <ul>
+        
+        <li>
+            <a class="" href="/posts/">
+                <i class="fa-li fa  fa-lg"></i><span>Blog</span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="" href="/cursos/">
+                <i class="fa-li fa  fa-lg"></i><span>Cursos</span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="" href="/proyectos/">
+                <i class="fa-li fa  fa-lg"></i><span>Proyectos</span>
+            </a>
+        </li>
+        
+    </ul>
+</nav>
+
+    <main>
+
+
+
+
+<article>
+
+    <h1>Vacunas</h1>
+
+    
+        <aside>
+    <ul>
+        <li>
+            <time class="post-date" datetime="2019-11-28T00:00:00Z">Nov 28, 2019</time>
+        </li>
+        
+
+        
+        <li>
+            <em>
+                
+                    
+                    <a href="/tags/r">#R</a>
+                
+                    , 
+                    <a href="/tags/ggplot">#ggplot</a>
+                
+                    , 
+                    <a href="/tags/tidytuesday">#tidytuesday</a>
+                
+            </em>
+        </li>
+        
+
+        <li>One minute read</li>
+    </ul>
+</aside>
+
+    
+
+    
+
+
+<p>Este es mi primer post sobre tidy tuesday. Este proyecto, creado por <a href="https://twitter.com/thomas_mock">Thomas Mock</a>, publica un data set todo los martes y invita a los participantes a postear una visualización usándolo.</p>
+<p>Para esta semana se publicaron tres juegos de datos provenientes de <a href="https://simplystatistics.org/2019/08/28/you-can-replicate-almost-any-plot-with-ggplot2/">este blog post</a>. La idea es mostrar el poder de <code>ggplot</code> para reproducir visualizaciones que encontró el autor por ahí.</p>
+<div id="el-efecto-de-la-vacuna-contra-el-sarampión" class="section level1">
+<h1>El efecto de la vacuna contra el sarampión</h1>
+<pre class="r"><code># Measels
+# devtools::install_github(&quot;rafalab/dslabs&quot;)
+library(dslabs)
+diseases &lt;- dslabs::us_contagious_diseases
+
+# Research!
+jet.colors &lt;- colorRampPalette(c(&quot;#F0FFFF&quot;, &quot;cyan&quot;, &quot;#007FFF&quot;, &quot;yellow&quot;, &quot;#FFBF00&quot;, &quot;orange&quot;, &quot;red&quot;, &quot;#7F0000&quot;), bias = 2.25)
+
+
+diseases %&gt;% 
+  filter(disease == &quot;Measles&quot;) %&gt;% 
+  filter(!state %in% c(&quot;Hawaii&quot;, &quot;Alaska&quot;)) %&gt;% 
+  mutate(rate = count / population * 10000 * 52 / weeks_reporting) %&gt;% 
+  mutate(state = reorder(state, desc(state))) %&gt;% 
+  ggplot(aes(year, state, fill=rate)) + 
+  geom_tile(color = &quot;white&quot;) + 
+  scale_fill_gradientn(colors = jet.colors(16), na.value = &quot;white&quot;, name = &quot;Tasa&quot;) + ## research!
+  scale_x_continuous(expand = c(0, 0)) + 
+  labs(x = &quot;&quot;, y = &quot;&quot;, title = &quot;Sarampión&quot;, subtitle = &quot;Enfermos cada 10000 habitantes&quot;) +
+  geom_vline(xintercept = 1963) + 
+  annotate(geom = &quot;text&quot;, x=1970, y = 50, label = &quot;Introducción de la vacuna&quot;) + 
+  theme_minimal() + 
+  coord_cartesian(clip = &#39;off&#39;) + 
+  theme(
+    legend.position = &quot;bottom&quot;,
+  )</code></pre>
+<p><img src="/posts/2019-12-28-vacunas_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+</div>
+
+
+</article>
+
+
+<section class="post-nav">
+    <ul>
+        
+        <li>
+            <a href="/posts/personas-y-lugares-vargas-llosa/"><i class="fa fa-chevron-circle-left"></i> Personas y lugares en las novelas de Mario Vargas Llosa</a>
+        </li>
+        
+        
+        <li>
+            <a href="/posts/metallica/">El estilo de Metallica a lo largo de los discos <i class="fa fa-chevron-circle-right"></i> </a>
+        </li>
+        
+    </ul>
+</section>
+    
+
+
+
+
+
+</main>
+    <footer>
+        <h6>Copyright © 2019 - Rafael La Buonora |
+            Rendered by <a href="https://gohugo.io" title="Hugo">Hugo</a> |
+            <a href="/index.xml">Subscribe</a></h6>
+    </footer>
+</div>
+<script src="/js/scripts.js"></script>
+
+  
+
+
+</body>
+
+
+
+</html>

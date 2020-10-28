@@ -6,10 +6,248 @@
        <description>Recent content in tidytuesday on rlabuonora.com</description>
        <generator>Hugo -- gohugo.io</generator>
        <copyright>Copyright &amp;copy; 2019 - Rafael La Buonora</copyright>
-       <lastBuildDate>Sun, 26 Jan 2020 00:00:00 +0000</lastBuildDate>
+       <lastBuildDate>Tue, 28 Jul 2020 00:00:00 +0000</lastBuildDate>
        
            <atom:link href="/tags/tidytuesday/index.xml" rel="self" type="application/rss+xml" />
        
+       
+       <item>
+         <title>Visualizando Homicidios</title>
+         <link>/posts/vacunas/</link>
+         <pubDate>Tue, 28 Jul 2020 00:00:00 +0000</pubDate>
+         
+         <guid>/posts/vacunas/</guid>
+         <description>
+
+
+&lt;p&gt;Este es mi primer post sobre tidy tuesday. Este proyecto, creado por &lt;a href=&#34;https://twitter.com/thomas_mock&#34;&gt;Thomas Mock&lt;/a&gt;, publica un data set todo los martes y invita a los participantes a postear una visualización usándolo.&lt;/p&gt;
+&lt;p&gt;Para esta semana se publicaron tres juegos de datos provenientes de &lt;a href=&#34;https://simplystatistics.org/2019/08/28/you-can-replicate-almost-any-plot-with-ggplot2/&#34;&gt;este blog post&lt;/a&gt;. La idea es mostrar el poder de &lt;code&gt;ggplot&lt;/code&gt; para reproducir visualizaciones que encontró el autor por ahí.&lt;/p&gt;
+&lt;div id=&#34;homicidios&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Homicidios&lt;/h1&gt;
+&lt;p&gt;El primer dataset tiene la tasa de homicidios en 6 países del G-8:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;homicidios &amp;lt;- read_csv(here(&amp;quot;static&amp;quot;, &amp;quot;data&amp;quot;, &amp;quot;tidytuesday&amp;quot;,&amp;quot;international_murders.csv&amp;quot;))
+
+head(homicidios)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 6 x 4
+##   country count label code 
+##   &amp;lt;chr&amp;gt;   &amp;lt;dbl&amp;gt; &amp;lt;chr&amp;gt; &amp;lt;chr&amp;gt;
+## 1 US       3.2  3.2   us   
+## 2 ITALY    0.71 0.71  it   
+## 3 CANADA   0.5  0.5   ca   
+## 4 UK       0.1  0.1   gb   
+## 5 JAPAN    0    0     jp   
+## 6 GERMANY  0.2  0.2   de&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Este es el gráfico original:&lt;/p&gt;
+&lt;div class=&#34;figure&#34;&gt;
+&lt;img src=&#34;https://abcnews.go.com/images/International/homocides_g8_countries_640x360_wmain.jpg&#34; alt=&#34;grafico original&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;grafico original&lt;/p&gt;
+&lt;/div&gt;
+&lt;p&gt;Revisando la fuente de los datos encontré &lt;a href=&#34;https://dataunodc.un.org/GSH_app&#34;&gt;esta app&lt;/a&gt;, sería interesante comparar a Uruguay en estos números, pero los datos no coinciden.&lt;/p&gt;
+&lt;p&gt;El diseño del gráfico es un bar chart, pero le agrega las banderas de los países y las tasas sobre las barras.&lt;/p&gt;
+&lt;p&gt;Este es el gráfico base con títulos:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# plot basico
+homicidios %&amp;gt;% 
+  ggplot(aes(country, count)) +
+  geom_col() + 
+  labs(x=&amp;quot;&amp;quot;, y=&amp;quot;# de homicidios con armas de fuego \n cada 100,000 habitantes&amp;quot;, 
+       caption = &amp;quot;Fuente: \nUNODC Homicide Statistics&amp;quot;,
+       title = &amp;quot;Tasa de Homicidios en países del G-8.&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-12-28-homicidios_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Como mapeamos el eje x a una columna de texto, &lt;code&gt;ggplot&lt;/code&gt; la convierte a un factor. El orden en el que aparecen los países en el eje depende de los niveles del factor, por defecto es alfabético:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;levels(factor(homicidios$country))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] &amp;quot;CANADA&amp;quot;  &amp;quot;FRANCE&amp;quot;  &amp;quot;GERMANY&amp;quot; &amp;quot;ITALY&amp;quot;   &amp;quot;JAPAN&amp;quot;   &amp;quot;RUSSIA&amp;quot;  &amp;quot;UK&amp;quot;     
+## [8] &amp;quot;US&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Esto es algo que puede confundir a alguien que no tiene experiencia trabajando con factores: el orden de los niveles es independiente del orden en que aparecen en el data frame.&lt;/p&gt;
+&lt;p&gt;En este caso, el orden del factor es alfabético (Canadá, Francia, etc.), y el data frame está ordenado por la tasa de homicidios (descendente): US, Italia, Canadá.&lt;/p&gt;
+&lt;p&gt;Para controlar el orden en el que aparecen los países ordenar las etiquetas, usamos una función muy útil de &lt;code&gt;forcats&lt;/code&gt;: &lt;code&gt;fct_inorder&lt;/code&gt;. Esta función reordena los niveles del factor para que coincida con el orden en el que aparecen en el data-frame:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;homicidios_2 &amp;lt;- homicidios %&amp;gt;% 
+  arrange(-count) %&amp;gt;% 
+  mutate(country_ordenado = fct_inorder(country))
+
+levels(homicidios_2$country_ordenado)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] &amp;quot;US&amp;quot;      &amp;quot;ITALY&amp;quot;   &amp;quot;CANADA&amp;quot;  &amp;quot;GERMANY&amp;quot; &amp;quot;UK&amp;quot;      &amp;quot;FRANCE&amp;quot;  &amp;quot;JAPAN&amp;quot;  
+## [8] &amp;quot;RUSSIA&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Para la versión final, agrego las etiquetas del texto con &lt;code&gt;geom_text&lt;/code&gt; (nudge_y me permite ajustar el texto un poco para que no toque las barras).&lt;/p&gt;
+&lt;p&gt;También descubrí &lt;code&gt;ggflags&lt;/code&gt;, que nos da una función &lt;code&gt;geom_flag&lt;/code&gt; con el &lt;code&gt;aes&lt;/code&gt; country para especificar el país. La coordenada y de todas las banderas la fijo en -.4.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# install_github(&amp;quot;rensa/ggflags&amp;quot;)
+
+library(ggflags)
+library(ggthemes)
+# theme_economist
+# agrego texto sobre las columnas con geom_text y nudge_y
+
+plot &amp;lt;- homicidios %&amp;gt;% 
+  arrange(-count) %&amp;gt;% 
+  mutate(country = fct_inorder(country)) %&amp;gt;% # fct_inorder
+  ggplot(aes(country, count)) + 
+  geom_col(fill=&amp;quot;darkred&amp;quot;) + 
+  geom_flag(y = -.4, aes(country = code), size = 12) + # geom_flag
+  geom_text(aes(label = if_else(country == &amp;quot;RUSSIA&amp;quot;, &amp;quot;S/D&amp;quot;, as.character(count))), 
+                nudge_y = .15) + # nudge, label
+  scale_x_discrete(labels=NULL) + # remove labels from x-axis
+  labs(x=&amp;quot;&amp;quot;, y=&amp;quot;# de homicidios con armas de fuego \n cada 100,000 habitantes&amp;quot;, 
+       caption = &amp;quot;Fuente: \nUNODC Homicide Statistics&amp;quot;,
+       title = &amp;quot;Tasa de Homicidios en países del G-8&amp;quot;) + 
+  theme_economist() +
+  theme(
+    axis.line.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    plot.caption = element_text(vjust = 170) # mover caption
+  )&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;plot&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-12-28-homicidios_files/figure-html/unnamed-chunk-7-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+</description>
+       </item>
+       
+       <item>
+         <title>Un gráfico de barras anotado</title>
+         <link>/posts/examenes-visualizaciones/</link>
+         <pubDate>Thu, 28 May 2020 00:00:00 +0000</pubDate>
+         
+         <guid>/posts/examenes-visualizaciones/</guid>
+         <description>
+
+
+&lt;p&gt;En este posteo hago un gráfico de barras con anotaciones para mostrar un problema en el sistema de exámenes de las escuelas de Nueva York.&lt;/p&gt;
+&lt;div id=&#34;diplopma-regents&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Diplopma Regents&lt;/h1&gt;
+&lt;p&gt;Los exámenes Regents son una serie de tests estándar de temas de secundaria en el estado de Nueva York. Este set de datos muestra las notas de exámenes en varias materias. Lo que llama la atención es que hay un gran número de examenes con 65, la nota mínima de aprobación.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;nyc_regents &amp;lt;-  read_csv(here(&amp;quot;static&amp;quot;, &amp;quot;data&amp;quot;, &amp;quot;tidytuesday&amp;quot;,&amp;quot;nyc_regents.csv&amp;quot;)
+)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Parsed with column specification:
+## cols(
+##   score = col_double(),
+##   integrated_algebra = col_double(),
+##   global_history = col_double(),
+##   living_environment = col_double(),
+##   english = col_double(),
+##   us_history = col_double()
+## )&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# reshape
+
+nyc_reshape &amp;lt;- nyc_regents %&amp;gt;% 
+  gather(k=&amp;quot;subject&amp;quot;, v=&amp;quot;tests&amp;quot;, -score) %&amp;gt;% 
+  group_by(score) %&amp;gt;% 
+  summarize(tests = sum(tests, na.rm = TRUE))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## `summarise()` ungrouping output (override with `.groups` argument)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# plot basico
+g &amp;lt;- ggplot(nyc_reshape, aes(score, tests)) + 
+  geom_col()
+
+# Texto
+
+g + 
+  labs(caption = &amp;quot;Fuente: New York City Department of Education&amp;quot;,
+       title = &amp;quot;Salvar Raspando&amp;quot;,
+       subtitle = &amp;quot;2010 Regents scores on Algebra, \nGlobal History, Biology, English &amp;amp; US History&amp;quot;, 
+       y = &amp;quot;&amp;quot;, x = &amp;quot;&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Warning: Removed 1 rows containing missing values (position_stack).&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-12-28-examenes_files/figure-html/unnamed-chunk-2-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Ejes
+# Scales en el grammar of graphics
+# Customizando los ejes con scale_x_* y scale_y_*
+# le pasamos una función a labels
+# expand es contraintuitivamente importante
+# labels, breaks, expand
+g + 
+  
+  labs(caption = &amp;quot;Source: New York City Department of Education&amp;quot;,
+       title = &amp;quot;Scraping By&amp;quot;,
+       subtitle = &amp;quot;2010 Regents scores on Algebra, \nGlobal History, Biology, English &amp;amp; US History&amp;quot;, 
+       y = &amp;quot;&amp;quot;, x = &amp;quot;&amp;quot;) + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_y_continuous(position = &amp;quot;right&amp;quot;, 
+                     labels = scales::number_format(big.mark = &amp;quot;,&amp;quot;), # function
+                     breaks = c(1e4, 2e4, 3e4))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Warning: `expand_scale()` is deprecated; use `expansion()` instead.
+
+## Warning: Removed 1 rows containing missing values (position_stack).&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-12-28-examenes_files/figure-html/unnamed-chunk-2-2.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Theme
+g + labs(caption = &amp;quot;Fuente: New York City Department of Education&amp;quot;,
+       title = &amp;quot;Salvar Raspando&amp;quot;,
+       subtitle = &amp;quot;Notas 2010 Regents en Álgebra, \nHistoria, Biología, e Inglés&amp;quot;,
+       y = &amp;quot;&amp;quot;, x = &amp;quot;&amp;quot;) + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_y_continuous(position = &amp;quot;right&amp;quot;, 
+                     labels = scales::number_format(big.mark = &amp;quot;,&amp;quot;), # function
+                     breaks = c(1e4, 2e4, 3e4)) + 
+  theme_minimal() + 
+  theme(
+    panel.grid.major.y = element_line(linetype = &amp;quot;dashed&amp;quot;, color = &amp;quot;gray50&amp;quot;),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.y = element_text(vjust = 1.5),
+    axis.text.x = element_text(vjust = 7),
+    plot.margin = margin(unit(c(20, 20, 20, 20), &amp;quot;cm&amp;quot;))
+  )&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Warning: `expand_scale()` is deprecated; use `expansion()` instead.
+
+## Warning: Removed 1 rows containing missing values (position_stack).&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-12-28-examenes_files/figure-html/unnamed-chunk-2-3.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# color a las columnas
+ggplot(nyc_reshape, aes(score, tests)) + 
+  geom_col(color = &amp;quot;black&amp;quot;, fill = &amp;quot;#C4843C&amp;quot;) + 
+  labs(caption = &amp;quot;Fuente: New York City Department of Education&amp;quot;,
+       title = &amp;quot;Salvar Raspando&amp;quot;,
+       subtitle = &amp;quot;Notas 2010 Regents en Álgebra, \nHistoria, Biología, e Inglés&amp;quot;,
+       y = &amp;quot;&amp;quot;, x = &amp;quot;&amp;quot;) + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_y_continuous(position = &amp;quot;right&amp;quot;, 
+                     labels = scales::number_format(big.mark = &amp;quot;,&amp;quot;), # function
+                     breaks = c(1e4, 2e4, 3e4)) + 
+  theme_minimal() + 
+  theme(
+    panel.grid.major.y = element_line(linetype = &amp;quot;dashed&amp;quot;, color = &amp;quot;gray50&amp;quot;),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.y = element_text(vjust = 1.5),
+    axis.text.x = element_text(vjust = 7),
+    plot.margin = margin(unit(c(20, 20, 20, 20), &amp;quot;cm&amp;quot;))
+  )&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Warning: `expand_scale()` is deprecated; use `expansion()` instead.
+
+## Warning: Removed 1 rows containing missing values (position_stack).&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-12-28-examenes_files/figure-html/unnamed-chunk-2-4.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Todo junto
+nyc_regents %&amp;gt;% 
+  gather(k=&amp;quot;k&amp;quot;, v=&amp;quot;v&amp;quot;, -score) %&amp;gt;% 
+  group_by(score) %&amp;gt;% 
+  summarize(v = sum(v, na.rm = TRUE)) %&amp;gt;% 
+  ggplot(aes(score, v)) +
+  annotate(&amp;quot;rect&amp;quot;, xmin = 65, xmax=Inf, ymin=0, ymax=Inf, alpha = 0.6, fill = &amp;quot;grey80&amp;quot;) + 
+  annotate(&amp;quot;text&amp;quot;, 
+           label = &amp;quot;Mìnimo para diploma Regents&amp;quot;,
+           x = 45, y = 2.5e4) + 
+  annotate(&amp;quot;segment&amp;quot;, arrow=arrow(type = &amp;quot;closed&amp;quot;, length = unit(0.2, &amp;quot;cm&amp;quot;)), x=50, y=2.8e4, xend=64, yend=3.2e4) + 
+  geom_col(color = &amp;quot;black&amp;quot;, fill = &amp;quot;#C4843C&amp;quot;) + 
+  theme_minimal() + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_y_continuous(position = &amp;quot;right&amp;quot;, 
+                     labels = scales::number_format(big.mark = &amp;quot;,&amp;quot;), # function
+                     breaks = c(1e4, 2e4, 3e4)) + 
+  labs(caption = &amp;quot;Fuente: New York City Department of Education&amp;quot;,
+       title = &amp;quot;Salvar Raspando&amp;quot;,
+       subtitle = &amp;quot;Notas Regents 2010 en Álgebra, \nHistoria, Biología, e Inglés&amp;quot;,
+       y = &amp;quot;&amp;quot;, x = &amp;quot;&amp;quot;) +
+  labs(y = &amp;quot;&amp;quot;, x = &amp;quot;&amp;quot;) +
+  theme(
+    panel.grid.major.y = element_line(linetype = &amp;quot;dashed&amp;quot;, color = &amp;quot;gray50&amp;quot;),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.y = element_text(vjust = 1.5),
+    axis.text.x = element_text(vjust = 7),
+    plot.margin = margin(unit(c(20, 20, 20, 20), &amp;quot;cm&amp;quot;)) # 
+  )&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## `summarise()` ungrouping output (override with `.groups` argument)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Warning: `expand_scale()` is deprecated; use `expansion()` instead.
+
+## Warning: Removed 1 rows containing missing values (position_stack).&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-12-28-examenes_files/figure-html/unnamed-chunk-2-5.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+</description>
+       </item>
        
        <item>
          <title>El estilo de Metallica a lo largo de los discos</title>
@@ -164,235 +402,46 @@ tempo &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;
        </item>
        
        <item>
-         <title>Visualizando homicidios, exámenes y la vacuna contra el sarampión</title>
-         <link>/posts/replicando-visualizaciones/</link>
+         <title>Vacunas</title>
+         <link>/posts/vacunas/</link>
          <pubDate>Thu, 28 Nov 2019 00:00:00 +0000</pubDate>
          
-         <guid>/posts/replicando-visualizaciones/</guid>
-         <description>&lt;p&gt;Este es mi primer post sobre tidy tuesday. Este proyecto, creado por &lt;a href=&#34;https://twitter.com/thomas_mock&#34;&gt;Thomas Mock&lt;/a&gt;, publica un data set todo los martes y invita a los participantes a postear una visualización usándolo.&lt;/p&gt;
+         <guid>/posts/vacunas/</guid>
+         <description>
+
+
+&lt;p&gt;Este es mi primer post sobre tidy tuesday. Este proyecto, creado por &lt;a href=&#34;https://twitter.com/thomas_mock&#34;&gt;Thomas Mock&lt;/a&gt;, publica un data set todo los martes y invita a los participantes a postear una visualización usándolo.&lt;/p&gt;
 &lt;p&gt;Para esta semana se publicaron tres juegos de datos provenientes de &lt;a href=&#34;https://simplystatistics.org/2019/08/28/you-can-replicate-almost-any-plot-with-ggplot2/&#34;&gt;este blog post&lt;/a&gt;. La idea es mostrar el poder de &lt;code&gt;ggplot&lt;/code&gt; para reproducir visualizaciones que encontró el autor por ahí.&lt;/p&gt;
-&lt;h1 id=&#34;homicidios&#34;&gt;Homicidios&lt;/h1&gt;
-&lt;p&gt;El primer dataset tiene la tasa de homicidios en 6 países del G-8:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;homicidios &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;read_csv&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;here&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;static&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;data&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;tidytuesday&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;international_murders.csv&amp;#34;&lt;/span&gt;))
+&lt;div id=&#34;el-efecto-de-la-vacuna-contra-el-sarampión&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;El efecto de la vacuna contra el sarampión&lt;/h1&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Measels
+# devtools::install_github(&amp;quot;rafalab/dslabs&amp;quot;)
+library(dslabs)
+diseases &amp;lt;- dslabs::us_contagious_diseases
 
-&lt;span style=&#34;color:#a6e22e&#34;&gt;head&lt;/span&gt;(homicidios)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;## # A tibble: 6 x 4
-##   country count label code 
-##   &amp;lt;chr&amp;gt;   &amp;lt;dbl&amp;gt; &amp;lt;chr&amp;gt; &amp;lt;chr&amp;gt;
-## 1 US       3.2  3.2   us   
-## 2 ITALY    0.71 0.71  it   
-## 3 CANADA   0.5  0.5   ca   
-## 4 UK       0.1  0.1   gb   
-## 5 JAPAN    0    0     jp   
-## 6 GERMANY  0.2  0.2   de
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Este es el gráfico original:&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://abcnews.go.com/images/International/homocides_g8_countries_640x360_wmain.jpg&#34; alt=&#34;grafico original&#34;&gt;&lt;/p&gt;
-&lt;p&gt;Revisando la fuente de los datos encontré &lt;a href=&#34;https://dataunodc.un.org/GSH_app&#34;&gt;esta app&lt;/a&gt;, sería interesante comparar a Uruguay en estos números, pero los datos no coinciden.&lt;/p&gt;
-&lt;p&gt;El diseño del gráfico es un bar chart, pero le agrega las banderas de los países y las tasas sobre las barras.&lt;/p&gt;
-&lt;p&gt;Este es el gráfico base con títulos:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# plot basico&lt;/span&gt;
-g &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; homicidios &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;ggplot&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;aes&lt;/span&gt;(country, count)) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;geom_col&lt;/span&gt;() &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;labs&lt;/span&gt;(x&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;, y&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;# de homicidios con armas de fuego \n cada 100,000 habitantes&amp;#34;&lt;/span&gt;, 
-       caption &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Fuente: \nUNODC Homicide Statistics&amp;#34;&lt;/span&gt;,
-       title &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Tasa de Homicidios en países del G-8.&amp;#34;&lt;/span&gt;)
-g
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
-&lt;p&gt;Como mapeamos el eje x a una columna de texto, &lt;code&gt;ggplot&lt;/code&gt; la convierte a un factor. El orden en el que aparecen los países en el eje depende de los niveles del factor, por defecto es alfabético:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;levels&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;factor&lt;/span&gt;(homicidios&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;country))
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;## [1] &amp;quot;CANADA&amp;quot;  &amp;quot;FRANCE&amp;quot;  &amp;quot;GERMANY&amp;quot; &amp;quot;ITALY&amp;quot;   &amp;quot;JAPAN&amp;quot;   &amp;quot;RUSSIA&amp;quot;  &amp;quot;UK&amp;quot;     
-## [8] &amp;quot;US&amp;quot;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Esto es algo que puede confundir a alguien que no tiene experiencia trabajando con factores: el orden de los niveles es independiente del orden en que aparecen en el data frame.&lt;/p&gt;
-&lt;p&gt;En este caso, el orden del factor es alfabético (Canadá, Francia, etc.), y el data frame está ordenado por la tasa de homicidios (descendente): US, Italia, Canadá.&lt;/p&gt;
-&lt;p&gt;Para controlar el orden en el que aparecen los países ordenar las etiquetas, usamos una función muy útil de &lt;code&gt;forcats&lt;/code&gt;: &lt;code&gt;fct_inorder&lt;/code&gt;. Esta función reordena los niveles del factor para que coincida con el orden en el que aparecen en el data-frame:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;homicidios_2 &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; homicidios &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;arrange&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;count) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;mutate&lt;/span&gt;(country_ordenado &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;fct_inorder&lt;/span&gt;(country))
-
-&lt;span style=&#34;color:#a6e22e&#34;&gt;levels&lt;/span&gt;(homicidios_2&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;country_ordenado)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;## [1] &amp;quot;US&amp;quot;      &amp;quot;ITALY&amp;quot;   &amp;quot;CANADA&amp;quot;  &amp;quot;GERMANY&amp;quot; &amp;quot;UK&amp;quot;      &amp;quot;FRANCE&amp;quot;  &amp;quot;JAPAN&amp;quot;  
-## [8] &amp;quot;RUSSIA&amp;quot;
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Para la versión final, agrego las etiquetas del texto con &lt;code&gt;geom_text&lt;/code&gt; (nudge_y me permite ajustar el texto un poco para que no toque las barras).&lt;/p&gt;
-&lt;p&gt;También descubrí &lt;code&gt;ggflags&lt;/code&gt;, que nos da una función &lt;code&gt;geom_flag&lt;/code&gt; con el &lt;code&gt;aes&lt;/code&gt; country para especificar el país. La coordenada y de todas las banderas la fijo en -.4.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# install_github(&amp;#34;rensa/ggflags&amp;#34;)&lt;/span&gt;
-
-&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(ggflags)
-&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(ggthemes)
-&lt;span style=&#34;color:#75715e&#34;&gt;# theme_economist&lt;/span&gt;
-&lt;span style=&#34;color:#75715e&#34;&gt;# agrego texto sobre las columnas con geom_text y nudge_y&lt;/span&gt;
-homicidios &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;arrange&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;count) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;mutate&lt;/span&gt;(country &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;fct_inorder&lt;/span&gt;(country)) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# fct_inorder&lt;/span&gt;
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;ggplot&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;aes&lt;/span&gt;(country, count)) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;geom_col&lt;/span&gt;(fill&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;darkred&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;geom_flag&lt;/span&gt;(y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;-.4&lt;/span&gt;, &lt;span style=&#34;color:#a6e22e&#34;&gt;aes&lt;/span&gt;(country &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; code), size &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;12&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# geom_flag&lt;/span&gt;
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;geom_text&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;aes&lt;/span&gt;(label &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;if_else&lt;/span&gt;(country &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;RUSSIA&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;S/D&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#a6e22e&#34;&gt;as.character&lt;/span&gt;(count))), 
-                nudge_y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;.15&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# nudge, label&lt;/span&gt;
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;scale_x_discrete&lt;/span&gt;(labels&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;NULL&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# remove labels from x-axis&lt;/span&gt;
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;labs&lt;/span&gt;(x&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;, y&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;# de homicidios con armas de fuego \n cada 100,000 habitantes&amp;#34;&lt;/span&gt;, 
-       caption &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Fuente: \nUNODC Homicide Statistics&amp;#34;&lt;/span&gt;,
-       title &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Tasa de Homicidios en países del G-8&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;theme_economist&lt;/span&gt;() &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;theme&lt;/span&gt;(
-    axis.line.x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_blank&lt;/span&gt;(),
-    axis.ticks.x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_blank&lt;/span&gt;(),
-    plot.caption &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_text&lt;/span&gt;(vjust &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;170&lt;/span&gt;) &lt;span style=&#34;color:#75715e&#34;&gt;# mover caption&lt;/span&gt;
-  )
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
-&lt;h1 id=&#34;diplopma-regents&#34;&gt;Diplopma Regents&lt;/h1&gt;
-&lt;p&gt;Los exámenes Regents son una serie de tests estándar de temas de secundaria en el estado de Nueva York. Este set de datos muestra las notas de exámenes en varias materias. Lo que llama la atención es que hay un gran número de examenes con 65, la nota mínima de aprobación.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;nyc_regents &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt;  &lt;span style=&#34;color:#a6e22e&#34;&gt;read_csv&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;here&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;static&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;data&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;tidytuesday&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;nyc_regents.csv&amp;#34;&lt;/span&gt;)
-)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;## Parsed with column specification:
-## cols(
-##   score = col_double(),
-##   integrated_algebra = col_double(),
-##   global_history = col_double(),
-##   living_environment = col_double(),
-##   english = col_double(),
-##   us_history = col_double()
-## )
-&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# reshape&lt;/span&gt;
-
-nyc_reshape &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; nyc_regents &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;gather&lt;/span&gt;(k&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;subject&amp;#34;&lt;/span&gt;, v&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;tests&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;score) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;group_by&lt;/span&gt;(score) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;summarize&lt;/span&gt;(tests &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;sum&lt;/span&gt;(tests, na.rm &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;TRUE&lt;/span&gt;))
-
-&lt;span style=&#34;color:#75715e&#34;&gt;# plot basico&lt;/span&gt;
-g &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;ggplot&lt;/span&gt;(nyc_reshape, &lt;span style=&#34;color:#a6e22e&#34;&gt;aes&lt;/span&gt;(score, tests)) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;geom_col&lt;/span&gt;()
-
-&lt;span style=&#34;color:#75715e&#34;&gt;# Texto&lt;/span&gt;
-
-g &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;labs&lt;/span&gt;(caption &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Fuente: New York City Department of Education&amp;#34;&lt;/span&gt;,
-       title &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Salvar Raspando&amp;#34;&lt;/span&gt;,
-       subtitle &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;2010 Regents scores on Algebra, \nGlobal History, Biology, English &amp;amp; US History&amp;#34;&lt;/span&gt;, 
-       y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;, x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;## Warning: Removed 1 rows containing missing values (position_stack).
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Ejes&lt;/span&gt;
-&lt;span style=&#34;color:#75715e&#34;&gt;# Scales en el grammar of graphics&lt;/span&gt;
-&lt;span style=&#34;color:#75715e&#34;&gt;# Customizando los ejes con scale_x_* y scale_y_*&lt;/span&gt;
-&lt;span style=&#34;color:#75715e&#34;&gt;# le pasamos una función a labels&lt;/span&gt;
-&lt;span style=&#34;color:#75715e&#34;&gt;# expand es contraintuitivamente importante&lt;/span&gt;
-&lt;span style=&#34;color:#75715e&#34;&gt;# labels, breaks, expand&lt;/span&gt;
-g &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;labs&lt;/span&gt;(caption &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Source: New York City Department of Education&amp;#34;&lt;/span&gt;,
-       title &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Scraping By&amp;#34;&lt;/span&gt;,
-       subtitle &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;2010 Regents scores on Algebra, \nGlobal History, Biology, English &amp;amp; US History&amp;#34;&lt;/span&gt;, 
-       y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;, x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;scale_x_continuous&lt;/span&gt;(breaks &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;seq&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;), expand &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;expand_scale&lt;/span&gt;(add &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;))) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;scale_y_continuous&lt;/span&gt;(position &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;right&amp;#34;&lt;/span&gt;, 
-                     labels &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; scales&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;number_format&lt;/span&gt;(big.mark &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;,&amp;#34;&lt;/span&gt;), &lt;span style=&#34;color:#75715e&#34;&gt;# function&lt;/span&gt;
-                     breaks &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;1e4&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2e4&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3e4&lt;/span&gt;))
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;## Warning: Removed 1 rows containing missing values (position_stack).
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Theme&lt;/span&gt;
-g &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;labs&lt;/span&gt;(caption &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Fuente: New York City Department of Education&amp;#34;&lt;/span&gt;,
-       title &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Salvar Raspando&amp;#34;&lt;/span&gt;,
-       subtitle &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Notas 2010 Regents en Álgebra, \nHistoria, Biología, e Inglés&amp;#34;&lt;/span&gt;,
-       y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;, x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;scale_x_continuous&lt;/span&gt;(breaks &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;seq&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;), expand &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;expand_scale&lt;/span&gt;(add &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;))) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;scale_y_continuous&lt;/span&gt;(position &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;right&amp;#34;&lt;/span&gt;, 
-                     labels &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; scales&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;number_format&lt;/span&gt;(big.mark &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;,&amp;#34;&lt;/span&gt;), &lt;span style=&#34;color:#75715e&#34;&gt;# function&lt;/span&gt;
-                     breaks &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;1e4&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2e4&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3e4&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;theme_minimal&lt;/span&gt;() &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;theme&lt;/span&gt;(
-    panel.grid.major.y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_line&lt;/span&gt;(linetype &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dashed&amp;#34;&lt;/span&gt;, color &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gray50&amp;#34;&lt;/span&gt;),
-    panel.grid.major.x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_blank&lt;/span&gt;(),
-    panel.grid.minor &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_blank&lt;/span&gt;(),
-    axis.text.y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_text&lt;/span&gt;(vjust &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1.5&lt;/span&gt;),
-    axis.text.x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_text&lt;/span&gt;(vjust &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;7&lt;/span&gt;),
-    plot.margin &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;margin&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;unit&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;20&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;20&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;20&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;20&lt;/span&gt;), &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;cm&amp;#34;&lt;/span&gt;))
-  )
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;## Warning: Removed 1 rows containing missing values (position_stack).
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# color a las columnas&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;ggplot&lt;/span&gt;(nyc_reshape, &lt;span style=&#34;color:#a6e22e&#34;&gt;aes&lt;/span&gt;(score, tests)) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;geom_col&lt;/span&gt;(color &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;black&amp;#34;&lt;/span&gt;, fill &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;#C4843C&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;labs&lt;/span&gt;(caption &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Fuente: New York City Department of Education&amp;#34;&lt;/span&gt;,
-       title &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Salvar Raspando&amp;#34;&lt;/span&gt;,
-       subtitle &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Notas 2010 Regents en Álgebra, \nHistoria, Biología, e Inglés&amp;#34;&lt;/span&gt;,
-       y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;, x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;scale_x_continuous&lt;/span&gt;(breaks &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;seq&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;), expand &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;expand_scale&lt;/span&gt;(add &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;))) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;scale_y_continuous&lt;/span&gt;(position &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;right&amp;#34;&lt;/span&gt;, 
-                     labels &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; scales&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;number_format&lt;/span&gt;(big.mark &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;,&amp;#34;&lt;/span&gt;), &lt;span style=&#34;color:#75715e&#34;&gt;# function&lt;/span&gt;
-                     breaks &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;1e4&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2e4&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3e4&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;theme_minimal&lt;/span&gt;() &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;theme&lt;/span&gt;(
-    panel.grid.major.y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_line&lt;/span&gt;(linetype &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dashed&amp;#34;&lt;/span&gt;, color &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gray50&amp;#34;&lt;/span&gt;),
-    panel.grid.major.x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_blank&lt;/span&gt;(),
-    panel.grid.minor &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_blank&lt;/span&gt;(),
-    axis.text.y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_text&lt;/span&gt;(vjust &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1.5&lt;/span&gt;),
-    axis.text.x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_text&lt;/span&gt;(vjust &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;7&lt;/span&gt;),
-    plot.margin &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;margin&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;unit&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;20&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;20&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;20&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;20&lt;/span&gt;), &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;cm&amp;#34;&lt;/span&gt;))
-  )
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;## Warning: Removed 1 rows containing missing values (position_stack).
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Todo junto&lt;/span&gt;
-nyc_regents &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;gather&lt;/span&gt;(k&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;k&amp;#34;&lt;/span&gt;, v&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;v&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;score) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;group_by&lt;/span&gt;(score) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;summarize&lt;/span&gt;(v &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;sum&lt;/span&gt;(v, na.rm &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;TRUE&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;ggplot&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;aes&lt;/span&gt;(score, v)) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;annotate&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;rect&amp;#34;&lt;/span&gt;, xmin &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;65&lt;/span&gt;, xmax&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;Inf&lt;/span&gt;, ymin&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, ymax&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;Inf&lt;/span&gt;, alpha &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0.6&lt;/span&gt;, fill &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;grey80&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;annotate&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;text&amp;#34;&lt;/span&gt;, 
-           label &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Mìnimo para diploma Regents&amp;#34;&lt;/span&gt;,
-           x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;45&lt;/span&gt;, y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2.5e4&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;annotate&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;segment&amp;#34;&lt;/span&gt;, arrow&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;arrow&lt;/span&gt;(type &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;closed&amp;#34;&lt;/span&gt;, length &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;unit&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;0.2&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;cm&amp;#34;&lt;/span&gt;)), x&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;50&lt;/span&gt;, y&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2.8e4&lt;/span&gt;, xend&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;64&lt;/span&gt;, yend&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;3.2e4&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;geom_col&lt;/span&gt;(color &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;black&amp;#34;&lt;/span&gt;, fill &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;#C4843C&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;theme_minimal&lt;/span&gt;() &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;scale_x_continuous&lt;/span&gt;(breaks &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;seq&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;100&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;), expand &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;expand_scale&lt;/span&gt;(add &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;))) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;scale_y_continuous&lt;/span&gt;(position &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;right&amp;#34;&lt;/span&gt;, 
-                     labels &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; scales&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;number_format&lt;/span&gt;(big.mark &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;,&amp;#34;&lt;/span&gt;), &lt;span style=&#34;color:#75715e&#34;&gt;# function&lt;/span&gt;
-                     breaks &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;1e4&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;2e4&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;3e4&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;labs&lt;/span&gt;(caption &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Fuente: New York City Department of Education&amp;#34;&lt;/span&gt;,
-       title &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Salvar Raspando&amp;#34;&lt;/span&gt;,
-       subtitle &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Notas Regents 2010 en Álgebra, \nHistoria, Biología, e Inglés&amp;#34;&lt;/span&gt;,
-       y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;, x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;labs&lt;/span&gt;(y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;, x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;theme&lt;/span&gt;(
-    panel.grid.major.y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_line&lt;/span&gt;(linetype &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;dashed&amp;#34;&lt;/span&gt;, color &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;gray50&amp;#34;&lt;/span&gt;),
-    panel.grid.major.x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_blank&lt;/span&gt;(),
-    panel.grid.minor &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_blank&lt;/span&gt;(),
-    axis.text.y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_text&lt;/span&gt;(vjust &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1.5&lt;/span&gt;),
-    axis.text.x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_text&lt;/span&gt;(vjust &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;7&lt;/span&gt;),
-    plot.margin &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;margin&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;unit&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;20&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;20&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;20&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;20&lt;/span&gt;), &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;cm&amp;#34;&lt;/span&gt;)) &lt;span style=&#34;color:#75715e&#34;&gt;# &lt;/span&gt;
-  )
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;## Warning: Removed 1 rows containing missing values (position_stack).
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
-&lt;h1 id=&#34;el-efecto-de-la-vacuna-contra-el-sarampión&#34;&gt;El efecto de la vacuna contra el sarampión&lt;/h1&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Measels&lt;/span&gt;
-&lt;span style=&#34;color:#75715e&#34;&gt;# devtools::install_github(&amp;#34;rafalab/dslabs&amp;#34;)&lt;/span&gt;
-&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(dslabs)
-diseases &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; dslabs&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;us_contagious_diseases
-
-&lt;span style=&#34;color:#75715e&#34;&gt;# Research!&lt;/span&gt;
-jet.colors &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;colorRampPalette&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;#F0FFFF&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;cyan&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;#007FFF&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;yellow&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;#FFBF00&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;orange&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;red&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;#7F0000&amp;#34;&lt;/span&gt;), bias &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2.25&lt;/span&gt;)
+# Research!
+jet.colors &amp;lt;- colorRampPalette(c(&amp;quot;#F0FFFF&amp;quot;, &amp;quot;cyan&amp;quot;, &amp;quot;#007FFF&amp;quot;, &amp;quot;yellow&amp;quot;, &amp;quot;#FFBF00&amp;quot;, &amp;quot;orange&amp;quot;, &amp;quot;red&amp;quot;, &amp;quot;#7F0000&amp;quot;), bias = 2.25)
 
 
-diseases &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;filter&lt;/span&gt;(disease &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Measles&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;filter&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;!&lt;/span&gt;state &lt;span style=&#34;color:#f92672&#34;&gt;%in%&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Hawaii&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Alaska&amp;#34;&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;mutate&lt;/span&gt;(rate &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; count &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; population &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;10000&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;52&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; weeks_reporting) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;mutate&lt;/span&gt;(state &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;reorder&lt;/span&gt;(state, &lt;span style=&#34;color:#a6e22e&#34;&gt;desc&lt;/span&gt;(state))) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;ggplot&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;aes&lt;/span&gt;(year, state, fill&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;rate)) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;geom_tile&lt;/span&gt;(color &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;white&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;scale_fill_gradientn&lt;/span&gt;(colors &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;jet.colors&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;16&lt;/span&gt;), na.value &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;white&amp;#34;&lt;/span&gt;, name &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Tasa&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;## research!&lt;/span&gt;
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;scale_x_continuous&lt;/span&gt;(expand &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;labs&lt;/span&gt;(x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;, y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;, title &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Sarampión&amp;#34;&lt;/span&gt;, subtitle &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Enfermos cada 10000 habitantes&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;geom_vline&lt;/span&gt;(xintercept &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1963&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;annotate&lt;/span&gt;(geom &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;text&amp;#34;&lt;/span&gt;, x&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1970&lt;/span&gt;, y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;50&lt;/span&gt;, label &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Introducción de la vacuna&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;theme_minimal&lt;/span&gt;() &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;coord_cartesian&lt;/span&gt;(clip &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;off&amp;#39;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
-  &lt;span style=&#34;color:#a6e22e&#34;&gt;theme&lt;/span&gt;(
-    legend.position &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;bottom&amp;#34;&lt;/span&gt;,
-  )
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
+diseases %&amp;gt;% 
+  filter(disease == &amp;quot;Measles&amp;quot;) %&amp;gt;% 
+  filter(!state %in% c(&amp;quot;Hawaii&amp;quot;, &amp;quot;Alaska&amp;quot;)) %&amp;gt;% 
+  mutate(rate = count / population * 10000 * 52 / weeks_reporting) %&amp;gt;% 
+  mutate(state = reorder(state, desc(state))) %&amp;gt;% 
+  ggplot(aes(year, state, fill=rate)) + 
+  geom_tile(color = &amp;quot;white&amp;quot;) + 
+  scale_fill_gradientn(colors = jet.colors(16), na.value = &amp;quot;white&amp;quot;, name = &amp;quot;Tasa&amp;quot;) + ## research!
+  scale_x_continuous(expand = c(0, 0)) + 
+  labs(x = &amp;quot;&amp;quot;, y = &amp;quot;&amp;quot;, title = &amp;quot;Sarampión&amp;quot;, subtitle = &amp;quot;Enfermos cada 10000 habitantes&amp;quot;) +
+  geom_vline(xintercept = 1963) + 
+  annotate(geom = &amp;quot;text&amp;quot;, x=1970, y = 50, label = &amp;quot;Introducción de la vacuna&amp;quot;) + 
+  theme_minimal() + 
+  coord_cartesian(clip = &amp;#39;off&amp;#39;) + 
+  theme(
+    legend.position = &amp;quot;bottom&amp;quot;,
+  )&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-12-28-vacunas_files/figure-html/unnamed-chunk-2-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
 </description>
        </item>
        

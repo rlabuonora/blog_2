@@ -1,0 +1,138 @@
+---
+title: "Un gráfico de barras anotado"
+author: ''
+date: '2020-05-28'
+slug: examenes-visualizaciones
+tags: ["R", "ggplot", "tidytuesday"]
+---
+```{r, include=FALSE}
+library(tidyverse)
+library(here)
+
+```
+
+En este posteo hago un gráfico de barras con anotaciones para mostrar un problema en el sistema de exámenes de las escuelas de Nueva York.
+
+
+
+
+
+# Diplopma Regents
+
+Los exámenes Regents son una serie de tests estándar de temas de secundaria en el estado de Nueva York. Este set de datos muestra las notas de exámenes en varias materias. Lo que llama la atención es que hay un gran número de examenes con 65, la nota mínima de aprobación.
+
+```{r}
+
+nyc_regents <-  read_csv(here("static", "data", "tidytuesday","nyc_regents.csv")
+)
+
+# reshape
+
+nyc_reshape <- nyc_regents %>% 
+  gather(k="subject", v="tests", -score) %>% 
+  group_by(score) %>% 
+  summarize(tests = sum(tests, na.rm = TRUE))
+
+# plot basico
+g <- ggplot(nyc_reshape, aes(score, tests)) + 
+  geom_col()
+
+# Texto
+
+g + 
+  labs(caption = "Fuente: New York City Department of Education",
+       title = "Salvar Raspando",
+       subtitle = "2010 Regents scores on Algebra, \nGlobal History, Biology, English & US History", 
+       y = "", x = "")
+  
+# Ejes
+# Scales en el grammar of graphics
+# Customizando los ejes con scale_x_* y scale_y_*
+# le pasamos una función a labels
+# expand es contraintuitivamente importante
+# labels, breaks, expand
+g + 
+  
+  labs(caption = "Source: New York City Department of Education",
+       title = "Scraping By",
+       subtitle = "2010 Regents scores on Algebra, \nGlobal History, Biology, English & US History", 
+       y = "", x = "") + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_y_continuous(position = "right", 
+                     labels = scales::number_format(big.mark = ","), # function
+                     breaks = c(1e4, 2e4, 3e4))
+
+
+# Theme
+g + labs(caption = "Fuente: New York City Department of Education",
+       title = "Salvar Raspando",
+       subtitle = "Notas 2010 Regents en Álgebra, \nHistoria, Biología, e Inglés",
+       y = "", x = "") + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_y_continuous(position = "right", 
+                     labels = scales::number_format(big.mark = ","), # function
+                     breaks = c(1e4, 2e4, 3e4)) + 
+  theme_minimal() + 
+  theme(
+    panel.grid.major.y = element_line(linetype = "dashed", color = "gray50"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.y = element_text(vjust = 1.5),
+    axis.text.x = element_text(vjust = 7),
+    plot.margin = margin(unit(c(20, 20, 20, 20), "cm"))
+  )
+
+# color a las columnas
+ggplot(nyc_reshape, aes(score, tests)) + 
+  geom_col(color = "black", fill = "#C4843C") + 
+  labs(caption = "Fuente: New York City Department of Education",
+       title = "Salvar Raspando",
+       subtitle = "Notas 2010 Regents en Álgebra, \nHistoria, Biología, e Inglés",
+       y = "", x = "") + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_y_continuous(position = "right", 
+                     labels = scales::number_format(big.mark = ","), # function
+                     breaks = c(1e4, 2e4, 3e4)) + 
+  theme_minimal() + 
+  theme(
+    panel.grid.major.y = element_line(linetype = "dashed", color = "gray50"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.y = element_text(vjust = 1.5),
+    axis.text.x = element_text(vjust = 7),
+    plot.margin = margin(unit(c(20, 20, 20, 20), "cm"))
+  )
+  
+
+# Todo junto
+nyc_regents %>% 
+  gather(k="k", v="v", -score) %>% 
+  group_by(score) %>% 
+  summarize(v = sum(v, na.rm = TRUE)) %>% 
+  ggplot(aes(score, v)) +
+  annotate("rect", xmin = 65, xmax=Inf, ymin=0, ymax=Inf, alpha = 0.6, fill = "grey80") + 
+  annotate("text", 
+           label = "Mìnimo para diploma Regents",
+           x = 45, y = 2.5e4) + 
+  annotate("segment", arrow=arrow(type = "closed", length = unit(0.2, "cm")), x=50, y=2.8e4, xend=64, yend=3.2e4) + 
+  geom_col(color = "black", fill = "#C4843C") + 
+  theme_minimal() + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_y_continuous(position = "right", 
+                     labels = scales::number_format(big.mark = ","), # function
+                     breaks = c(1e4, 2e4, 3e4)) + 
+  labs(caption = "Fuente: New York City Department of Education",
+       title = "Salvar Raspando",
+       subtitle = "Notas Regents 2010 en Álgebra, \nHistoria, Biología, e Inglés",
+       y = "", x = "") +
+  labs(y = "", x = "") +
+  theme(
+    panel.grid.major.y = element_line(linetype = "dashed", color = "gray50"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.y = element_text(vjust = 1.5),
+    axis.text.x = element_text(vjust = 7),
+    plot.margin = margin(unit(c(20, 20, 20, 20), "cm")) # 
+  )
+
+```

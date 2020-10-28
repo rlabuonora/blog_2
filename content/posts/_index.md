@@ -1,5 +1,5 @@
 ---
 menu: main
-title: Posts
+title: Blog
 weight: "10"
 ---

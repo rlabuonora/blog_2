@@ -12,21 +12,41 @@
        
        
        <item>
-         <title>Posts</title>
+         <title>Blog</title>
          <link>/posts/</link>
-         <pubDate>Sun, 26 Jan 2020 00:00:00 +0000</pubDate>
+         <pubDate>Tue, 28 Jul 2020 00:00:00 +0000</pubDate>
          
          <guid>/posts/</guid>
          <description></description>
        </item>
        
        <item>
-         <title>Este Blog</title>
-         <link>/about/</link>
+         <title>Cursos</title>
+         <link>/cursos/</link>
          <pubDate>Wed, 09 Apr 2014 00:00:00 +0000</pubDate>
          
-         <guid>/about/</guid>
-         <description>&lt;p&gt;Acá escribo sobre los problemas en los que trabajo.&lt;/p&gt;
+         <guid>/cursos/</guid>
+         <description>&lt;p&gt;Estos son los cursos más recientes que desarrollé:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://econ.rlabuonora.com/&#34;&gt;Introducción a la Economía&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.reportes.rlabuonora.com&#34;&gt;Reportes automáticos con R&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+       </item>
+       
+       <item>
+         <title>Proyectos</title>
+         <link>/proyectos/</link>
+         <pubDate>Wed, 09 Apr 2014 00:00:00 +0000</pubDate>
+         
+         <guid>/proyectos/</guid>
+         <description>&lt;p&gt;Estos son los proyectos más recientes en los que trabajé. La mayor parte usan &lt;a href=&#34;https://reactjs.org/&#34;&gt;React&lt;/a&gt;.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://piedra-paper-tijera.netlify.app/&#34;&gt;Piedra, papel o tijera&lt;/a&gt; (2020)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://juego-de-la-vida.netlify.app/&#34;&gt;El juego de la vida&lt;/a&gt; (2020)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://weather-widget-v1.herokuapp.com/&#34;&gt;Weather App&lt;/a&gt; (2016)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.rlabuonora.com/calculator/&#34;&gt;Calculadora&lt;/a&gt; (2016)&lt;/li&gt;
+&lt;/ul&gt;
 </description>
        </item>
        

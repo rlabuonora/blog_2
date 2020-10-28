@@ -1,0 +1,30 @@
+
+   <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+     <channel>
+       <title>Trabajo on rlabuonora.com</title>
+       <link>/tags/trabajo/</link>
+       <description>Recent content in Trabajo on rlabuonora.com</description>
+       <generator>Hugo -- gohugo.io</generator>
+       <copyright>Copyright &amp;copy; 2019 - Rafael La Buonora</copyright>
+       <lastBuildDate>Mon, 01 Aug 2016 00:00:00 +0000</lastBuildDate>
+       
+           <atom:link href="/tags/trabajo/index.xml" rel="self" type="application/rss+xml" />
+       
+       
+       <item>
+         <title>Ciudades Inteligentes</title>
+         <link>/posts/ciudades-inteligentes/</link>
+         <pubDate>Mon, 01 Aug 2016 00:00:00 +0000</pubDate>
+         
+         <guid>/posts/ciudades-inteligentes/</guid>
+         <description>
+
+
+&lt;p&gt;El 1 de Setiembre me invitaron a presentar preciosGub en el Foro Nacional de Ciudades Sustentables organizado por la Cámara de Comercio e Industria Uruguayo-Alemana en la Torre de las Telecomunicaciones de Antel.&lt;/p&gt;
+&lt;p&gt;&lt;img  class=&#34;static-image&#34; src=&#34;/posts/2016-08-12-ciudades-inteligentes_files/ciudades_inteligentes.jpg&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Me tocó exponer en un panel sobre tendencias y aplicaciones en ciudades inteligentes moderado por Gonzalo Sobral, del que participaron Leonardo Loureiro, Ariel Scaliter y Juan Pablo Pignataro. Acá hay un &lt;a href=&#34;https://ladiaria.com.uy/articulo/2016/9/farmakon/&#34;&gt;artículo de La Diaria &lt;/a&gt;con la cobertura del evento.&lt;/p&gt;
+</description>
+       </item>
+       
+     </channel>
+   </rss>
