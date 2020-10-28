@@ -6,10 +6,162 @@
        <description>Recent content in R on Rascando la superficie</description>
        <generator>Hugo -- gohugo.io</generator>
        <copyright>Copyright &amp;copy; 2019 - Rafael La Buonora</copyright>
-       <lastBuildDate>Thu, 28 Nov 2019 00:00:00 +0000</lastBuildDate>
+       <lastBuildDate>Sun, 26 Jan 2020 00:00:00 +0000</lastBuildDate>
        
            <atom:link href="/tags/r/index.xml" rel="self" type="application/rss+xml" />
        
+       
+       <item>
+         <title>El estilo de Metallica a lo largo de los discos</title>
+         <link>/posts/metallica/</link>
+         <pubDate>Sun, 26 Jan 2020 00:00:00 +0000</pubDate>
+         
+         <guid>/posts/metallica/</guid>
+         <description>&lt;p&gt;Para este post de &lt;a href=&#34;https://twitter.com/hashtag/tidytuesday?lang=en&#34;&gt;#tidytuesday&lt;/a&gt; usé la API de spotify para bajar datos sobre la música de Metallica.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2020-01-26-metallica_files/metallica_tempo.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Este es el código para bajar los datos y la tapa de los discos:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(spotifyr)
+&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(tidyverse)
+&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(lubridate)
+
+
+METALLICA_ID &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;2ye2Wgw4gimLv2eAKyk1NB&amp;#34;&lt;/span&gt;
+metallica_albums &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;get_artist_albums&lt;/span&gt;(id&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;METALLICA_ID,
+                                      include_groups &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;album&amp;#34;&lt;/span&gt;,
+                                      limit &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;50&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt;
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;slice&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;11&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;13&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;17&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;19&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;21&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;26&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;30&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;35&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;39&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;43&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;mutate&lt;/span&gt;(release_year &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;year&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;as_date&lt;/span&gt;(release_date)))
+
+
+metallica_albums&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;cover_url &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; metallica_albums&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;images &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  purrr&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;map&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;url&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  purrr&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;map&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;)
+
+
+metallica_albums &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; metallica_albums &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;select&lt;/span&gt;(album_name&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;name, album_id&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;id, release_year, cover_url) 
+  
+
+get_album_tracks &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;function&lt;/span&gt;(album_id, album_name) {
+  &lt;span style=&#34;color:#75715e&#34;&gt;# get track name, track id &amp;amp; album name (add all album.level data here)&lt;/span&gt;
+  album &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;get_album&lt;/span&gt;(id&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;album_id)
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;tibble&lt;/span&gt;(track_name&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;album&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;tracks&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;items&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;name,
+         track_id   &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; album&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;tracks&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;items&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;id,
+         album_name &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; album_name)
+}
+
+get_track_info &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;function&lt;/span&gt;(track_id, track_name, album_name) {
+  features &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;get_track_audio_features&lt;/span&gt;(id&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;track_id)
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;mutate&lt;/span&gt;(features, 
+         album_name &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; album_name,
+         track_name &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; track_name) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+    &lt;span style=&#34;color:#a6e22e&#34;&gt;select&lt;/span&gt;(album_name, track_name, danceability&lt;span style=&#34;color:#f92672&#34;&gt;:&lt;/span&gt;tempo, duration_ms)
+}
+
+
+metallica_tracks &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; metallica_albums &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;pmap&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;function&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;...&lt;/span&gt;) {
+    current &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;tibble&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;...&lt;/span&gt;)
+    &lt;span style=&#34;color:#a6e22e&#34;&gt;get_album_tracks&lt;/span&gt;(current&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;album_id, current&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;album_name)
+  }) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;map&lt;/span&gt;(purrr&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;transpose) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  flatten &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;map_df&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;function&lt;/span&gt;(x) {
+    &lt;span style=&#34;color:#a6e22e&#34;&gt;get_track_info&lt;/span&gt;(x&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;track_id, x&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;track_name, x&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;album_name)
+  }) 
+
+metallica_tracks_df &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; metallica_tracks &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;left_join&lt;/span&gt;(metallica_albums) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;mutate&lt;/span&gt;(track_name &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;str_remove&lt;/span&gt;(track_name, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34; - Remastered&amp;#34;&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;mutate&lt;/span&gt;(track_name &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;str_remove&lt;/span&gt;(track_name, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;\\(Remastered\\)&amp;#34;&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt;
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;mutate&lt;/span&gt;(album_name &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;str_remove&lt;/span&gt;(album_name, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;\\(Remastered\\)&amp;#34;&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;group_by&lt;/span&gt;(album_name) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;mutate&lt;/span&gt;(track_num &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;row_number&lt;/span&gt;()) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;arrange&lt;/span&gt;(release_year, track_num)
+
+&lt;span style=&#34;color:#a6e22e&#34;&gt;dir.create&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;data&amp;#39;&lt;/span&gt;)
+&lt;span style=&#34;color:#a6e22e&#34;&gt;saveRDS&lt;/span&gt;(metallica_tracks_df, file&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;data/metallica.rds&amp;#34;&lt;/span&gt;)
+
+download_cover &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;function&lt;/span&gt;(url, release_year) {
+  file_name &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; glue&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;glue&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{release_year}.jpg&amp;#34;&lt;/span&gt;)
+  dest &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;file.path&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;covers&amp;#34;&lt;/span&gt;, file_name)
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;download.file&lt;/span&gt;(url, destfile&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;dest)
+}
+
+&lt;span style=&#34;color:#a6e22e&#34;&gt;dir.create&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;covers&amp;#39;&lt;/span&gt;)
+purrr&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;walk2&lt;/span&gt;(metallica_albums&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;cover_url,
+            metallica_albums&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;release_year, 
+            download_cover)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Y este es el código para crear el gráfico:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Evolution of song tempo&lt;/span&gt;
+
+&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(tidyverse)
+&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(ggplot2)
+&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(jpeg)
+&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(grid)
+&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(ggdark)
+&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(showtext)
+&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(ggrepel)
+
+&lt;span style=&#34;color:#a6e22e&#34;&gt;theme_set&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;dark_theme_grey&lt;/span&gt;())
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# Agregar fuente&lt;/span&gt;
+&lt;span style=&#34;color:#a6e22e&#34;&gt;font_add_google&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Metal Mania&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;metal&amp;#34;&lt;/span&gt;)
+&lt;span style=&#34;color:#a6e22e&#34;&gt;showtext_auto&lt;/span&gt;()
+
+metallica &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;readRDS&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;./data/metallica.rds&amp;#34;&lt;/span&gt;)
+
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# metallica$track_name &amp;lt;- fct_inorder(factor(metallica$track_name))&lt;/span&gt;
+metallica&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;album_name &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;fct_inorder&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;factor&lt;/span&gt;(metallica&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;album_name))
+
+fast_songs &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Holier Than Thou&amp;#34;&lt;/span&gt;, 
+                &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;My Apocalypse&amp;#34;&lt;/span&gt;, 
+                &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;The Four Horsemen&amp;#34;&lt;/span&gt;)
+
+highligts &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; metallica &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;filter&lt;/span&gt;(track_name &lt;span style=&#34;color:#f92672&#34;&gt;%in%&lt;/span&gt;  fast_songs)
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# Gráfico de base.&lt;/span&gt;
+tempo &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; metallica &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;ggplot&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;aes&lt;/span&gt;(album_name, tempo, group &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;scale_x_discrete&lt;/span&gt;(breaks &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;NULL&lt;/span&gt;, expand&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;0.1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;scale_y_continuous&lt;/span&gt;(limits &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;60&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;220&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;geom_point&lt;/span&gt;() &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;geom_text_repel&lt;/span&gt;(data &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; highligts, 
+                  &lt;span style=&#34;color:#a6e22e&#34;&gt;aes&lt;/span&gt;(label&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;track_name), 
+                  nudge_y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;,
+                  nudge_x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;.2&lt;/span&gt;,
+                  color&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;white&amp;#34;&lt;/span&gt;, size &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;geom_smooth&lt;/span&gt;(se&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;FALSE&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;guides&lt;/span&gt;(color&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;FALSE&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;labs&lt;/span&gt;(title&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Metallica&amp;#34;&lt;/span&gt;, 
+       subtitle &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;New albums are almost as fast as the early ones.&amp;#34;&lt;/span&gt;, 
+       caption  &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Data: Spotify&amp;#34;&lt;/span&gt;,
+       x&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Album&amp;#34;&lt;/span&gt;, y&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Tempo (bpm)&amp;#34;&lt;/span&gt;)
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# Agregar las tapas de los discos como imágenes.&lt;/span&gt;
+covers &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;list.files&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;covers&amp;#39;&lt;/span&gt;, full.names &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;TRUE&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  purrr&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;map&lt;/span&gt;(readJPEG) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  purrr&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;map&lt;/span&gt;(rasterGrob, interpolate&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;TRUE&lt;/span&gt;)
+
+y_coord_cover &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;60&lt;/span&gt;
+y_offset &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;10.5&lt;/span&gt;
+
+
+&lt;span style=&#34;color:#a6e22e&#34;&gt;for &lt;/span&gt;(i in &lt;span style=&#34;color:#a6e22e&#34;&gt;seq_along&lt;/span&gt;(covers)) {
+  tempo &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; tempo &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;  &lt;span style=&#34;color:#a6e22e&#34;&gt;annotation_custom&lt;/span&gt;(grob&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;covers[[i]], xmin&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;i&lt;span style=&#34;color:#ae81ff&#34;&gt;-1+.5&lt;/span&gt;, xmax&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;i&lt;span style=&#34;color:#ae81ff&#34;&gt;+.5&lt;/span&gt;, ymin&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;y_coord_cover, ymax&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;y_coord_cover&lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;y_offset)
+}
+
+tempo &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;theme&lt;/span&gt;(
+    text &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_text&lt;/span&gt;(family&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;metal&amp;#34;&lt;/span&gt;),
+    plot.title &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_text&lt;/span&gt;(hjust &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;.5&lt;/span&gt;),
+    plot.subtitle &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_text&lt;/span&gt;(hjust&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;.5&lt;/span&gt;)
+  ) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;ggsave&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;metallica_tempo.png&amp;#34;&lt;/span&gt;)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
+       </item>
        
        <item>
          <title>Visualizando homicidios, exámenes y la vacuna contra el sarampión</title>

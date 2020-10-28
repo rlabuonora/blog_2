@@ -4,7 +4,7 @@ author: ''
 date: '2020-01-26'
 slug: metallica
 categories: []
-tags: []
+tags: ["tidytuesday", "ggplot", "R"]
 ---
 
 

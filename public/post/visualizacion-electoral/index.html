@@ -1,0 +1,269 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+  <title>Rascando la superficie</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="The HTML5 Herald" />
+  <meta name="author" content="Con Rafael La Buonora" /><meta name="generator" content="Hugo 0.65.3" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" />
+  <script src="https://kit.fontawesome.com/b76b73e8e8.js" crossorigin="anonymous"></script>
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab|Ruda" />
+  <link rel="stylesheet" type="text/css" href="/css/styles.css" /><link rel="icon" type="image/png" href="./favicon.png">
+
+</head>
+
+<body>
+  <div id="container">
+    <header>
+      <h1>
+                <a href="/">Rascando la superficie</a>
+            </h1>
+
+      <ul id="social-media">
+        
+        
+        
+        <li><a href="https://twitter.com/rlabuonora"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+          
+        <li><a href="https://github.com/rlabuonora"><i class="fab fa-github fa-lg" aria-hidden="true"></i></a></li>
+           
+        <li><a href="http://cv.rlabuonora.com"><i class="fas fa-file-alt" aria-hidden="true"></i></a></li>
+        
+      </ul>
+      
+      <p><em>Rafael La Buonora</em></p>
+      
+    </header>
+
+    
+<nav>
+    <ul>
+        
+        <li>
+            <a class="" href="/posts/">
+                <i class="fa-li fa  fa-lg"></i><span>Posts</span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="" href="/about/">
+                <i class="fa-li fa  fa-lg"></i><span>Este Blog</span>
+            </a>
+        </li>
+        
+    </ul>
+</nav>
+
+    <main>
+
+
+
+
+<article>
+
+    <h1>visualizacion_electoral</h1>
+
+    
+        <aside>
+    <ul>
+        <li>
+            <time class="post-date" datetime="2020-07-26T00:00:00Z">Jul 26, 2020</time>
+        </li>
+        
+
+        
+        <li>
+            <em>
+                
+                    
+                    <a href="/tags/ggplot">#ggplot</a>
+                
+                    , 
+                    <a href="/tags/r">#R</a>
+                
+            </em>
+        </li>
+        
+
+        <li>3 minutes read</li>
+    </ul>
+</aside>
+
+    
+
+    
+
+
+<div id="gramatica" class="section level1">
+<h1>Gramática</h1>
+<blockquote>
+<p>Es el conjunto de reglas estructurales que gobiernan la composición de oraciones y palabras e un lenguaje.</p>
+</blockquote>
+<p>Una gramática es el tipo de cosas que hay en un lenguaje y las relaciones que tiene que haber entre ellas para generar sentencias válidas en cierto lenguaje (aunque no necesariamente significativas)</p>
+<p>En visualización, refiere a los <strong>elementos</strong> que hay en un gráfico (puntos, líneas, texto, etc.) y cómo se <strong>interrelacionan</strong> entre sí.</p>
+<blockquote class="twitter-tweet">
+<p lang="es" dir="ltr">
+Esta es la verdad de los números de empleo: desde junio 2014 hasta junio 2019 se perdieron 67 mil empleos. Nada ganamos con hacernos los distraídos, nada ganamos jugando con los números. La realidad es terca. A los problemas hay que mirarlos a los ojos, reconocerlos y encararlos. <a href="https://t.co/b7fh7xTePq">pic.twitter.com/b7fh7xTePq</a>
+</p>
+— Ernesto Talvi (<span class="citation">@ernesto_talvi</span>) <a href="https://twitter.com/ernesto_talvi/status/1159857066829369344?ref_src=twsrc%5Etfw">August 9, 2019</a>
+</blockquote>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<div id="elementos-visuales" class="section level2">
+<h2># Elementos visuales</h2>
+<p><img src="./talvi.jpeg" /></p>
+<p>–</p>
+<ul>
+<li>Dos rectángulos rojos.</li>
+</ul>
+</div>
+</div>
+<div id="mapeos-esteticos" class="section level1">
+<h1>Mapeos estéticos</h1>
+<p><img src="./talvi.jpeg" /></p>
+<p>–</p>
+<ul>
+<li>El alto de la barra mide la cantidad de empleados en dos momentos del tiempo.</li>
+</ul>
+</div>
+<div id="datos" class="section level1">
+<h1>Datos</h1>
+<p>–</p>
+<pre class="r"><code>empleo &lt;- tibble(
+  ocupados = c(1654, 1586),
+  fecha = c(&#39;jun-14&#39;, &#39;jun-19&#39;),
+)
+empleo</code></pre>
+<pre><code>## # A tibble: 2 x 2
+##   ocupados fecha 
+##      &lt;dbl&gt; &lt;chr&gt; 
+## 1     1654 jun-14
+## 2     1586 jun-19</code></pre>
+</div>
+<div id="ggplot" class="section level1">
+<h1>Ggplot</h1>
+<pre class="r"><code>ggplot(empleo)</code></pre>
+<p><img src="/post/2020-07-26-visualizacion-electoral_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+</div>
+<div id="mapeo" class="section level1">
+<h1>Mapeo</h1>
+<p><span class="math inline">\(x -&gt; fecha\)</span>
+<span class="math inline">\(y-&gt; ocupados\)</span></p>
+<pre class="r"><code>ggplot(empleo, aes(fecha, ocupados))</code></pre>
+<p><img src="/post/2020-07-26-visualizacion-electoral_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+</div>
+<div id="geoms-columnas" class="section level1">
+<h1>Geoms (columnas)</h1>
+<p>.pull-left[</p>
+<pre class="r"><code>ggplot(empleo, 
+       aes(fecha, ocupados)) + 
+  geom_col()</code></pre>
+<p>]</p>
+<p>.pull-right[
+<img src="/post/2020-07-26-visualizacion-electoral_files/figure-html/barras-1.png" />]</p>
+<blockquote class="twitter-tweet">
+<p lang="es" dir="ltr">
+Muy buen ejemplo de mal uso de la visualización estadística que distorsiona la percepción. Se viola una regla básica para gráficos de barras que deben comenzar en cero ya que esta visualización depende de la longitud de las barras para codificar los datos. <a href="https://t.co/dyBEXP8mN0">https://t.co/dyBEXP8mN0</a>
+</p>
+— Natalia da Silva (<span class="citation">@pacocuak</span>) <a href="https://twitter.com/pacocuak/status/1160894862260092934?ref_src=twsrc%5Etfw">August 12, 2019</a>
+</blockquote>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<p>Otros comentarios:</p>
+<ul>
+<li>Los ejes no empiezan en 0.</li>
+<li>Bajo ratio de información tinta.</li>
+</ul>
+</div>
+<div id="detalles" class="section level1">
+<h1>Detalles</h1>
+<pre class="r"><code>talvi &lt;- ggplot(empleo, aes(fecha, ocupados)) + 
+  geom_col(fill = &quot;orange&quot;, width =0.5) + 
+  geom_text(aes(x=fecha, y=ocupados, label=ocupados), nudge_y = 10) +
+  coord_cartesian(ylim=c(1540, 1670)) + 
+  scale_y_continuous(
+    labels = scales::number_format(big.mark = &#39;.&#39;, decimal.mark = &#39;,&#39;)
+  ) + 
+  theme_minimal() +
+  labs(x=&quot;Fecha&quot;, y = &quot;Miles&quot;, 
+       caption = &quot;Fuente: Ine.&quot;,
+       title = &quot;Cantidad de ocupados&quot;) + 
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    plot.caption = element_text(hjust = -.1)
+  )</code></pre>
+<pre class="r"><code>talvi</code></pre>
+<p><img src="/post/2020-07-26-visualizacion-electoral_files/figure-html/unnamed-chunk-6-1.png" width="840" /></p>
+</div>
+<div id="escalas" class="section level1">
+<h1>Escalas</h1>
+<ul>
+<li>Los <code>aesthetics</code> mapean del dato al atributo estético de la figura.
+En este caso es: (alto de la barra -&gt; nivel de ocupación)
+posición en el eje x -&gt; fecha)</li>
+<li>Las escalas pasan del atributo estético al dato. (alto -&gt; nivel de ocupación)</li>
+</ul>
+</div>
+<div id="escalas-1" class="section level1">
+<h1>Escalas</h1>
+<ul>
+<li>Qué tienen en común la leyenda y las etiquetas de los ejes?</li>
+<li>Son escalas</li>
+</ul>
+</div>
+<div id="como-seguir" class="section level1">
+<h1>¿Cómo seguir?</h1>
+<p>Bibliografía</p>
+<ul>
+<li>R for Data Science (Capítulo 3)</li>
+</ul>
+<p>Introducción a ggplot y algunos piques.</p>
+<ul>
+<li>Kieran Healy: Visualización con ejemplos de R</li>
+<li>Claus Wilke: Visualización</li>
+<li>Roger Peng: Programación en ggplot</li>
+</ul>
+</div>
+
+
+</article>
+
+
+<section class="post-nav">
+    <ul>
+        
+        <li>
+            <a href="/post/posteo/"><i class="fa fa-chevron-circle-left"></i> Posteo</a>
+        </li>
+        
+        
+    </ul>
+</section>
+    
+
+
+
+
+
+</main>
+    <footer>
+        <h6>Copyright © 2019 - Rafael La Buonora |
+            Rendered by <a href="https://gohugo.io" title="Hugo">Hugo</a> |
+            <a href="/index.xml">Subscribe</a></h6>
+    </footer>
+</div>
+<script src="/js/scripts.js"></script>
+
+  
+<script src="/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+
+</body>
+
+
+
+</html>
