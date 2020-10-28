@@ -15,3 +15,7 @@
 article p .static-image {
   width: 50%;
 }
+
+#home p {
+  margin: 1em;
+}

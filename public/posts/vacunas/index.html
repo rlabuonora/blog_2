@@ -7,7 +7,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="The HTML5 Herald" />
-  <meta name="author" content="Rafael La Buonora" /><meta name="generator" content="Hugo 0.65.3" />
+  <meta name="author" content="Rafael La Buonora" /><meta name="generator" content="Hugo 0.76.5" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" />
   <script src="https://kit.fontawesome.com/b76b73e8e8.js" crossorigin="anonymous"></script>
   
@@ -70,13 +70,13 @@
 
 <article>
 
-    <h1>Visualizando Homicidios</h1>
+    <h1>Vacunas</h1>
 
     
         <aside>
     <ul>
         <li>
-            <time class="post-date" datetime="2020-07-28T00:00:00Z">Jul 28, 2020</time>
+            <time class="post-date" datetime="2019-11-28T00:00:00Z">Nov 28, 2019</time>
         </li>
         
 
@@ -97,7 +97,7 @@
         </li>
         
 
-        <li>3 minutes read</li>
+        <li>One minute read</li>
     </ul>
 </aside>
 
@@ -108,80 +108,35 @@
 
 <p>Este es mi primer post sobre tidy tuesday. Este proyecto, creado por <a href="https://twitter.com/thomas_mock">Thomas Mock</a>, publica un data set todo los martes y invita a los participantes a postear una visualización usándolo.</p>
 <p>Para esta semana se publicaron tres juegos de datos provenientes de <a href="https://simplystatistics.org/2019/08/28/you-can-replicate-almost-any-plot-with-ggplot2/">este blog post</a>. La idea es mostrar el poder de <code>ggplot</code> para reproducir visualizaciones que encontró el autor por ahí.</p>
-<div id="homicidios" class="section level1">
-<h1>Homicidios</h1>
-<p>El primer dataset tiene la tasa de homicidios en 6 países del G-8:</p>
-<pre class="r"><code>homicidios &lt;- read_csv(here(&quot;static&quot;, &quot;data&quot;, &quot;tidytuesday&quot;,&quot;international_murders.csv&quot;))
+<div id="el-efecto-de-la-vacuna-contra-el-sarampión" class="section level1">
+<h1>El efecto de la vacuna contra el sarampión</h1>
+<pre class="r"><code># Measels
+# devtools::install_github(&quot;rafalab/dslabs&quot;)
+library(dslabs)
+diseases &lt;- dslabs::us_contagious_diseases
 
-head(homicidios)</code></pre>
-<pre><code>## # A tibble: 6 x 4
-##   country count label code 
-##   &lt;chr&gt;   &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;
-## 1 US       3.2  3.2   us   
-## 2 ITALY    0.71 0.71  it   
-## 3 CANADA   0.5  0.5   ca   
-## 4 UK       0.1  0.1   gb   
-## 5 JAPAN    0    0     jp   
-## 6 GERMANY  0.2  0.2   de</code></pre>
-<p>Este es el gráfico original:</p>
-<div class="figure">
-<img src="https://abcnews.go.com/images/International/homocides_g8_countries_640x360_wmain.jpg" alt="grafico original" />
-<p class="caption">grafico original</p>
-</div>
-<p>Revisando la fuente de los datos encontré <a href="https://dataunodc.un.org/GSH_app">esta app</a>, sería interesante comparar a Uruguay en estos números, pero los datos no coinciden.</p>
-<p>El diseño del gráfico es un bar chart, pero le agrega las banderas de los países y las tasas sobre las barras.</p>
-<p>Este es el gráfico base con títulos:</p>
-<pre class="r"><code># plot basico
-homicidios %&gt;% 
-  ggplot(aes(country, count)) +
-  geom_col() + 
-  labs(x=&quot;&quot;, y=&quot;# de homicidios con armas de fuego \n cada 100,000 habitantes&quot;, 
-       caption = &quot;Fuente: \nUNODC Homicide Statistics&quot;,
-       title = &quot;Tasa de Homicidios en países del G-8.&quot;)</code></pre>
-<p><img src="/posts/2019-12-28-homicidios_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
-<p>Como mapeamos el eje x a una columna de texto, <code>ggplot</code> la convierte a un factor. El orden en el que aparecen los países en el eje depende de los niveles del factor, por defecto es alfabético:</p>
-<pre class="r"><code>levels(factor(homicidios$country))</code></pre>
-<pre><code>## [1] &quot;CANADA&quot;  &quot;FRANCE&quot;  &quot;GERMANY&quot; &quot;ITALY&quot;   &quot;JAPAN&quot;   &quot;RUSSIA&quot;  &quot;UK&quot;     
-## [8] &quot;US&quot;</code></pre>
-<p>Esto es algo que puede confundir a alguien que no tiene experiencia trabajando con factores: el orden de los niveles es independiente del orden en que aparecen en el data frame.</p>
-<p>En este caso, el orden del factor es alfabético (Canadá, Francia, etc.), y el data frame está ordenado por la tasa de homicidios (descendente): US, Italia, Canadá.</p>
-<p>Para controlar el orden en el que aparecen los países ordenar las etiquetas, usamos una función muy útil de <code>forcats</code>: <code>fct_inorder</code>. Esta función reordena los niveles del factor para que coincida con el orden en el que aparecen en el data-frame:</p>
-<pre class="r"><code>homicidios_2 &lt;- homicidios %&gt;% 
-  arrange(-count) %&gt;% 
-  mutate(country_ordenado = fct_inorder(country))
+# Research!
+jet.colors &lt;- colorRampPalette(c(&quot;#F0FFFF&quot;, &quot;cyan&quot;, &quot;#007FFF&quot;, &quot;yellow&quot;, &quot;#FFBF00&quot;, &quot;orange&quot;, &quot;red&quot;, &quot;#7F0000&quot;), bias = 2.25)
 
-levels(homicidios_2$country_ordenado)</code></pre>
-<pre><code>## [1] &quot;US&quot;      &quot;ITALY&quot;   &quot;CANADA&quot;  &quot;GERMANY&quot; &quot;UK&quot;      &quot;FRANCE&quot;  &quot;JAPAN&quot;  
-## [8] &quot;RUSSIA&quot;</code></pre>
-<p>Para la versión final, agrego las etiquetas del texto con <code>geom_text</code> (nudge_y me permite ajustar el texto un poco para que no toque las barras).</p>
-<p>También descubrí <code>ggflags</code>, que nos da una función <code>geom_flag</code> con el <code>aes</code> country para especificar el país. La coordenada y de todas las banderas la fijo en -.4.</p>
-<pre class="r"><code># install_github(&quot;rensa/ggflags&quot;)
 
-library(ggflags)
-library(ggthemes)
-# theme_economist
-# agrego texto sobre las columnas con geom_text y nudge_y
-
-plot &lt;- homicidios %&gt;% 
-  arrange(-count) %&gt;% 
-  mutate(country = fct_inorder(country)) %&gt;% # fct_inorder
-  ggplot(aes(country, count)) + 
-  geom_col(fill=&quot;darkred&quot;) + 
-  geom_flag(y = -.4, aes(country = code), size = 12) + # geom_flag
-  geom_text(aes(label = if_else(country == &quot;RUSSIA&quot;, &quot;S/D&quot;, as.character(count))), 
-                nudge_y = .15) + # nudge, label
-  scale_x_discrete(labels=NULL) + # remove labels from x-axis
-  labs(x=&quot;&quot;, y=&quot;# de homicidios con armas de fuego \n cada 100,000 habitantes&quot;, 
-       caption = &quot;Fuente: \nUNODC Homicide Statistics&quot;,
-       title = &quot;Tasa de Homicidios en países del G-8&quot;) + 
-  theme_economist() +
+diseases %&gt;% 
+  filter(disease == &quot;Measles&quot;) %&gt;% 
+  filter(!state %in% c(&quot;Hawaii&quot;, &quot;Alaska&quot;)) %&gt;% 
+  mutate(rate = count / population * 10000 * 52 / weeks_reporting) %&gt;% 
+  mutate(state = reorder(state, desc(state))) %&gt;% 
+  ggplot(aes(year, state, fill=rate)) + 
+  geom_tile(color = &quot;white&quot;) + 
+  scale_fill_gradientn(colors = jet.colors(16), na.value = &quot;white&quot;, name = &quot;Tasa&quot;) + ## research!
+  scale_x_continuous(expand = c(0, 0)) + 
+  labs(x = &quot;&quot;, y = &quot;&quot;, title = &quot;Sarampión&quot;, subtitle = &quot;Enfermos cada 10000 habitantes&quot;) +
+  geom_vline(xintercept = 1963) + 
+  annotate(geom = &quot;text&quot;, x=1970, y = 50, label = &quot;Introducción de la vacuna&quot;) + 
+  theme_minimal() + 
+  coord_cartesian(clip = &#39;off&#39;) + 
   theme(
-    axis.line.x = element_blank(),
-    axis.ticks.x = element_blank(),
-    plot.caption = element_text(vjust = 170) # mover caption
+    legend.position = &quot;bottom&quot;,
   )</code></pre>
-<pre class="r"><code>plot</code></pre>
-<p><img src="/posts/2019-12-28-homicidios_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p><img src="/posts/2019-12-28-vacunas_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
 </div>
 
 
@@ -192,9 +147,13 @@ plot &lt;- homicidios %&gt;%
     <ul>
         
         <li>
-            <a href="/posts/examenes-visualizaciones/"><i class="fa fa-chevron-circle-left"></i> Un gráfico de barras anotado</a>
+            <a href="/posts/personas-y-lugares-vargas-llosa/"><i class="fa fa-chevron-circle-left"></i> Personas y lugares en las novelas de Mario Vargas Llosa</a>
         </li>
         
+        
+        <li>
+            <a href="/posts/metallica/">El estilo de Metallica a lo largo de los discos <i class="fa fa-chevron-circle-right"></i> </a>
+        </li>
         
     </ul>
 </section>
@@ -214,9 +173,6 @@ plot &lt;- homicidios %&gt;%
 <script src="/js/scripts.js"></script>
 
   
-<script src="/js/math-code.js"></script>
-<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-
 
 
 </body>
