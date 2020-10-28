@@ -4,9 +4,12 @@
   margin-top: 1em;
 }
 
-#container header h1 {
-  margin-bottom: -1em;
-  color: red;
+@media (min-width: 600px) {
+
+  #container header h1 {
+    margin-bottom: -1em;
+  }
+
 }
 
 article p .static-image {
