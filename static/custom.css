@@ -16,6 +16,14 @@ article p .static-image {
   width: 50%;
 }
 
-#home p {
-  margin: 1em;
+#home  {
+  text-align: center;
+}
+
+#home h2 {
+  margin-top: 2em;
+}
+
+#home a {
+  border-bottom: 0.2em solid #666666;
 }
