@@ -40,9 +40,11 @@ article p .static-image {
 .item-thumb img {
   width: 5%;
   float: left;
+  box-shadow: none;
 }
 
 /* Posts */
+
 
 .img-post {
   width: 40%;
