@@ -5,7 +5,7 @@ canonifyurls = true
 theme = "hugo-kiera"
 ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 
-paginate = 10
+paginate = 16
 
 summaryLength = 30
 enableEmoji = true

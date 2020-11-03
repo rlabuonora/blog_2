@@ -8,5 +8,18 @@ weight: "20"
 
 Estos son los cursos más recientes que desarrollé:
 
-- [Introducción a la Economía](https://econ.rlabuonora.com/)
-- [Reportes automáticos con R](https://www.reportes.rlabuonora.com)
+{{<item-thumb 
+      "Introducción a la Economía" 
+      "Curso básico de Economía"
+      "https://econ.rlabuonora.com/)" 
+      "thumbs/econ.png">}}
+      
+      
+      
+{{<item-thumb 
+      "Reportes automáticos con R" 
+      "Visualización y comunicación con datos usando R y Rmarkdown."
+      "https://reportes.rlabuonora.com/)" 
+      "thumbs/R.png">}}
+      
+      

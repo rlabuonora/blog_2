@@ -16,6 +16,8 @@ article p .static-image {
   width: 50%;
 }
 
+/* Home */
+
 #home  {
   text-align: center;
 }
@@ -26,4 +28,23 @@ article p .static-image {
 
 #home a {
   border-bottom: 0.2em solid #666666;
+}
+
+
+/* Shortcode for displaying projects */
+
+.item-thumb {
+  list-style: none;
+}
+
+.item-thumb img {
+  width: 5%;
+  float: left;
+}
+
+/* Posts */
+
+.img-post {
+  width: 40%;
+  margin: 0 auto;
 }

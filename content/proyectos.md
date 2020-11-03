@@ -8,14 +8,37 @@ weight: "20"
 
 Estos son los proyectos más recientes en los que trabajé.
 
-- [Piedra, papel o tijera](https://piedra-paper-tijera.netlify.app/) (2020)
-- [El juego de la vida](https://juego-de-la-vida.netlify.app/) (2020)
-- [Productores Familiares](https://rlabuonora.shinyapps.io/productores_familiares_app)(2018)
-- Llamados CCE[Demo]() (2018)
-- [Weather App](https://weather-widget-v1.herokuapp.com/) (2016)
-- [Calculadora](http://www.rlabuonora.com/calculator/) (2016)
+{{<item-thumb 
+      "El juego de la vida" 
+      "Simulador de Autómatas celulares"
+      "https://juego-de-la-vida.netlify.app/" 
+      "thumbs/cellular_automata.jpg">}}
+
+{{<item-thumb 
+      "Piedra, papel o tijera" 
+      "Clásico Juego en React"
+      "https://piedra-paper-tijera.netlify.app/)" 
+      "thumbs/scissors.png">}}
+      
+
+{{<item-thumb 
+      "Productores Familiares" 
+      "Dashboard para mejorar la logística de las compras públicas de alimentos"
+      "https://rlabuonora.shinyapps.io/productores_familiares_app)(2018" 
+      "thumbs/shiny.png">}}
+      
+{{<item-thumb 
+      "Calculadora" 
+      "Una calculadora implementada en React"
+      "https://react-calculadora.netlify.app/" 
+      "thumbs/calculatorIcon.png">}}
+      
+{{<item-thumb 
+      "Weather App" 
+      "Georeferencia al cliente y consulta el clima en ese punto."
+      "https://weather-widget-v1.herokuapp.com/" 
+      "thumbs/weather.png">}}
+      
+      
+- Llamados CCE [Demo]() (2018)
 - Imputación EFHU [Github](https://github.com/rlabuonora/efhu) (2015)
-
-
-
-
