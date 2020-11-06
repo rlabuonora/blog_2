@@ -17,7 +17,7 @@ Estos son los proyectos más recientes en los que trabajé.
 {{<item-thumb 
       "Piedra, papel o tijera" 
       "Clásico Juego en React"
-      "https://piedra-paper-tijera.netlify.app/)" 
+      "https://piedra-paper-tijera.netlify.app)" 
       "thumbs/scissors.png">}}
       
 

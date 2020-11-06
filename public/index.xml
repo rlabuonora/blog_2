@@ -67,7 +67,7 @@
 &lt;div class=&#34;media&#34;&gt;
   &lt;img  class=&#34;media-image&#34; src=&#39;thumbs/scissors.png&#39;&gt;
   &lt;div class=&#34;media-body&#34;&gt;
-      &lt;a href=&#39;https://piedra-paper-tijera.netlify.app/%29&#39;&gt;
+      &lt;a href=&#39;https://piedra-paper-tijera.netlify.app%29&#39;&gt;
        &lt;h4&gt;Piedra, papel o tijera&lt;/h4&gt;
        &lt;p&gt;Clásico Juego en React&lt;/p&gt;
       &lt;/a&gt;
