@@ -54,11 +54,10 @@
          <pubDate>Wed, 09 Apr 2014 00:00:00 +0000</pubDate>
          
          <guid>/proyectos/</guid>
-         <description>&lt;p&gt;Estos son los proyectos más recientes en los que trabajé.&lt;/p&gt;
-&lt;div class=&#34;media&#34;&gt;
+         <description>&lt;div class=&#34;media&#34;&gt;
   &lt;img  class=&#34;media-image&#34; src=&#39;thumbs/cellular_automata.jpg&#39;&gt;
   &lt;div class=&#34;media-body&#34;&gt;
-      &lt;a href=&#39;https://juego-de-la-vida.netlify.app/&#39;&gt;
+      &lt;a href=&#39;https://juego-de-la-vida.netlify.app&#39;&gt;
        &lt;h4&gt;El juego de la vida&lt;/h4&gt;
        &lt;p&gt;Simulador de Autómatas celulares&lt;/p&gt;
       &lt;/a&gt;
@@ -67,7 +66,7 @@
 &lt;div class=&#34;media&#34;&gt;
   &lt;img  class=&#34;media-image&#34; src=&#39;thumbs/scissors.png&#39;&gt;
   &lt;div class=&#34;media-body&#34;&gt;
-      &lt;a href=&#39;https://piedra-paper-tijera.netlify.app%29&#39;&gt;
+      &lt;a href=&#39;https://piedra-paper-tijera.netlify.app&#39;&gt;
        &lt;h4&gt;Piedra, papel o tijera&lt;/h4&gt;
        &lt;p&gt;Clásico Juego en React&lt;/p&gt;
       &lt;/a&gt;
@@ -76,7 +75,7 @@
 &lt;div class=&#34;media&#34;&gt;
   &lt;img  class=&#34;media-image&#34; src=&#39;thumbs/shiny.png&#39;&gt;
   &lt;div class=&#34;media-body&#34;&gt;
-      &lt;a href=&#39;https://rlabuonora.shinyapps.io/productores_familiares_app%29%282018&#39;&gt;
+      &lt;a href=&#39;https://rlabuonora.shinyapps.io/productores_familiares_app&#39;&gt;
        &lt;h4&gt;Productores Familiares&lt;/h4&gt;
        &lt;p&gt;Dashboard para mejorar la logística de las compras públicas de alimentos&lt;/p&gt;
       &lt;/a&gt;
@@ -85,7 +84,7 @@
 &lt;div class=&#34;media&#34;&gt;
   &lt;img  class=&#34;media-image&#34; src=&#39;thumbs/calculatorIcon.png&#39;&gt;
   &lt;div class=&#34;media-body&#34;&gt;
-      &lt;a href=&#39;https://react-calculadora.netlify.app/&#39;&gt;
+      &lt;a href=&#39;https://react-calculadora.netlify.app&#39;&gt;
        &lt;h4&gt;Calculadora&lt;/h4&gt;
        &lt;p&gt;Una calculadora implementada en React&lt;/p&gt;
       &lt;/a&gt;
@@ -94,7 +93,7 @@
 &lt;div class=&#34;media&#34;&gt;
   &lt;img  class=&#34;media-image&#34; src=&#39;thumbs/weather.png&#39;&gt;
   &lt;div class=&#34;media-body&#34;&gt;
-      &lt;a href=&#39;https://weather-widget-v1.herokuapp.com/&#39;&gt;
+      &lt;a href=&#39;https://weather-widget-v1.herokuapp.com&#39;&gt;
        &lt;h4&gt;Weather App&lt;/h4&gt;
        &lt;p&gt;Georeferencia al cliente y consulta el clima en ese punto.&lt;/p&gt;
       &lt;/a&gt;
