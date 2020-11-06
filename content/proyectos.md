@@ -39,6 +39,10 @@ Estos son los proyectos más recientes en los que trabajé.
       "https://weather-widget-v1.herokuapp.com/" 
       "thumbs/weather.png">}}
       
+            
+{{<item-thumb 
+      "Imputación EFHU" 
+      "Código para la imputación múltiple de la Encuesta Financiera de los Hogares Uruguayos."
+      "https://cienciassociales.edu.uy/wp-content/uploads/2020/03/Descripci%C3%B3n-y-resultados-EFHU2.pdf" 
+      "thumbs/stata.jpeg">}}
       
-- Llamados CCE [Demo]() (2018)
-- Imputación EFHU [Github](https://github.com/rlabuonora/efhu) (2015)

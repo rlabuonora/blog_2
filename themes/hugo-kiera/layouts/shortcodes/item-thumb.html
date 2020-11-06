@@ -1,13 +1,9 @@
-<li class="item-thumb">
-  <img  class="thumb" src='{{.Get 3}}'>
-  <a href='{{.Get 2 }}'>
-  <h4>
-    {{.Get 0 }}
-  </h4>
-  <p>
-    {{.Get 1}}
-  </p>
-  </a>
-  
-  
-</li>
+<div class="media">
+  <img  class="media-image" src='{{.Get 3}}'>
+  <div class="media-body">
+      <a href='{{.Get 2 }}'>
+       <h4>{{.Get 0 }}</h4>
+       <p>{{.Get 1}}</p>
+      </a>
+  </div>
+</div>
