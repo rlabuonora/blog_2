@@ -39,7 +39,7 @@
 &lt;div class=&#34;media&#34;&gt;
   &lt;img  class=&#34;media-image&#34; src=&#39;thumbs/R.png&#39;&gt;
   &lt;div class=&#34;media-body&#34;&gt;
-      &lt;a href=&#39;https://reportes.rlabuonora.com%29&#39;&gt;
+      &lt;a href=&#39;https://reportes.rlabuonora.com&#39;&gt;
        &lt;h4&gt;Reportes automáticos con R&lt;/h4&gt;
        &lt;p&gt;Visualización y comunicación con datos usando R y Rmarkdown.&lt;/p&gt;
       &lt;/a&gt;

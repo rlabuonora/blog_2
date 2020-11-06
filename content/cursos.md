@@ -11,7 +11,7 @@ Estos son los cursos más recientes que desarrollé:
 {{<item-thumb 
       "Introducción a la Economía" 
       "Curso básico de Economía"
-      "https://econ.rlabuonora.com)" 
+      "https://econ.rlabuonora.com" 
       "thumbs/econ.png">}}
       
       
@@ -19,7 +19,7 @@ Estos son los cursos más recientes que desarrollé:
 {{<item-thumb 
       "Reportes automáticos con R" 
       "Visualización y comunicación con datos usando R y Rmarkdown."
-      "https://reportes.rlabuonora.com)" 
+      "https://reportes.rlabuonora.com" 
       "thumbs/R.png">}}
       
       
