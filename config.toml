@@ -18,6 +18,6 @@ pygmentsCodeFences = true
 
 [params]
     tagline = ""
-    favicon = "favicon.png"
+    favicon = "/favicon.png"
     MathJaxCDN = "//cdnjs.cloudflare.com/ajax/libs"
     MathJaxVersion = "2.7.5"

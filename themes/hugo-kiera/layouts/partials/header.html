@@ -6,7 +6,8 @@
   <title>{{ .Site.Title }}</title>
   {{ partial "meta" . }}
   {{ partial "header_includes" . -}}
-  <link rel="icon" type="image/png" href="./favicon.png">
+  {{ with .Site.Params.favicon }} <link rel="icon" href="{{ . | absURL }}"> {{ end }}
+
 
 </head>
 
