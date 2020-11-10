@@ -14,6 +14,11 @@ Estos son los cursos más recientes que desarrollé:
       "https://econ.rlabuonora.com" 
       "thumbs/econ.png">}}
       
+{{<item-thumb 
+      "Planning Public Policy in Argentina" 
+      "Proyecto interactivo para analizar indicadores económicos usando técnicas de cluster y componentes principales (requiere suscripción)."
+      "https://learn.datacamp.com/projects/638" 
+      "thumbs/datacamp.png">}}
       
       
 {{<item-thumb 
