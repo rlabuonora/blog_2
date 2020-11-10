@@ -16,7 +16,7 @@ Estos son los cursos más recientes que desarrollé:
       
 {{<item-thumb 
       "Planning Public Policy in Argentina" 
-      "Proyecto interactivo para analizar indicadores económicos usando técnicas de cluster y componentes principales (requiere suscripción)."
+      "Proyecto interactivo para analizar indicadores económicos usando técnicas de cluster y componentes principales."
       "https://learn.datacamp.com/projects/638" 
       "thumbs/datacamp.png">}}
       
