@@ -1,0 +1,18 @@
+---
+title: Causas de Muerte en Uruguay
+author: ''
+date: '2021-05-06'
+slug: []
+categories: []
+tags: []
+draft: true
+---
+
+Parsear un pdf para analizar los datos de las causas de muerte en Uruguay.
+
+```{r}
+library(pdftools)
+text <- pdf_text("informe_preliminiar_de_mortalidad.pdf")
+head(text)
+```
+

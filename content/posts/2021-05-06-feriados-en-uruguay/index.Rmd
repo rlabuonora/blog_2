@@ -1,0 +1,33 @@
+---
+title: Feriados en Uruguay
+author: ''
+date: '2021-02-06'
+slug: []
+categories: []
+tags: []
+draft: true
+---
+
+El primero de Mayo conmemoramos el días de los trabajadores. Lamentablemente, este año nos cayó sábado, por lo que nos perdimos el día libre. 
+
+En este post uso lubridate para ver cuantos feriados caen fin de semana por año.
+
+```{r}
+library(rvest)
+
+url <- "https://es.wikipedia.org/wiki/D%C3%ADas_feriados_de_Uruguay"
+
+# tablas <- url %>% 
+#   read_html() %>%
+#   html_node("table") %>% 
+#   html_table(fill=TRUE)
+```
+
+
+# rvest
+
+- [ver este link](https://github.com/tidyverse/rvest/blob/master/R/table.R)
+
+- [y este](https://stackoverflow.com/questions/59728183/rvest-html-table-produces-errors)
+
+- [y este]()

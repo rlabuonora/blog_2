@@ -1,0 +1,29 @@
+---
+title: Flujo de trabajo en GIT
+author: ''
+date: '2021-05-06'
+slug: []
+categories: []
+tags: []
+draft: true
+---
+
+
+
+<p>Este post es una idea que me vino leyendo <a href="">mastering shiny</a>, del gran Hadley Wickham. Aprovecho para comentar que Hadley es un genio, el libro está <strong>lleno</strong> de información super interesante y casi nada de relleno.</p>
+<div id="algunos-comentarios-generales-sobre-el-libro" class="section level2">
+<h2>Algunos comentarios generales sobre el libro</h2>
+</div>
+<div id="el-capítulo-de-flujos-de-trabajo" class="section level2">
+<h2>El capítulo de flujos de trabajo</h2>
+<p>El apartado flujos de trabajo me parece muy interesante. Siempre me interesó mucho el tema de cómo trabajar y me encanta ver como piensa la gente cuando resuelve problemas en la computadora.</p>
+<p>Como tips concretos, correr shiny con un background job me parece una muy buena idea, y el uso del debugger interactivo sigue sin convencerme demasiado (soy de la escuela de los prints)</p>
+<p>El ejemplo de debuguear una app de shiny está bueno, porque refleja mucho un caso real en el que introducimos un bug en la aplicación por no saber algo sobre las funciones que usamos ( <code>==</code>, <code>subset</code> y <code>read_csv</code>).</p>
+<p>En general creo que pensamos mal como resolver estas situaciones, porque tendemos a suponer que cuando usamos una función sin entender totalmente como funciona nos merecemos los que nos pasa y tenemos que sufrir las consecuencias (esto puede venir de la cultura del RTFM de Linux).</p>
+<p>Este enfoque es bastante poco pragmático, y no se corresponde con mi experiencia en la que uso todo el tiempo funciones y librerías que no conozco y viendo que pasa en el camino.</p>
+<p>Además, el proceso de resolver un bug suele no ser lineal, con un principio y un final definitivo, si no que tiene una fase de exploración y diagnóstico del problema, y una fase de implementación de la solución. El problema es que este proceso muchas veces mezcla las dos etapas, y a veces tiene “falsos finales”, en los que creo que encontré la solución pero en realidad estoy equivocado.</p>
+<p>El resultado final es que hacemos “arreglos” basados en modelos mentales sobre como funciona el programa que estamos haciendo que son incorrectos, y estos arreglos van quedando residualmente en código comitteado y, lo que es peor, en código en producción.</p>
+</div>
+<div id="el-ejemplo-subset" class="section level2">
+<h2>El ejemplo: subset</h2>
+</div>
