@@ -1,33 +1,154 @@
 ---
-title: Flujo de trabajo en GIT
+title: Flujo de trabajo en Git
 author: ''
 date: '2021-05-06'
 slug: []
-categories: []
+categories: ["Git", "R"]
 tags: []
 draft: true
 ---
 
-Este post es una idea que me vino leyendo [mastering shiny](), del gran Hadley Wickham. Aprovecho para comentar que Hadley es un genio, el libro está __lleno__ de información super interesante y casi nada de relleno.
 
-## Algunos comentarios generales sobre el libro
 
-## El capítulo de flujos de trabajo
+Este post es se me ocurrió leyendo el [capítulo de flujos de trabajo de Mastering Shiny](https://mastering-shiny.org/action-workflow.html) Me interesa mucho saber como trabajan las personas cuando resuelven cosas en la computadora. 
 
-El apartado flujos de trabajo me parece muy interesante. Siempre me interesó mucho el tema de cómo trabajar y me encanta ver como piensa la gente cuando resuelve problemas en la computadora.
+En general creo que pensamos mal como resolver estas situaciones, porque tendemos a suponer que cuando usamos algún software sin entender totalmente como funciona y algo sale mal nos merecemos los tormentos que sufrimos [Read the Fucking Manual!](https://es.wikipedia.org/wiki/RTFM).
 
-Como tips concretos, correr shiny con un background job me parece una muy buena idea, y el uso del debugger interactivo sigue sin convencerme demasiado (soy de la escuela de los prints)
+Este enfoque me parece bastante poco pragmático, y no se corresponde con mi experiencia en la que uso todo el tiempo funciones y librerías que no conozco y veo que pasa en el camino.
 
-El ejemplo de debuguear una app de shiny está bueno, porque refleja mucho un caso real en el que introducimos un bug en la aplicación por no saber algo sobre las funciones que usamos ( `==`, `subset` y `read_csv`).
+En mi experiencia, el proceso de resolver un problema tiene una fase de exploración en la que googleo posibles soluciones y junto algunas piezas que me pueden servir para resolver el puzzle. Después que junté varias piezas (típicamente en la forma de unas cuantas pestañas abiertas en el navegador) empiezao a ver si puedo juntarlas y sacar algo aceptable.
 
-En general creo que pensamos mal como resolver estas situaciones, porque tendemos a suponer que cuando usamos una función sin entender totalmente como funciona nos merecemos los que nos pasa y tenemos que sufrir las consecuencias (esto puede venir de la cultura del RTFM de Linux).
+El problema es que este proceso muchas veces mezcla las dos etapas, y a veces tiene "falsos finales", en los que creo que encontré la solución pero en realidad estoy equivocado.
 
-Este enfoque es bastante poco pragmático, y no se corresponde con mi experiencia en la que uso todo el tiempo funciones y librerías que no conozco y viendo que pasa en el camino.
-
-Además, el proceso de resolver un bug suele no ser lineal, con un principio y un final definitivo, si no que tiene una fase de exploración y diagnóstico del problema, y una fase de implementación de la solución. El problema es que este proceso muchas veces mezcla las dos etapas, y a veces tiene "falsos finales", en los que creo que encontré la solución pero en realidad estoy equivocado.
-
-El resultado final es que hacemos "arreglos" basados en modelos mentales sobre como funciona el programa que estamos haciendo que son incorrectos, y estos arreglos van quedando residualmente en código comitteado y, lo que es peor, en código en producción.
+El resultado final es que hacemos "arreglos" basados en modelos mentales sobre como funciona el software que estamos haciendo que son incorrectos, y estos arreglos van quedando residualmente en código comitteado y, lo que es peor, en código en producción.
 
 ## El ejemplo: subset
+```{bash echo=FALSE}
+cd app
+rm -rf .git
+cp app_0.R app.R
+git init
+git add -A
+git commit -m "Initial commit"
 
+```
+
+```{bash}
+# Bash
+cd app
+git status
+git log --oneline
+```
+
+Encontré un bug: uso subset para arreglarlo. Pero primero hago un branch.
+```{bash}
+cd app
+git checkout -b demasiados_nas
+
+```
+
+Hago los cambios.
+```{bash}
+cd app
+cp app_1.R app.R
+```
+
+<!-- Miro GIT -->
+```{bash}
+cd app
+git status
+git diff
+
+```
+
+Me gusta, commiteo
+```{bash}
+cd app
+git add app.R
+git commit -m "Usa subset en vez de =="
+```
+
+No alcanza, uso `%in%`
+```{bash}
+cd app 
+cp app_2.R app.R
+
+```
+
+
+Chequeo
+```{bash}
+cd app
+git status
+git diff
+```
+
+Me gusta
+```{bash}
+cd app
+git add app.R
+git commit -m "Usa %in% en vez de == en subset"
+```
+
+Mergear a master
+```{bash}
+cd app
+git checkout master
+git merge demasiados_nas
+git log --all --decorate --oneline --graph
+
+```
+
+El diagnóstico incorrecto: `shiny` cambia `NA` por "NA". Listo.
+
+Semanas después... NA es North America! Estuvimos todo el tiempo atrás de la pista incorrecta. En realidad `sales` bi tiene `NA` en la variable `TERRITORY`:
+
+```{r}
+library(dplyr)
+sales <- readr::read_csv("https://raw.githubusercontent.com/hadley/mastering-shiny/master/sales-dashboard/sales_data_sample.csv", na = "")
+
+filter(sales, is.na(TERRITORY))
+```
+
+Ahora tenemos dos opciones, abandonar la ciencia de datos o aceptar que estos errores son una realidad diaria que tenemos que gestionar. 
+
+Vamos a usar Git para arreglar este problema. Lo que vamos a hacer va a ser volver al momento del tiempo donde todo estaba bien y sacar una `branch` desde ese commit.
+```{bash}
+cd app
+git reset --hard HEAD~2
+git checkout -b no_hay_nas_en_territory
+
+```
+
+Hacer los cambios
+```{bash}
+cd app
+cp app_3.R app.R
+```
+
+Verlos. Mirar la app.
+```{bash}
+cd app
+git status
+git diff
+```
+
+Todo Ok. Commitear.
+```{bash}
+cd app
+git add app.R
+git commit -m "Agrega argumento na a la llamada a read_csv"
+git log --all --decorate --oneline --graph
+
+```
+
+Ahora tengo que mergear esto en master. Pero master incluye todos los cambios equivocados que hice.
+
+```{bash}
+cd app
+git checkout master
+git merge no_hay_nas_en_territory
+git log --all --decorate --oneline --graph
+
+```
 

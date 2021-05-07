@@ -1,29 +1,221 @@
 ---
-title: Flujo de trabajo en GIT
+title: Flujo de trabajo en Git
 author: ''
 date: '2021-05-06'
 slug: []
-categories: []
+categories: ["Git", "R"]
 tags: []
 draft: true
 ---
 
 
 
-<p>Este post es una idea que me vino leyendo <a href="">mastering shiny</a>, del gran Hadley Wickham. Aprovecho para comentar que Hadley es un genio, el libro está <strong>lleno</strong> de información super interesante y casi nada de relleno.</p>
-<div id="algunos-comentarios-generales-sobre-el-libro" class="section level2">
-<h2>Algunos comentarios generales sobre el libro</h2>
-</div>
-<div id="el-capítulo-de-flujos-de-trabajo" class="section level2">
-<h2>El capítulo de flujos de trabajo</h2>
-<p>El apartado flujos de trabajo me parece muy interesante. Siempre me interesó mucho el tema de cómo trabajar y me encanta ver como piensa la gente cuando resuelve problemas en la computadora.</p>
-<p>Como tips concretos, correr shiny con un background job me parece una muy buena idea, y el uso del debugger interactivo sigue sin convencerme demasiado (soy de la escuela de los prints)</p>
-<p>El ejemplo de debuguear una app de shiny está bueno, porque refleja mucho un caso real en el que introducimos un bug en la aplicación por no saber algo sobre las funciones que usamos ( <code>==</code>, <code>subset</code> y <code>read_csv</code>).</p>
-<p>En general creo que pensamos mal como resolver estas situaciones, porque tendemos a suponer que cuando usamos una función sin entender totalmente como funciona nos merecemos los que nos pasa y tenemos que sufrir las consecuencias (esto puede venir de la cultura del RTFM de Linux).</p>
-<p>Este enfoque es bastante poco pragmático, y no se corresponde con mi experiencia en la que uso todo el tiempo funciones y librerías que no conozco y viendo que pasa en el camino.</p>
-<p>Además, el proceso de resolver un bug suele no ser lineal, con un principio y un final definitivo, si no que tiene una fase de exploración y diagnóstico del problema, y una fase de implementación de la solución. El problema es que este proceso muchas veces mezcla las dos etapas, y a veces tiene “falsos finales”, en los que creo que encontré la solución pero en realidad estoy equivocado.</p>
-<p>El resultado final es que hacemos “arreglos” basados en modelos mentales sobre como funciona el programa que estamos haciendo que son incorrectos, y estos arreglos van quedando residualmente en código comitteado y, lo que es peor, en código en producción.</p>
-</div>
+<p>Este post es se me ocurrió leyendo el <a href="https://mastering-shiny.org/action-workflow.html">capítulo de flujos de trabajo de Mastering Shiny</a> Me interesa mucho saber como trabajan las personas cuando resuelven cosas en la computadora.</p>
+<p>En general creo que pensamos mal como resolver estas situaciones, porque tendemos a suponer que cuando usamos algún software sin entender totalmente como funciona y algo sale mal nos merecemos los tormentos que sufrimos <a href="https://es.wikipedia.org/wiki/RTFM">Read the Fucking Manual!</a>.</p>
+<p>Este enfoque me parece bastante poco pragmático, y no se corresponde con mi experiencia en la que uso todo el tiempo funciones y librerías que no conozco y veo que pasa en el camino.</p>
+<p>En mi experiencia, el proceso de resolver un problema tiene una fase de exploración en la que googleo posibles soluciones y junto algunas piezas que me pueden servir para resolver el puzzle. Después que junté varias piezas (típicamente en la forma de unas cuantas pestañas abiertas en el navegador) empiezao a ver si puedo juntarlas y sacar algo aceptable.</p>
+<p>El problema es que este proceso muchas veces mezcla las dos etapas, y a veces tiene “falsos finales”, en los que creo que encontré la solución pero en realidad estoy equivocado.</p>
+<p>El resultado final es que hacemos “arreglos” basados en modelos mentales sobre como funciona el software que estamos haciendo que son incorrectos, y estos arreglos van quedando residualmente en código comitteado y, lo que es peor, en código en producción.</p>
 <div id="el-ejemplo-subset" class="section level2">
 <h2>El ejemplo: subset</h2>
+<pre><code>## Initialized empty Git repository in /Users/rlabuonora/Desktop/data_science/work/blog_2/content/posts/2021-05-06-flujo-de-trabajo-en-git/app/.git/
+## [master (root-commit) 4650ef2] Initial commit
+##  2 files changed, 21 insertions(+)
+##  create mode 100644 .gitignore
+##  create mode 100644 app.R</code></pre>
+<pre class="bash"><code># Bash
+cd app
+git status
+git log --oneline</code></pre>
+<pre><code>## On branch master
+## nothing to commit, working tree clean
+## 4650ef2 Initial commit</code></pre>
+<p>Encontré un bug: uso subset para arreglarlo. Pero primero hago un branch.</p>
+<pre class="bash"><code>cd app
+git checkout -b demasiados_nas
+</code></pre>
+<pre><code>## Switched to a new branch &#39;demasiados_nas&#39;</code></pre>
+<p>Hago los cambios.</p>
+<pre class="bash"><code>cd app
+cp app_1.R app.R</code></pre>
+<!-- Miro GIT -->
+<pre class="bash"><code>cd app
+git status
+git diff
+</code></pre>
+<pre><code>## On branch demasiados_nas
+## Changes not staged for commit:
+##   (use &quot;git add &lt;file&gt;...&quot; to update what will be committed)
+##   (use &quot;git restore &lt;file&gt;...&quot; to discard changes in working directory)
+##  modified:   app.R
+## 
+## no changes added to commit (use &quot;git add&quot; and/or &quot;git commit -a&quot;)
+## diff --git a/app.R b/app.R
+## index 7ef3837..27c80bb 100644
+## --- a/app.R
+## +++ b/app.R
+## @@ -12,7 +12,7 @@ ui &lt;- fluidPage(
+##      tableOutput(&quot;selected&quot;)
+##  )
+##  server &lt;- function(input, output, session) {
+## -    selected &lt;- reactive(sales[sales$TERRITORY == input$territory, ])
+## +    selected &lt;- reactive(subset(sales, sales$TERRITORY == input$territory))
+##      output$selected &lt;- renderTable(head(selected(), 10))
+##  }
+## </code></pre>
+<p>Me gusta, commiteo</p>
+<pre class="bash"><code>cd app
+git add app.R
+git commit -m &quot;Usa subset en vez de ==&quot;</code></pre>
+<pre><code>## [demasiados_nas d4e7fac] Usa subset en vez de ==
+##  1 file changed, 1 insertion(+), 1 deletion(-)</code></pre>
+<p>No alcanza, uso <code>%in%</code></p>
+<pre class="bash"><code>cd app 
+cp app_2.R app.R
+</code></pre>
+<p>Chequeo</p>
+<pre class="bash"><code>cd app
+git status
+git diff</code></pre>
+<pre><code>## On branch demasiados_nas
+## Changes not staged for commit:
+##   (use &quot;git add &lt;file&gt;...&quot; to update what will be committed)
+##   (use &quot;git restore &lt;file&gt;...&quot; to discard changes in working directory)
+##  modified:   app.R
+## 
+## no changes added to commit (use &quot;git add&quot; and/or &quot;git commit -a&quot;)
+## diff --git a/app.R b/app.R
+## index 27c80bb..53d28cd 100644
+## --- a/app.R
+## +++ b/app.R
+## @@ -12,7 +12,7 @@ ui &lt;- fluidPage(
+##      tableOutput(&quot;selected&quot;)
+##  )
+##  server &lt;- function(input, output, session) {
+## -    selected &lt;- reactive(subset(sales, sales$TERRITORY == input$territory))
+## +    selected &lt;- reactive(subset(sales, sales$TERRITORY %in% input$territory))
+##      output$selected &lt;- renderTable(head(selected(), 10))
+##  }
+## </code></pre>
+<p>Me gusta</p>
+<pre class="bash"><code>cd app
+git add app.R
+git commit -m &quot;Usa %in% en vez de == en subset&quot;</code></pre>
+<pre><code>## [demasiados_nas eaea4d2] Usa %in% en vez de == en subset
+##  1 file changed, 1 insertion(+), 1 deletion(-)</code></pre>
+<p>Mergear a master</p>
+<pre class="bash"><code>cd app
+git checkout master
+git merge demasiados_nas
+git log --all --decorate --oneline --graph
+</code></pre>
+<pre><code>## Switched to branch &#39;master&#39;
+## Updating 4650ef2..eaea4d2
+## Fast-forward
+##  app.R | 2 +-
+##  1 file changed, 1 insertion(+), 1 deletion(-)
+## * eaea4d2 (HEAD -&gt; master, demasiados_nas) Usa %in% en vez de == en subset
+## * d4e7fac Usa subset en vez de ==
+## * 4650ef2 Initial commit</code></pre>
+<p>El diagnóstico incorrecto: <code>shiny</code> cambia <code>NA</code> por “NA”. Listo.</p>
+<p>Semanas después… NA es North America! Estuvimos todo el tiempo atrás de la pista incorrecta. En realidad <code>sales</code> bi tiene <code>NA</code> en la variable <code>TERRITORY</code>:</p>
+<pre class="r"><code>library(dplyr)</code></pre>
+<pre><code>## Warning: package &#39;dplyr&#39; was built under R version 3.6.2</code></pre>
+<pre><code>## 
+## Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     filter, lag</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>sales &lt;- readr::read_csv(&quot;https://raw.githubusercontent.com/hadley/mastering-shiny/master/sales-dashboard/sales_data_sample.csv&quot;, na = &quot;&quot;)</code></pre>
+<pre><code>## 
+## ── Column specification ────────────────────────────────────────────────────────
+## cols(
+##   .default = col_character(),
+##   ORDERNUMBER = col_double(),
+##   QUANTITYORDERED = col_double(),
+##   PRICEEACH = col_double(),
+##   ORDERLINENUMBER = col_double(),
+##   SALES = col_double(),
+##   QTR_ID = col_double(),
+##   MONTH_ID = col_double(),
+##   YEAR_ID = col_double(),
+##   MSRP = col_double()
+## )
+## ℹ Use `spec()` for the full column specifications.</code></pre>
+<pre class="r"><code>filter(sales, is.na(TERRITORY))</code></pre>
+<pre><code>## # A tibble: 0 x 25
+## # … with 25 variables: ORDERNUMBER &lt;dbl&gt;, QUANTITYORDERED &lt;dbl&gt;,
+## #   PRICEEACH &lt;dbl&gt;, ORDERLINENUMBER &lt;dbl&gt;, SALES &lt;dbl&gt;, ORDERDATE &lt;chr&gt;,
+## #   STATUS &lt;chr&gt;, QTR_ID &lt;dbl&gt;, MONTH_ID &lt;dbl&gt;, YEAR_ID &lt;dbl&gt;,
+## #   PRODUCTLINE &lt;chr&gt;, MSRP &lt;dbl&gt;, PRODUCTCODE &lt;chr&gt;, CUSTOMERNAME &lt;chr&gt;,
+## #   PHONE &lt;chr&gt;, ADDRESSLINE1 &lt;chr&gt;, ADDRESSLINE2 &lt;chr&gt;, CITY &lt;chr&gt;,
+## #   STATE &lt;chr&gt;, POSTALCODE &lt;chr&gt;, COUNTRY &lt;chr&gt;, TERRITORY &lt;chr&gt;,
+## #   CONTACTLASTNAME &lt;chr&gt;, CONTACTFIRSTNAME &lt;chr&gt;, DEALSIZE &lt;chr&gt;</code></pre>
+<p>Ahora tenemos dos opciones, abandonar la ciencia de datos o aceptar que estos errores son una realidad diaria que tenemos que gestionar.</p>
+<p>Vamos a usar Git para arreglar este problema. Lo que vamos a hacer va a ser volver al momento del tiempo donde todo estaba bien y sacar una <code>branch</code> desde ese commit.</p>
+<pre class="bash"><code>cd app
+git reset --hard HEAD~2
+git checkout -b no_hay_nas_en_territory
+</code></pre>
+<pre><code>## HEAD is now at 4650ef2 Initial commit
+## Switched to a new branch &#39;no_hay_nas_en_territory&#39;</code></pre>
+<p>Hacer los cambios</p>
+<pre class="bash"><code>cd app
+cp app_3.R app.R</code></pre>
+<p>Verlos. Mirar la app.</p>
+<pre class="bash"><code>cd app
+git status
+git diff</code></pre>
+<pre><code>## On branch no_hay_nas_en_territory
+## Changes not staged for commit:
+##   (use &quot;git add &lt;file&gt;...&quot; to update what will be committed)
+##   (use &quot;git restore &lt;file&gt;...&quot; to discard changes in working directory)
+##  modified:   app.R
+## 
+## no changes added to commit (use &quot;git add&quot; and/or &quot;git commit -a&quot;)
+## diff --git a/app.R b/app.R
+## index 7ef3837..387e0c9 100644
+## --- a/app.R
+## +++ b/app.R
+## @@ -1,7 +1,7 @@
+##  library(shiny)
+##  library(readr)
+##  
+## -sales &lt;- readr::read_csv(&quot;https://raw.githubusercontent.com/hadley/mastering-shiny/master/sales-dashboard/sales_data_sample.csv&quot;)
+## +sales &lt;- readr::read_csv(&quot;https://raw.githubusercontent.com/hadley/mastering-shiny/master/sales-dashboard/sales_data_sample.csv&quot;, na = &quot;&quot;)
+##  sales &lt;- sales[c(
+##      &quot;TERRITORY&quot;, &quot;ORDERDATE&quot;, &quot;ORDERNUMBER&quot;, &quot;PRODUCTCODE&quot;,
+##      &quot;QUANTITYORDERED&quot;, &quot;PRICEEACH&quot;</code></pre>
+<p>Todo Ok. Commitear.</p>
+<pre class="bash"><code>cd app
+git add app.R
+git commit -m &quot;Agrega argumento na a la llamada a read_csv&quot;
+git log --all --decorate --oneline --graph
+</code></pre>
+<pre><code>## [no_hay_nas_en_territory 7d4bb01] Agrega argumento na a la llamada a read_csv
+##  1 file changed, 1 insertion(+), 1 deletion(-)
+## * 7d4bb01 (HEAD -&gt; no_hay_nas_en_territory) Agrega argumento na a la llamada a read_csv
+## | * eaea4d2 (demasiados_nas) Usa %in% en vez de == en subset
+## | * d4e7fac Usa subset en vez de ==
+## |/  
+## * 4650ef2 (master) Initial commit</code></pre>
+<p>Ahora tengo que mergear esto en master. Pero master incluye todos los cambios equivocados que hice.</p>
+<pre class="bash"><code>cd app
+git checkout master
+git merge no_hay_nas_en_territory
+git log --all --decorate --oneline --graph
+</code></pre>
+<pre><code>## Switched to branch &#39;master&#39;
+## Updating 4650ef2..7d4bb01
+## Fast-forward
+##  app.R | 2 +-
+##  1 file changed, 1 insertion(+), 1 deletion(-)
+## * 7d4bb01 (HEAD -&gt; master, no_hay_nas_en_territory) Agrega argumento na a la llamada a read_csv
+## | * eaea4d2 (demasiados_nas) Usa %in% en vez de == en subset
+## | * d4e7fac Usa subset en vez de ==
+## |/  
+## * 4650ef2 Initial commit</code></pre>
 </div>

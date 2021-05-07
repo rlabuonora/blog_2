@@ -17,10 +17,17 @@ library(rvest)
 
 url <- "https://es.wikipedia.org/wiki/D%C3%ADas_feriados_de_Uruguay"
 
-# tablas <- url %>% 
-#   read_html() %>%
-#   html_node("table") %>% 
-#   html_table(fill=TRUE)
+content <- url %>%
+  read_html() %>% 
+  html_node("table") 
+
+content %>% 
+  html_node(css = "table")
+
+url <- "https://en.wikipedia.org/wiki/United_Kingdom_Parliament_constituencies"
+items <- read_html(url) %>% html_nodes(xpath='//*[@id="mw-content-text"]/div/table[2]') %>% html_table()
+
+
 ```
 
 
