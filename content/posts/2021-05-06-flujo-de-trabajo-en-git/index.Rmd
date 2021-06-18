@@ -27,7 +27,6 @@ Este post es se me ocurrió leyendo el [capítulo de flujos de trabajo de Master
 
 ```{bash echo=FALSE, results='hide'}
 cd app
-rm -rf .git
 cp app_0.R app.R
 git init
 git add -A
@@ -201,5 +200,12 @@ git checkout master
 git merge no_hay_nas_en_territory
 git log --all --decorate --oneline --graph
 
+```
+
+
+```{bash include=FALSE}
+# Sacar el repo para que Netlify no moleste
+cd app
+rm -rf .git
 ```
 
