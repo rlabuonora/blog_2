@@ -14,8 +14,14 @@ En este post uso lubridate para ver cuantos feriados caen fin de semana por año
 
 ```{r}
 library(rvest)
+library(tidyverse)
 
 url <- "https://es.wikipedia.org/wiki/D%C3%ADas_feriados_de_Uruguay"
+
+lines <- url %>%
+  read_html() %>%
+  html_nodes(xpath="//table[starts-with(@class, 'wikitable')]") %>%
+  html_nodes(xpath = 'tbody/tr')
 
 content <- url %>%
   read_html() %>% 

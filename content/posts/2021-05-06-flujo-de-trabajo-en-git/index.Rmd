@@ -9,21 +9,24 @@ draft: true
 ---
 
 
+Muchas veces usamos _software_ sin entender totalmente como funciona. Cuando algo (inevitablemente) sale mal, creemos que nos merecemos los tormentos que sufrimos [Read the Fucking Manual!](https://es.wikipedia.org/wiki/RTFM)
 
-Este post es se me ocurrió leyendo el [capítulo de flujos de trabajo de Mastering Shiny](https://mastering-shiny.org/action-workflow.html) Me interesa mucho saber como trabajan las personas cuando resuelven cosas en la computadora. 
+En este post uso una de las _killer features_ de Git para seguir el ejemplo de Hadley. Esta _feature_ son las branches (si bien otros SVNs tienen branches, Git las hace muy fáciles de usar).
 
-En general creo que pensamos mal como resolver estas situaciones, porque tendemos a suponer que cuando usamos algún software sin entender totalmente como funciona y algo sale mal nos merecemos los tormentos que sufrimos [Read the Fucking Manual!](https://es.wikipedia.org/wiki/RTFM).
+Las branches permiten tener versiones independientes de el programa que estamos desarrollando. Esto me permite moverme fácilmente entre una versión y otra y experimentar interferir con el trabajo de otros miembros del equipo.
 
-Este enfoque me parece bastante poco pragmático, y no se corresponde con mi experiencia en la que uso todo el tiempo funciones y librerías que no conozco y veo que pasa en el camino.
+En este caso, trato de arreglar un _bug_, pero como mi idea original del problema se basa en un modelo mental incorrecto de la función que estoy usando, introduzco un montón de cambios innecesarios y/o contraproducentes en el proceso de aclarar ese malentendido en mi mente.
 
-En mi experiencia, el proceso de resolver un problema tiene una fase de exploración en la que googleo posibles soluciones y junto algunas piezas que me pueden servir para resolver el puzzle. Después que junté varias piezas (típicamente en la forma de unas cuantas pestañas abiertas en el navegador) empiezao a ver si puedo juntarlas y sacar algo aceptable.
+Trabajar en una _branch_ de Git me permite experimentar y una vez que llego a la solución correcta quedarme solo con los cambios que necesito, y descartar todos los cambios que no eran necesarios para la solución final. 
 
-El problema es que este proceso muchas veces mezcla las dos etapas, y a veces tiene "falsos finales", en los que creo que encontré la solución pero en realidad estoy equivocado.
+Este post es se me ocurrió leyendo el [capítulo de flujos de trabajo de Mastering Shiny](https://mastering-shiny.org/action-workflow.html#case-study). El ejemplo es una app con un selector para elegir la región y listar los registros del archivo de `csv` que pertenecen a esa región.
 
-El resultado final es que hacemos "arreglos" basados en modelos mentales sobre como funciona el software que estamos haciendo que son incorrectos, y estos arreglos van quedando residualmente en código comitteado y, lo que es peor, en código en producción.
 
-## El ejemplo: subset
-```{bash echo=FALSE}
+
+## El ejemplo.
+
+
+```{bash echo=FALSE, results='hide'}
 cd app
 rm -rf .git
 cp app_0.R app.R
@@ -33,21 +36,57 @@ git commit -m "Initial commit"
 
 ```
 
+
+```{r eval=FALSE}
+library(shiny)
+library(readr)
+
+sales <- readr::read_csv("https://raw.githubusercontent.com/hadley/mastering-shiny/master/sales-dashboard/sales_data_sample.csv")
+sales <- sales[c(
+    "TERRITORY", "ORDERDATE", "ORDERNUMBER", "PRODUCTCODE",
+    "QUANTITYORDERED", "PRICEEACH"
+)]
+
+ui <- fluidPage(
+    selectInput("territory", "territory", choices = unique(sales$TERRITORY)),
+    tableOutput("selected")
+)
+server <- function(input, output, session) {
+    selected <- reactive(sales[sales$TERRITORY == input$territory, ])
+    output$selected <- renderTable(head(selected(), 10))
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
+```
+
+Si pegás el código en RStudio y corrés la app, ves que hay un montón de `NAs`. El problema está muy bien explicado en el capítulo de Hadley que mencioné antes. 
+
+Entramos al directorio de la app y chequeamos el estado de Git:
 ```{bash}
 # Bash
 cd app
 git status
 git log --oneline
 ```
+Solo está el commit inicial. 
 
-Encontré un bug: uso subset para arreglarlo. Pero primero hago un branch.
+El problema está en esta expresión:
+
+```{r eval=FALSE}
+sales[sales$TERRITORY == input$territory, ]
+```
+
+Cuando `sales$TERRITORY` es `NA`, `sales$TERRITORY == input$territory` es `NA` y `sales[NA]` da una fila de `NAs`.
+
+Vamos a usar `subset` para arreglarlo, pero primero hago un branch.
 ```{bash}
 cd app
 git checkout -b demasiados_nas
 
 ```
 
-Hago los cambios.
+
 ```{bash}
 cd app
 cp app_1.R app.R
@@ -61,36 +100,50 @@ git diff
 
 ```
 
-Me gusta, commiteo
+[Acá](https://www.atlassian.com/git/tutorials/saving-changes/git-diff) hay más información sobre como leer esta salida. Muestra 7 líneas a partir de la línea 12. Las que empiezan con `-` son la versión anterior, y la que empieza con `+` la nueva. Commiteo el cambio y sigo.
+
+
+
 ```{bash}
 cd app
 git add app.R
 git commit -m "Usa subset en vez de =="
 ```
+Pero ahora me encuentro con otro problema. Como dice Hadley, los `NA` son infecciosos. Eso implica que `sales$TERRITORY == NA` es siempre `NA`, por lo si elegimo NA en el dropdown vamos a subsetear por un vector de `NA`:
 
-No alcanza, uso `%in%`
-```{bash}
+```{r echo=FALSE, include=FALSE}
+sales <- readr::read_csv("https://raw.githubusercontent.com/hadley/mastering-shiny/master/sales-dashboard/sales_data_sample.csv")
+sales <- sales[c(
+    "TERRITORY", "ORDERDATE", "ORDERNUMBER", "PRODUCTCODE",
+    "QUANTITYORDERED", "PRICEEACH"
+)]
+```
+
+
+```{r}
+subset(sales, TERRITORY == NA)
+```
+
+Para solucionar eso, podemos usar `%in%`:
+
+```{r}
+subset(sales, TERRITORY %in% c("EMEA"))
+```
+
+```{bash include=FALSE}
 cd app 
 cp app_2.R app.R
 
 ```
 
-
-Chequeo
-```{bash}
-cd app
-git status
-git diff
-```
-
-Me gusta
+Commiteamos el resultado.
 ```{bash}
 cd app
 git add app.R
 git commit -m "Usa %in% en vez de == en subset"
 ```
 
-Mergear a master
+Y mergear a master
 ```{bash}
 cd app
 git checkout master
@@ -99,20 +152,20 @@ git log --all --decorate --oneline --graph
 
 ```
 
-El diagnóstico incorrecto: `shiny` cambia `NA` por "NA". Listo.
+## Plot Twist
 
-Semanas después... NA es North America! Estuvimos todo el tiempo atrás de la pista incorrecta. En realidad `sales` bi tiene `NA` en la variable `TERRITORY`:
+Bueno acá viene lo mejor, en el archivo original,  `NA` no es `NA` de R, sino "NA" de North America. `r emo::ji("person_facepalming")`. Estuvimos todo el tiempo atrás de la pista incorrecta. En realidad `sales` no tiene `NA` en la variable `TERRITORY`.
 
-```{r}
-library(dplyr)
+La solución correcta es especificar los NAs en la llamada a `read_csv`, para que no confunda "NA" con `NA`.
+
+```{r eval=FALSE}
 sales <- readr::read_csv("https://raw.githubusercontent.com/hadley/mastering-shiny/master/sales-dashboard/sales_data_sample.csv", na = "")
 
-filter(sales, is.na(TERRITORY))
 ```
 
-Ahora tenemos dos opciones, abandonar la ciencia de datos o aceptar que estos errores son una realidad diaria que tenemos que gestionar. 
+Pero ahora tenemos toda nuestra app plagada de cambios que hicimos cuando no entendíamos el problema! 
 
-Vamos a usar Git para arreglar este problema. Lo que vamos a hacer va a ser volver al momento del tiempo donde todo estaba bien y sacar una `branch` desde ese commit.
+Vamos a usar Git para arreglar este problema. Usammos `git reset` para volver `master` dos commits para atrás. Así, `master` apunta al commit donde empezó el problema.
 ```{bash}
 cd app
 git reset --hard HEAD~2
@@ -121,19 +174,18 @@ git checkout -b no_hay_nas_en_territory
 ```
 
 Hacer los cambios
-```{bash}
+```{bash include=FALSE}
 cd app
 cp app_3.R app.R
 ```
 
-Verlos. Mirar la app.
 ```{bash}
 cd app
 git status
 git diff
 ```
 
-Todo Ok. Commitear.
+La línea que había que cambiar era la 7!
 ```{bash}
 cd app
 git add app.R
@@ -142,7 +194,7 @@ git log --all --decorate --oneline --graph
 
 ```
 
-Ahora tengo que mergear esto en master. Pero master incluye todos los cambios equivocados que hice.
+Ahora tengo que mergeamos estos estos cambios con master. 
 
 ```{bash}
 cd app
