@@ -45,7 +45,7 @@ git status
 git log --oneline</code></pre>
 <pre><code>## On branch master
 ## nothing to commit, working tree clean
-## 5234f2d Initial commit</code></pre>
+## ab35b52 Initial commit</code></pre>
 <p>Solo está el commit inicial.</p>
 <p>El problema está en esta expresión:</p>
 <pre class="r"><code>sales[sales$TERRITORY == input$territory, ]</code></pre>
@@ -86,7 +86,7 @@ git diff
 <pre class="bash"><code>cd app
 git add app.R
 git commit -m &quot;Usa subset en vez de ==&quot;</code></pre>
-<pre><code>## [demasiados_nas 2c3bddd] Usa subset en vez de ==
+<pre><code>## [demasiados_nas b7e9db1] Usa subset en vez de ==
 ##  1 file changed, 1 insertion(+), 1 deletion(-)</code></pre>
 <p>Pero ahora me encuentro con otro problema. Como dice Hadley, los <code>NA</code> son infecciosos. Eso implica que <code>sales$TERRITORY == NA</code> es siempre <code>NA</code>, por lo si elegimo NA en el dropdown vamos a subsetear por un vector de <code>NA</code>:</p>
 <pre class="r"><code>subset(sales, TERRITORY == NA)</code></pre>
@@ -113,7 +113,7 @@ git commit -m &quot;Usa subset en vez de ==&quot;</code></pre>
 <pre class="bash"><code>cd app
 git add app.R
 git commit -m &quot;Usa %in% en vez de == en subset&quot;</code></pre>
-<pre><code>## [demasiados_nas d8f5295] Usa %in% en vez de == en subset
+<pre><code>## [demasiados_nas bdfb0b8] Usa %in% en vez de == en subset
 ##  1 file changed, 1 insertion(+), 1 deletion(-)</code></pre>
 <p>Y mergear a master</p>
 <pre class="bash"><code>cd app
@@ -122,13 +122,13 @@ git merge demasiados_nas
 git log --all --decorate --oneline --graph
 </code></pre>
 <pre><code>## Switched to branch &#39;master&#39;
-## Updating 5234f2d..d8f5295
+## Updating ab35b52..bdfb0b8
 ## Fast-forward
 ##  app.R | 2 +-
 ##  1 file changed, 1 insertion(+), 1 deletion(-)
-## * d8f5295 (HEAD -&gt; master, demasiados_nas) Usa %in% en vez de == en subset
-## * 2c3bddd Usa subset en vez de ==
-## * 5234f2d Initial commit</code></pre>
+## * bdfb0b8 (HEAD -&gt; master, demasiados_nas) Usa %in% en vez de == en subset
+## * b7e9db1 Usa subset en vez de ==
+## * ab35b52 Initial commit</code></pre>
 </div>
 <div id="plot-twist" class="section level2">
 <h2>Plot Twist</h2>
@@ -141,7 +141,7 @@ git log --all --decorate --oneline --graph
 git reset --hard HEAD~2
 git checkout -b no_hay_nas_en_territory
 </code></pre>
-<pre><code>## HEAD is now at 5234f2d Initial commit
+<pre><code>## HEAD is now at ab35b52 Initial commit
 ## Switched to a new branch &#39;no_hay_nas_en_territory&#39;</code></pre>
 <p>Hacer los cambios</p>
 <pre class="bash"><code>cd app
@@ -173,13 +173,13 @@ git add app.R
 git commit -m &quot;Agrega argumento na a la llamada a read_csv&quot;
 git log --all --decorate --oneline --graph
 </code></pre>
-<pre><code>## [no_hay_nas_en_territory a22dd8e] Agrega argumento na a la llamada a read_csv
+<pre><code>## [no_hay_nas_en_territory cf20d9b] Agrega argumento na a la llamada a read_csv
 ##  1 file changed, 1 insertion(+), 1 deletion(-)
-## * a22dd8e (HEAD -&gt; no_hay_nas_en_territory) Agrega argumento na a la llamada a read_csv
-## | * d8f5295 (demasiados_nas) Usa %in% en vez de == en subset
-## | * 2c3bddd Usa subset en vez de ==
+## * bdfb0b8 (demasiados_nas) Usa %in% en vez de == en subset
+## * b7e9db1 Usa subset en vez de ==
+## | * cf20d9b (HEAD -&gt; no_hay_nas_en_territory) Agrega argumento na a la llamada a read_csv
 ## |/  
-## * 5234f2d (master) Initial commit</code></pre>
+## * ab35b52 (master) Initial commit</code></pre>
 <p>Ahora tengo que mergeamos estos estos cambios con master.</p>
 <pre class="bash"><code>cd app
 git checkout master
@@ -187,13 +187,13 @@ git merge no_hay_nas_en_territory
 git log --all --decorate --oneline --graph
 </code></pre>
 <pre><code>## Switched to branch &#39;master&#39;
-## Updating 5234f2d..a22dd8e
+## Updating ab35b52..cf20d9b
 ## Fast-forward
 ##  app.R | 2 +-
 ##  1 file changed, 1 insertion(+), 1 deletion(-)
-## * a22dd8e (HEAD -&gt; master, no_hay_nas_en_territory) Agrega argumento na a la llamada a read_csv
-## | * d8f5295 (demasiados_nas) Usa %in% en vez de == en subset
-## | * 2c3bddd Usa subset en vez de ==
+## * bdfb0b8 (demasiados_nas) Usa %in% en vez de == en subset
+## * b7e9db1 Usa subset en vez de ==
+## | * cf20d9b (HEAD -&gt; master, no_hay_nas_en_territory) Agrega argumento na a la llamada a read_csv
 ## |/  
-## * 5234f2d Initial commit</code></pre>
+## * ab35b52 Initial commit</code></pre>
 </div>
