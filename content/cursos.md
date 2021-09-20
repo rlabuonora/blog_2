@@ -17,7 +17,7 @@ Estos son los cursos más recientes que desarrollé:
 {{<item-thumb 
       "Planning Public Policy in Argentina" 
       "Proyecto interactivo de análisis de datos."
-      "https://learn.datacamp.com/projects/638" 
+      "https://www.datacamp.com/projects/638" 
       "thumbs/datacamp.png">}}
       
       

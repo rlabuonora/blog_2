@@ -10,11 +10,11 @@ tags: []
 
 
 <p>Muchas veces usamos <em>software</em> sin entender totalmente como funciona. Cuando algo (inevitablemente) sale mal, creemos que nos merecemos los tormentos que sufrimos <a href="https://es.wikipedia.org/wiki/RTFM">Read the Fucking Manual!</a></p>
-<p>En este post uso una de las <em>killer features</em> de Git para seguir el ejemplo de Hadley. Esta <em>feature</em> son las branches (si bien otros SVNs tienen branches, Git las hace muy fáciles de usar).</p>
+<p>En este post uso una de las <em>killer features</em> de Git para seguir el ejemplo del <a href="https://mastering-shiny.org/action-workflow.html#case-study">capítulo de flujos de trabajo de Mastering Shiny</a>. Esta <em>feature</em> son las branches (si bien otros SVNs tienen branches, Git las hace muy fáciles de usar).</p>
 <p>Las branches permiten tener versiones independientes de el programa que estamos desarrollando. Esto me permite moverme fácilmente entre una versión y otra y experimentar interferir con el trabajo de otros miembros del equipo.</p>
 <p>En este caso, trato de arreglar un <em>bug</em>, pero como mi idea original del problema se basa en un modelo mental incorrecto de la función que estoy usando, introduzco un montón de cambios innecesarios y/o contraproducentes en el proceso de aclarar ese malentendido en mi mente.</p>
 <p>Trabajar en una <em>branch</em> de Git me permite experimentar y una vez que llego a la solución correcta quedarme solo con los cambios que necesito, y descartar todos los cambios que no eran necesarios para la solución final.</p>
-<p>Este post es se me ocurrió leyendo el <a href="https://mastering-shiny.org/action-workflow.html#case-study">capítulo de flujos de trabajo de Mastering Shiny</a>. El ejemplo es una app con un selector para elegir la región y listar los registros del archivo de <code>csv</code> que pertenecen a esa región.</p>
+<p>El ejemplo es una app con un selector para elegir la región y listar los registros del archivo de <code>csv</code> que pertenecen a esa región.</p>
 <div id="el-ejemplo." class="section level2">
 <h2>El ejemplo.</h2>
 <pre class="r"><code>library(shiny)
@@ -45,7 +45,7 @@ git status
 git log --oneline</code></pre>
 <pre><code>## On branch master
 ## nothing to commit, working tree clean
-## 7783918 Initial commit</code></pre>
+## bff90c4 Initial commit</code></pre>
 <p>Solo está el commit inicial.</p>
 <p>El problema está en esta expresión:</p>
 <pre class="r"><code>sales[sales$TERRITORY == input$territory, ]</code></pre>
@@ -86,7 +86,7 @@ git diff
 <pre class="bash"><code>cd app
 git add app.R
 git commit -m &quot;Usa subset en vez de ==&quot;</code></pre>
-<pre><code>## [demasiados_nas 1a34206] Usa subset en vez de ==
+<pre><code>## [demasiados_nas 5a2006c] Usa subset en vez de ==
 ##  1 file changed, 1 insertion(+), 1 deletion(-)</code></pre>
 <p>Pero ahora me encuentro con otro problema. Como dice Hadley, los <code>NA</code> son infecciosos. Eso implica que <code>sales$TERRITORY == NA</code> es siempre <code>NA</code>, por lo si elegimo NA en el dropdown vamos a subsetear por un vector de <code>NA</code>:</p>
 <pre class="r"><code>subset(sales, TERRITORY == NA)</code></pre>
@@ -113,7 +113,7 @@ git commit -m &quot;Usa subset en vez de ==&quot;</code></pre>
 <pre class="bash"><code>cd app
 git add app.R
 git commit -m &quot;Usa %in% en vez de == en subset&quot;</code></pre>
-<pre><code>## [demasiados_nas 1a8db58] Usa %in% en vez de == en subset
+<pre><code>## [demasiados_nas 41b2365] Usa %in% en vez de == en subset
 ##  1 file changed, 1 insertion(+), 1 deletion(-)</code></pre>
 <p>Y mergear a master</p>
 <pre class="bash"><code>cd app
@@ -122,13 +122,13 @@ git merge demasiados_nas
 git log --all --decorate --oneline --graph
 </code></pre>
 <pre><code>## Switched to branch &#39;master&#39;
-## Updating 7783918..1a8db58
+## Updating bff90c4..41b2365
 ## Fast-forward
 ##  app.R | 2 +-
 ##  1 file changed, 1 insertion(+), 1 deletion(-)
-## * 1a8db58 (HEAD -&gt; master, demasiados_nas) Usa %in% en vez de == en subset
-## * 1a34206 Usa subset en vez de ==
-## * 7783918 Initial commit</code></pre>
+## * 41b2365 (HEAD -&gt; master, demasiados_nas) Usa %in% en vez de == en subset
+## * 5a2006c Usa subset en vez de ==
+## * bff90c4 Initial commit</code></pre>
 </div>
 <div id="plot-twist" class="section level2">
 <h2>Plot Twist</h2>
@@ -141,7 +141,7 @@ git log --all --decorate --oneline --graph
 git reset --hard HEAD~2
 git checkout -b no_hay_nas_en_territory
 </code></pre>
-<pre><code>## HEAD is now at 7783918 Initial commit
+<pre><code>## HEAD is now at bff90c4 Initial commit
 ## Switched to a new branch &#39;no_hay_nas_en_territory&#39;</code></pre>
 <p>Hacer los cambios</p>
 <pre class="bash"><code>cd app
@@ -173,13 +173,13 @@ git add app.R
 git commit -m &quot;Agrega argumento na a la llamada a read_csv&quot;
 git log --all --decorate --oneline --graph
 </code></pre>
-<pre><code>## [no_hay_nas_en_territory 296c140] Agrega argumento na a la llamada a read_csv
+<pre><code>## [no_hay_nas_en_territory fbc196e] Agrega argumento na a la llamada a read_csv
 ##  1 file changed, 1 insertion(+), 1 deletion(-)
-## * 296c140 (HEAD -&gt; no_hay_nas_en_territory) Agrega argumento na a la llamada a read_csv
-## | * 1a8db58 (demasiados_nas) Usa %in% en vez de == en subset
-## | * 1a34206 Usa subset en vez de ==
+## * fbc196e (HEAD -&gt; no_hay_nas_en_territory) Agrega argumento na a la llamada a read_csv
+## | * 41b2365 (demasiados_nas) Usa %in% en vez de == en subset
+## | * 5a2006c Usa subset en vez de ==
 ## |/  
-## * 7783918 (master) Initial commit</code></pre>
+## * bff90c4 (master) Initial commit</code></pre>
 <p>Ahora tengo que mergeamos estos estos cambios con master.</p>
 <pre class="bash"><code>cd app
 git checkout master
@@ -187,13 +187,13 @@ git merge no_hay_nas_en_territory
 git log --all --decorate --oneline --graph
 </code></pre>
 <pre><code>## Switched to branch &#39;master&#39;
-## Updating 7783918..296c140
+## Updating bff90c4..fbc196e
 ## Fast-forward
 ##  app.R | 2 +-
 ##  1 file changed, 1 insertion(+), 1 deletion(-)
-## * 296c140 (HEAD -&gt; master, no_hay_nas_en_territory) Agrega argumento na a la llamada a read_csv
-## | * 1a8db58 (demasiados_nas) Usa %in% en vez de == en subset
-## | * 1a34206 Usa subset en vez de ==
+## * fbc196e (HEAD -&gt; master, no_hay_nas_en_territory) Agrega argumento na a la llamada a read_csv
+## | * 41b2365 (demasiados_nas) Usa %in% en vez de == en subset
+## | * 5a2006c Usa subset en vez de ==
 ## |/  
-## * 7783918 Initial commit</code></pre>
+## * bff90c4 Initial commit</code></pre>
 </div>

@@ -10,7 +10,7 @@ tags: []
 
 Muchas veces usamos _software_ sin entender totalmente como funciona. Cuando algo (inevitablemente) sale mal, creemos que nos merecemos los tormentos que sufrimos [Read the Fucking Manual!](https://es.wikipedia.org/wiki/RTFM)
 
-En este post uso una de las _killer features_ de Git para seguir el ejemplo de Hadley. Esta _feature_ son las branches (si bien otros SVNs tienen branches, Git las hace muy fáciles de usar).
+En este post uso una de las _killer features_ de Git para seguir el ejemplo del [capítulo de flujos de trabajo de Mastering Shiny](https://mastering-shiny.org/action-workflow.html#case-study). Esta _feature_ son las branches (si bien otros SVNs tienen branches, Git las hace muy fáciles de usar).
 
 Las branches permiten tener versiones independientes de el programa que estamos desarrollando. Esto me permite moverme fácilmente entre una versión y otra y experimentar interferir con el trabajo de otros miembros del equipo.
 
@@ -18,7 +18,7 @@ En este caso, trato de arreglar un _bug_, pero como mi idea original del problem
 
 Trabajar en una _branch_ de Git me permite experimentar y una vez que llego a la solución correcta quedarme solo con los cambios que necesito, y descartar todos los cambios que no eran necesarios para la solución final. 
 
-Este post es se me ocurrió leyendo el [capítulo de flujos de trabajo de Mastering Shiny](https://mastering-shiny.org/action-workflow.html#case-study). El ejemplo es una app con un selector para elegir la región y listar los registros del archivo de `csv` que pertenecen a esa región.
+El ejemplo es una app con un selector para elegir la región y listar los registros del archivo de `csv` que pertenecen a esa región.
 
 
 
