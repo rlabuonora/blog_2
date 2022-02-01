@@ -6,6 +6,12 @@ slug: []
 categories: []
 tags: []
 ---
+```{r include=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE)
+
+```
+
+
 
 El primero de Mayo conmemoramos el días de los trabajadores. Lamentablemente, este año nos cayó sábado, por lo que nos perdimos el día libre. En este post uso `lubridate` para visualizar este lamentable fenómeno de la vida labora de este país.
 
@@ -41,7 +47,7 @@ En Uruguay hay `r nrow(feriados)` feriados. Para convertirlas en fechas, usamos 
 
 
 ```{r}
-
+library(lubridate)
 
 expand_grid(t=2015:2030, fecha=feriados$fecha) %>% 
   left_join(feriados, by="fecha") %>% 

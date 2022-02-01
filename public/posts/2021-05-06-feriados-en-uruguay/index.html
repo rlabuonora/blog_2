@@ -93,50 +93,54 @@
 <script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
 
 
-<p>El primero de Mayo conmemoramos el días de los trabajadores. Lamentablemente, este año nos cayó sábado, por lo que nos perdimos el día libre.</p>
-<p>En este post uso lubridate para ver cuantos feriados caen fin de semana por año.</p>
-<pre class="r"><code>library(rvest)</code></pre>
-<pre><code>## Warning: package &#39;rvest&#39; was built under R version 4.0.5</code></pre>
-<pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## Warning: package &#39;tidyverse&#39; was built under R version 4.0.5</code></pre>
-<pre><code>## -- Attaching packages --------------------------------------- tidyverse 1.3.1 --</code></pre>
-<pre><code>## v ggplot2 3.3.5     v purrr   0.3.4
-## v tibble  3.1.4     v dplyr   1.0.7
-## v tidyr   1.1.4     v stringr 1.4.0
-## v readr   2.0.1     v forcats 0.5.1</code></pre>
-<pre><code>## Warning: package &#39;ggplot2&#39; was built under R version 4.0.5</code></pre>
-<pre><code>## Warning: package &#39;tibble&#39; was built under R version 4.0.5</code></pre>
-<pre><code>## Warning: package &#39;tidyr&#39; was built under R version 4.0.5</code></pre>
-<pre><code>## Warning: package &#39;readr&#39; was built under R version 4.0.5</code></pre>
-<pre><code>## Warning: package &#39;dplyr&#39; was built under R version 4.0.5</code></pre>
-<pre><code>## Warning: package &#39;forcats&#39; was built under R version 4.0.5</code></pre>
-<pre><code>## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
-## x dplyr::filter()         masks stats::filter()
-## x readr::guess_encoding() masks rvest::guess_encoding()
-## x dplyr::lag()            masks stats::lag()</code></pre>
-<pre class="r"><code>url &lt;- &quot;https://es.wikipedia.org/wiki/D%C3%ADas_feriados_de_Uruguay&quot;
+<p>El primero de Mayo conmemoramos el días de los trabajadores. Lamentablemente, este año nos cayó sábado, por lo que nos perdimos el día libre. En este post uso <code>lubridate</code> para visualizar este lamentable fenómeno de la vida labora de este país.</p>
+<p>Wikipedia tiene una tabla con los <a href="https://es.wikipedia.org/wiki/D%C3%ADas_feriados_de_Uruguay">feriados en Uruguay</a>. Traté de scrapearla directo con <code>rvest</code> pero la última columna de la tabla da problemas así que copié los datos a mano.</p>
+<pre class="r"><code>library(tidyverse)
 
-lines &lt;- url %&gt;%
-  read_html() %&gt;%
-  html_nodes(xpath=&quot;//table[starts-with(@class, &#39;wikitable&#39;)]&quot;) %&gt;%
-  html_nodes(xpath = &#39;tbody/tr&#39;)
+feriados &lt;- tibble::tribble(
+  ~fecha,       ~nombre,    
+  &quot;1 de enero&quot;, &quot;Año Nuevo&quot;,
+  &quot;6 de enero&quot;, &quot;Día de los Niños&quot;,
+  &quot;19 de abril&quot;, &quot;Desembarco de los Treinta y Tres Orientales&quot;,
+  &quot;1 de mayo&quot;,    &quot;Día de los Trabajadores&quot;,
+  &quot;18 de mayo&quot;,  &quot;Batalla de Las Piedras&quot;,
+  &quot;19 de junio&quot;, &quot;Natalicio de Artigas&quot;,
+  &quot;18 de julio&quot;, &quot;Jura de la Constitución&quot;,
+  &quot;25 de agosto&quot;,&quot;Declaratoria de la Independencia&quot;, 
+  &quot;12 de octubre&quot;, &quot;Día de la Raza&quot;,
+  &quot;2 de noviembre&quot;, &quot;Día de los Difuntos&quot;,
+  &quot;25 de diciembre&quot;, &quot;Día de la Familia&quot;) %&gt;% 
+  # Sacamos &quot; de&quot; para que no moleste a lubridate
+  mutate(fecha = str_replace(fecha, &quot; de&quot;, &quot;&quot;))</code></pre>
+<div id="parsear-fechas-en-español." class="section level1">
+<h1>Parsear fechas (en español).</h1>
+<p>En Uruguay hay 11 feriados. Para convertirlas en fechas, usamos <code>expand_grid</code> para combinar las fechas con todos los años entre 2015 y 2030, y para parsear el texto de la fecha usamos <code>readr::parse_date</code>. La función <code>wday</code> nos da el día de la semana en que cae determinada fecha.</p>
+<pre class="r"><code>library(lubridate)
 
-content &lt;- url %&gt;%
-  read_html() %&gt;% 
-  html_node(&quot;table&quot;) 
-
-content %&gt;% 
-  html_node(css = &quot;table&quot;)</code></pre>
-<pre><code>## {xml_missing}
-## &lt;NA&gt;</code></pre>
-<pre class="r"><code>url &lt;- &quot;https://en.wikipedia.org/wiki/United_Kingdom_Parliament_constituencies&quot;
-items &lt;- read_html(url) %&gt;% html_nodes(xpath=&#39;//*[@id=&quot;mw-content-text&quot;]/div/table[2]&#39;) %&gt;% html_table()</code></pre>
-<div id="rvest" class="section level1">
-<h1>rvest</h1>
-<ul>
-<li><p><a href="https://github.com/tidyverse/rvest/blob/master/R/table.R">ver este link</a></p></li>
-<li><p><a href="https://stackoverflow.com/questions/59728183/rvest-html-table-produces-errors">y este</a></p></li>
-</ul>
+expand_grid(t=2015:2030, fecha=feriados$fecha) %&gt;% 
+  left_join(feriados, by=&quot;fecha&quot;) %&gt;% 
+  mutate(fecha = paste(fecha, t)) %&gt;% 
+  mutate(fecha=parse_date(fecha, &quot;%d %B %Y&quot;, locale=locale(&quot;es&quot;))) %&gt;% 
+  mutate(wdia=wday(fecha, label=TRUE, abbr=FALSE)) %&gt;% 
+  mutate(wdia = stringr::str_to_title(wdia))</code></pre>
+<pre><code>## # A tibble: 176 x 4
+##        t fecha      nombre                                      wdia    
+##    &lt;int&gt; &lt;date&gt;     &lt;chr&gt;                                       &lt;chr&gt;   
+##  1  2015 2015-01-01 Año Nuevo                                   Thursday
+##  2  2015 2015-01-06 Día de los Niños                            Tuesday 
+##  3  2015 2015-04-19 Desembarco de los Treinta y Tres Orientales Sunday  
+##  4  2015 2015-05-01 Día de los Trabajadores                     Friday  
+##  5  2015 2015-05-18 Batalla de Las Piedras                      Monday  
+##  6  2015 2015-06-19 Natalicio de Artigas                        Friday  
+##  7  2015 2015-07-18 Jura de la Constitución                     Saturday
+##  8  2015 2015-08-25 Declaratoria de la Independencia            Tuesday 
+##  9  2015 2015-10-12 Día de la Raza                              Monday  
+## 10  2015 2015-11-02 Día de los Difuntos                         Monday  
+## # ... with 166 more rows</code></pre>
+</div>
+<div id="visualización" class="section level1">
+<h1>Visualización</h1>
+<p>Esta es la parte más divertida, queda para la próxima.</p>
 </div>
 
 
@@ -173,6 +177,9 @@ items &lt;- read_html(url) %&gt;% html_nodes(xpath=&#39;//*[@id=&quot;mw-content
 <script src="/js/scripts.js"></script>
 
   
+<script src="/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
 
 
 </body>
