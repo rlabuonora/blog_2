@@ -1,0 +1,657 @@
+
+   <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+     <channel>
+       <title>ggplot on rlabuonora.com</title>
+       <link>/tags/ggplot/</link>
+       <description>Recent content in ggplot on rlabuonora.com</description>
+       <generator>Hugo -- gohugo.io</generator>
+       <copyright>Copyright &amp;copy; 2019 - Rafael La Buonora</copyright>
+       <lastBuildDate>Tue, 28 Jul 2020 00:00:00 +0000</lastBuildDate>
+       
+           <atom:link href="/tags/ggplot/index.xml" rel="self" type="application/rss+xml" />
+       
+       
+       <item>
+         <title>Visualizando Homicidios</title>
+         <link>/posts/vacunas/</link>
+         <pubDate>Tue, 28 Jul 2020 00:00:00 +0000</pubDate>
+         
+         <guid>/posts/vacunas/</guid>
+         <description>
+
+
+&lt;p&gt;Este es mi primer post sobre tidy tuesday. Este proyecto, creado por &lt;a href=&#34;https://twitter.com/thomas_mock&#34;&gt;Thomas Mock&lt;/a&gt;, publica un data set todo los martes y invita a los participantes a postear una visualización usándolo.&lt;/p&gt;
+&lt;p&gt;Para esta semana se publicaron tres juegos de datos provenientes de &lt;a href=&#34;https://simplystatistics.org/2019/08/28/you-can-replicate-almost-any-plot-with-ggplot2/&#34;&gt;este blog post&lt;/a&gt;. La idea es mostrar el poder de &lt;code&gt;ggplot&lt;/code&gt; para reproducir visualizaciones que encontró el autor por ahí.&lt;/p&gt;
+&lt;div id=&#34;homicidios&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Homicidios&lt;/h1&gt;
+&lt;p&gt;El primer dataset tiene la tasa de homicidios en 6 países del G-8:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;homicidios &amp;lt;- read_csv(here(&amp;quot;static&amp;quot;, &amp;quot;data&amp;quot;, &amp;quot;tidytuesday&amp;quot;,&amp;quot;international_murders.csv&amp;quot;))
+
+head(homicidios)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 6 x 4
+##   country count label code 
+##   &amp;lt;chr&amp;gt;   &amp;lt;dbl&amp;gt; &amp;lt;chr&amp;gt; &amp;lt;chr&amp;gt;
+## 1 US       3.2  3.2   us   
+## 2 ITALY    0.71 0.71  it   
+## 3 CANADA   0.5  0.5   ca   
+## 4 UK       0.1  0.1   gb   
+## 5 JAPAN    0    0     jp   
+## 6 GERMANY  0.2  0.2   de&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Este es el gráfico original:&lt;/p&gt;
+&lt;div class=&#34;figure&#34;&gt;
+&lt;img src=&#34;https://abcnews.go.com/images/International/homocides_g8_countries_640x360_wmain.jpg&#34; alt=&#34;grafico original&#34; /&gt;
+&lt;p class=&#34;caption&#34;&gt;grafico original&lt;/p&gt;
+&lt;/div&gt;
+&lt;p&gt;Revisando la fuente de los datos encontré &lt;a href=&#34;https://dataunodc.un.org/GSH_app&#34;&gt;esta app&lt;/a&gt;, sería interesante comparar a Uruguay en estos números, pero los datos no coinciden.&lt;/p&gt;
+&lt;p&gt;El diseño del gráfico es un bar chart, pero le agrega las banderas de los países y las tasas sobre las barras.&lt;/p&gt;
+&lt;p&gt;Este es el gráfico base con títulos:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# plot basico
+homicidios %&amp;gt;% 
+  ggplot(aes(country, count)) +
+  geom_col() + 
+  labs(x=&amp;quot;&amp;quot;, y=&amp;quot;# de homicidios con armas de fuego \n cada 100,000 habitantes&amp;quot;, 
+       caption = &amp;quot;Fuente: \nUNODC Homicide Statistics&amp;quot;,
+       title = &amp;quot;Tasa de Homicidios en países del G-8.&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-12-28-homicidios_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Como mapeamos el eje x a una columna de texto, &lt;code&gt;ggplot&lt;/code&gt; la convierte a un factor. El orden en el que aparecen los países en el eje depende de los niveles del factor, por defecto es alfabético:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;levels(factor(homicidios$country))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] &amp;quot;CANADA&amp;quot;  &amp;quot;FRANCE&amp;quot;  &amp;quot;GERMANY&amp;quot; &amp;quot;ITALY&amp;quot;   &amp;quot;JAPAN&amp;quot;   &amp;quot;RUSSIA&amp;quot;  &amp;quot;UK&amp;quot;     
+## [8] &amp;quot;US&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Esto es algo que puede confundir a alguien que no tiene experiencia trabajando con factores: el orden de los niveles es independiente del orden en que aparecen en el data frame.&lt;/p&gt;
+&lt;p&gt;En este caso, el orden del factor es alfabético (Canadá, Francia, etc.), y el data frame está ordenado por la tasa de homicidios (descendente): US, Italia, Canadá.&lt;/p&gt;
+&lt;p&gt;Para controlar el orden en el que aparecen los países ordenar las etiquetas, usamos una función muy útil de &lt;code&gt;forcats&lt;/code&gt;: &lt;code&gt;fct_inorder&lt;/code&gt;. Esta función reordena los niveles del factor para que coincida con el orden en el que aparecen en el data-frame:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;homicidios_2 &amp;lt;- homicidios %&amp;gt;% 
+  arrange(-count) %&amp;gt;% 
+  mutate(country_ordenado = fct_inorder(country))
+
+levels(homicidios_2$country_ordenado)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] &amp;quot;US&amp;quot;      &amp;quot;ITALY&amp;quot;   &amp;quot;CANADA&amp;quot;  &amp;quot;GERMANY&amp;quot; &amp;quot;UK&amp;quot;      &amp;quot;FRANCE&amp;quot;  &amp;quot;JAPAN&amp;quot;  
+## [8] &amp;quot;RUSSIA&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Para la versión final, agrego las etiquetas del texto con &lt;code&gt;geom_text&lt;/code&gt; (nudge_y me permite ajustar el texto un poco para que no toque las barras).&lt;/p&gt;
+&lt;p&gt;También descubrí &lt;code&gt;ggflags&lt;/code&gt;, que nos da una función &lt;code&gt;geom_flag&lt;/code&gt; con el &lt;code&gt;aes&lt;/code&gt; country para especificar el país. La coordenada y de todas las banderas la fijo en -.4.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# install_github(&amp;quot;rensa/ggflags&amp;quot;)
+
+library(ggflags)
+library(ggthemes)
+# theme_economist
+# agrego texto sobre las columnas con geom_text y nudge_y
+
+plot &amp;lt;- homicidios %&amp;gt;% 
+  arrange(-count) %&amp;gt;% 
+  mutate(country = fct_inorder(country)) %&amp;gt;% # fct_inorder
+  ggplot(aes(country, count)) + 
+  geom_col(fill=&amp;quot;darkred&amp;quot;) + 
+  geom_flag(y = -.4, aes(country = code), size = 12) + # geom_flag
+  geom_text(aes(label = if_else(country == &amp;quot;RUSSIA&amp;quot;, &amp;quot;S/D&amp;quot;, as.character(count))), 
+                nudge_y = .15) + # nudge, label
+  scale_x_discrete(labels=NULL) + # remove labels from x-axis
+  labs(x=&amp;quot;&amp;quot;, y=&amp;quot;# de homicidios con armas de fuego \n cada 100,000 habitantes&amp;quot;, 
+       caption = &amp;quot;Fuente: \nUNODC Homicide Statistics&amp;quot;,
+       title = &amp;quot;Tasa de Homicidios en países del G-8&amp;quot;) + 
+  theme_economist() +
+  theme(
+    axis.line.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    plot.caption = element_text(vjust = 170) # mover caption
+  )&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;plot&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-12-28-homicidios_files/figure-html/unnamed-chunk-7-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+</description>
+       </item>
+       
+       <item>
+         <title>Un gráfico de barras anotado</title>
+         <link>/posts/examenes-visualizaciones/</link>
+         <pubDate>Thu, 28 May 2020 00:00:00 +0000</pubDate>
+         
+         <guid>/posts/examenes-visualizaciones/</guid>
+         <description>
+
+
+&lt;p&gt;En este posteo hago un gráfico de barras con anotaciones para mostrar un problema en el sistema de exámenes de las escuelas de Nueva York.&lt;/p&gt;
+&lt;div id=&#34;diplopma-regents&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Diplopma Regents&lt;/h1&gt;
+&lt;p&gt;Los exámenes Regents son una serie de tests estándar de temas de secundaria en el estado de Nueva York. Este set de datos muestra las notas de exámenes en varias materias. Lo que llama la atención es que hay un gran número de examenes con 65, la nota mínima de aprobación.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;nyc_regents &amp;lt;-  read_csv(here(&amp;quot;static&amp;quot;, &amp;quot;data&amp;quot;, &amp;quot;tidytuesday&amp;quot;,&amp;quot;nyc_regents.csv&amp;quot;)
+)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Parsed with column specification:
+## cols(
+##   score = col_double(),
+##   integrated_algebra = col_double(),
+##   global_history = col_double(),
+##   living_environment = col_double(),
+##   english = col_double(),
+##   us_history = col_double()
+## )&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# reshape
+
+nyc_reshape &amp;lt;- nyc_regents %&amp;gt;% 
+  gather(k=&amp;quot;subject&amp;quot;, v=&amp;quot;tests&amp;quot;, -score) %&amp;gt;% 
+  group_by(score) %&amp;gt;% 
+  summarize(tests = sum(tests, na.rm = TRUE))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## `summarise()` ungrouping output (override with `.groups` argument)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# plot basico
+g &amp;lt;- ggplot(nyc_reshape, aes(score, tests)) + 
+  geom_col()
+
+# Texto
+
+g + 
+  labs(caption = &amp;quot;Fuente: New York City Department of Education&amp;quot;,
+       title = &amp;quot;Salvar Raspando&amp;quot;,
+       subtitle = &amp;quot;2010 Regents scores on Algebra, \nGlobal History, Biology, English &amp;amp; US History&amp;quot;, 
+       y = &amp;quot;&amp;quot;, x = &amp;quot;&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Warning: Removed 1 rows containing missing values (position_stack).&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-12-28-examenes_files/figure-html/unnamed-chunk-2-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Ejes
+# Scales en el grammar of graphics
+# Customizando los ejes con scale_x_* y scale_y_*
+# le pasamos una función a labels
+# expand es contraintuitivamente importante
+# labels, breaks, expand
+g + 
+  
+  labs(caption = &amp;quot;Source: New York City Department of Education&amp;quot;,
+       title = &amp;quot;Scraping By&amp;quot;,
+       subtitle = &amp;quot;2010 Regents scores on Algebra, \nGlobal History, Biology, English &amp;amp; US History&amp;quot;, 
+       y = &amp;quot;&amp;quot;, x = &amp;quot;&amp;quot;) + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_y_continuous(position = &amp;quot;right&amp;quot;, 
+                     labels = scales::number_format(big.mark = &amp;quot;,&amp;quot;), # function
+                     breaks = c(1e4, 2e4, 3e4))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Warning: `expand_scale()` is deprecated; use `expansion()` instead.
+
+## Warning: Removed 1 rows containing missing values (position_stack).&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-12-28-examenes_files/figure-html/unnamed-chunk-2-2.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Theme
+g + labs(caption = &amp;quot;Fuente: New York City Department of Education&amp;quot;,
+       title = &amp;quot;Salvar Raspando&amp;quot;,
+       subtitle = &amp;quot;Notas 2010 Regents en Álgebra, \nHistoria, Biología, e Inglés&amp;quot;,
+       y = &amp;quot;&amp;quot;, x = &amp;quot;&amp;quot;) + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_y_continuous(position = &amp;quot;right&amp;quot;, 
+                     labels = scales::number_format(big.mark = &amp;quot;,&amp;quot;), # function
+                     breaks = c(1e4, 2e4, 3e4)) + 
+  theme_minimal() + 
+  theme(
+    panel.grid.major.y = element_line(linetype = &amp;quot;dashed&amp;quot;, color = &amp;quot;gray50&amp;quot;),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.y = element_text(vjust = 1.5),
+    axis.text.x = element_text(vjust = 7),
+    plot.margin = margin(unit(c(20, 20, 20, 20), &amp;quot;cm&amp;quot;))
+  )&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Warning: `expand_scale()` is deprecated; use `expansion()` instead.
+
+## Warning: Removed 1 rows containing missing values (position_stack).&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-12-28-examenes_files/figure-html/unnamed-chunk-2-3.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# color a las columnas
+ggplot(nyc_reshape, aes(score, tests)) + 
+  geom_col(color = &amp;quot;black&amp;quot;, fill = &amp;quot;#C4843C&amp;quot;) + 
+  labs(caption = &amp;quot;Fuente: New York City Department of Education&amp;quot;,
+       title = &amp;quot;Salvar Raspando&amp;quot;,
+       subtitle = &amp;quot;Notas 2010 Regents en Álgebra, \nHistoria, Biología, e Inglés&amp;quot;,
+       y = &amp;quot;&amp;quot;, x = &amp;quot;&amp;quot;) + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_y_continuous(position = &amp;quot;right&amp;quot;, 
+                     labels = scales::number_format(big.mark = &amp;quot;,&amp;quot;), # function
+                     breaks = c(1e4, 2e4, 3e4)) + 
+  theme_minimal() + 
+  theme(
+    panel.grid.major.y = element_line(linetype = &amp;quot;dashed&amp;quot;, color = &amp;quot;gray50&amp;quot;),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.y = element_text(vjust = 1.5),
+    axis.text.x = element_text(vjust = 7),
+    plot.margin = margin(unit(c(20, 20, 20, 20), &amp;quot;cm&amp;quot;))
+  )&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Warning: `expand_scale()` is deprecated; use `expansion()` instead.
+
+## Warning: Removed 1 rows containing missing values (position_stack).&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-12-28-examenes_files/figure-html/unnamed-chunk-2-4.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Todo junto
+nyc_regents %&amp;gt;% 
+  gather(k=&amp;quot;k&amp;quot;, v=&amp;quot;v&amp;quot;, -score) %&amp;gt;% 
+  group_by(score) %&amp;gt;% 
+  summarize(v = sum(v, na.rm = TRUE)) %&amp;gt;% 
+  ggplot(aes(score, v)) +
+  annotate(&amp;quot;rect&amp;quot;, xmin = 65, xmax=Inf, ymin=0, ymax=Inf, alpha = 0.6, fill = &amp;quot;grey80&amp;quot;) + 
+  annotate(&amp;quot;text&amp;quot;, 
+           label = &amp;quot;Mìnimo para diploma Regents&amp;quot;,
+           x = 45, y = 2.5e4) + 
+  annotate(&amp;quot;segment&amp;quot;, arrow=arrow(type = &amp;quot;closed&amp;quot;, length = unit(0.2, &amp;quot;cm&amp;quot;)), x=50, y=2.8e4, xend=64, yend=3.2e4) + 
+  geom_col(color = &amp;quot;black&amp;quot;, fill = &amp;quot;#C4843C&amp;quot;) + 
+  theme_minimal() + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_y_continuous(position = &amp;quot;right&amp;quot;, 
+                     labels = scales::number_format(big.mark = &amp;quot;,&amp;quot;), # function
+                     breaks = c(1e4, 2e4, 3e4)) + 
+  labs(caption = &amp;quot;Fuente: New York City Department of Education&amp;quot;,
+       title = &amp;quot;Salvar Raspando&amp;quot;,
+       subtitle = &amp;quot;Notas Regents 2010 en Álgebra, \nHistoria, Biología, e Inglés&amp;quot;,
+       y = &amp;quot;&amp;quot;, x = &amp;quot;&amp;quot;) +
+  labs(y = &amp;quot;&amp;quot;, x = &amp;quot;&amp;quot;) +
+  theme(
+    panel.grid.major.y = element_line(linetype = &amp;quot;dashed&amp;quot;, color = &amp;quot;gray50&amp;quot;),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.y = element_text(vjust = 1.5),
+    axis.text.x = element_text(vjust = 7),
+    plot.margin = margin(unit(c(20, 20, 20, 20), &amp;quot;cm&amp;quot;)) # 
+  )&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## `summarise()` ungrouping output (override with `.groups` argument)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Warning: `expand_scale()` is deprecated; use `expansion()` instead.
+
+## Warning: Removed 1 rows containing missing values (position_stack).&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-12-28-examenes_files/figure-html/unnamed-chunk-2-5.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+</description>
+       </item>
+       
+       <item>
+         <title>El estilo de Metallica a lo largo de los discos</title>
+         <link>/posts/metallica/</link>
+         <pubDate>Sun, 26 Jan 2020 00:00:00 +0000</pubDate>
+         
+         <guid>/posts/metallica/</guid>
+         <description>&lt;p&gt;Para este post de &lt;a href=&#34;https://twitter.com/hashtag/tidytuesday?lang=en&#34;&gt;#tidytuesday&lt;/a&gt; usé la API de spotify para bajar datos sobre la música de Metallica.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2020-01-26-metallica_files/metallica_tempo.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Este es el código para bajar los datos y la tapa de los discos:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(spotifyr)
+&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(tidyverse)
+&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(lubridate)
+
+
+METALLICA_ID &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;2ye2Wgw4gimLv2eAKyk1NB&amp;#34;&lt;/span&gt;
+metallica_albums &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;get_artist_albums&lt;/span&gt;(id&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;METALLICA_ID,
+                                      include_groups &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;album&amp;#34;&lt;/span&gt;,
+                                      limit &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;50&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt;
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;slice&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;11&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;13&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;17&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;19&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;21&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;26&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;30&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;35&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;39&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;43&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;mutate&lt;/span&gt;(release_year &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;year&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;as_date&lt;/span&gt;(release_date)))
+
+
+metallica_albums&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;cover_url &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; metallica_albums&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;images &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  purrr&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;map&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;url&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  purrr&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;map&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;)
+
+
+metallica_albums &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; metallica_albums &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;select&lt;/span&gt;(album_name&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;name, album_id&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;id, release_year, cover_url) 
+  
+
+get_album_tracks &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;function&lt;/span&gt;(album_id, album_name) {
+  &lt;span style=&#34;color:#75715e&#34;&gt;# get track name, track id &amp;amp; album name (add all album.level data here)&lt;/span&gt;
+  album &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;get_album&lt;/span&gt;(id&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;album_id)
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;tibble&lt;/span&gt;(track_name&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;album&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;tracks&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;items&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;name,
+         track_id   &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; album&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;tracks&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;items&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;id,
+         album_name &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; album_name)
+}
+
+get_track_info &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;function&lt;/span&gt;(track_id, track_name, album_name) {
+  features &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;get_track_audio_features&lt;/span&gt;(id&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;track_id)
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;mutate&lt;/span&gt;(features, 
+         album_name &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; album_name,
+         track_name &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; track_name) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+    &lt;span style=&#34;color:#a6e22e&#34;&gt;select&lt;/span&gt;(album_name, track_name, danceability&lt;span style=&#34;color:#f92672&#34;&gt;:&lt;/span&gt;tempo, duration_ms)
+}
+
+
+metallica_tracks &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; metallica_albums &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;pmap&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;function&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;...&lt;/span&gt;) {
+    current &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;tibble&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;...&lt;/span&gt;)
+    &lt;span style=&#34;color:#a6e22e&#34;&gt;get_album_tracks&lt;/span&gt;(current&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;album_id, current&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;album_name)
+  }) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;map&lt;/span&gt;(purrr&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;transpose) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  flatten &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;map_df&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;function&lt;/span&gt;(x) {
+    &lt;span style=&#34;color:#a6e22e&#34;&gt;get_track_info&lt;/span&gt;(x&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;track_id, x&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;track_name, x&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;album_name)
+  }) 
+
+metallica_tracks_df &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; metallica_tracks &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;left_join&lt;/span&gt;(metallica_albums) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;mutate&lt;/span&gt;(track_name &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;str_remove&lt;/span&gt;(track_name, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34; - Remastered&amp;#34;&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;mutate&lt;/span&gt;(track_name &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;str_remove&lt;/span&gt;(track_name, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;\\(Remastered\\)&amp;#34;&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt;
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;mutate&lt;/span&gt;(album_name &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;str_remove&lt;/span&gt;(album_name, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;\\(Remastered\\)&amp;#34;&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;group_by&lt;/span&gt;(album_name) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;mutate&lt;/span&gt;(track_num &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;row_number&lt;/span&gt;()) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;arrange&lt;/span&gt;(release_year, track_num)
+
+&lt;span style=&#34;color:#a6e22e&#34;&gt;dir.create&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;data&amp;#39;&lt;/span&gt;)
+&lt;span style=&#34;color:#a6e22e&#34;&gt;saveRDS&lt;/span&gt;(metallica_tracks_df, file&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;data/metallica.rds&amp;#34;&lt;/span&gt;)
+
+download_cover &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;function&lt;/span&gt;(url, release_year) {
+  file_name &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; glue&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;glue&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;{release_year}.jpg&amp;#34;&lt;/span&gt;)
+  dest &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;file.path&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;covers&amp;#34;&lt;/span&gt;, file_name)
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;download.file&lt;/span&gt;(url, destfile&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;dest)
+}
+
+&lt;span style=&#34;color:#a6e22e&#34;&gt;dir.create&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;covers&amp;#39;&lt;/span&gt;)
+purrr&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;walk2&lt;/span&gt;(metallica_albums&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;cover_url,
+            metallica_albums&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;release_year, 
+            download_cover)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Y este es el código para crear el gráfico:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Evolution of song tempo&lt;/span&gt;
+
+&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(tidyverse)
+&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(ggplot2)
+&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(jpeg)
+&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(grid)
+&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(ggdark)
+&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(showtext)
+&lt;span style=&#34;color:#a6e22e&#34;&gt;library&lt;/span&gt;(ggrepel)
+
+&lt;span style=&#34;color:#a6e22e&#34;&gt;theme_set&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;dark_theme_grey&lt;/span&gt;())
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# Agregar fuente&lt;/span&gt;
+&lt;span style=&#34;color:#a6e22e&#34;&gt;font_add_google&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Metal Mania&amp;#34;&lt;/span&gt;, &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;metal&amp;#34;&lt;/span&gt;)
+&lt;span style=&#34;color:#a6e22e&#34;&gt;showtext_auto&lt;/span&gt;()
+
+metallica &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;readRDS&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;./data/metallica.rds&amp;#34;&lt;/span&gt;)
+
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# metallica$track_name &amp;lt;- fct_inorder(factor(metallica$track_name))&lt;/span&gt;
+metallica&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;album_name &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;fct_inorder&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;factor&lt;/span&gt;(metallica&lt;span style=&#34;color:#f92672&#34;&gt;$&lt;/span&gt;album_name))
+
+fast_songs &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Holier Than Thou&amp;#34;&lt;/span&gt;, 
+                &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;My Apocalypse&amp;#34;&lt;/span&gt;, 
+                &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;The Four Horsemen&amp;#34;&lt;/span&gt;)
+
+highligts &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; metallica &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;filter&lt;/span&gt;(track_name &lt;span style=&#34;color:#f92672&#34;&gt;%in%&lt;/span&gt;  fast_songs)
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# Gráfico de base.&lt;/span&gt;
+tempo &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; metallica &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;ggplot&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;aes&lt;/span&gt;(album_name, tempo, group &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;scale_x_discrete&lt;/span&gt;(breaks &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;NULL&lt;/span&gt;, expand&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;0.1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;scale_y_continuous&lt;/span&gt;(limits &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;60&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;220&lt;/span&gt;)) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;geom_point&lt;/span&gt;() &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;geom_text_repel&lt;/span&gt;(data &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; highligts, 
+                  &lt;span style=&#34;color:#a6e22e&#34;&gt;aes&lt;/span&gt;(label&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;track_name), 
+                  nudge_y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;,
+                  nudge_x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;.2&lt;/span&gt;,
+                  color&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;white&amp;#34;&lt;/span&gt;, size &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;geom_smooth&lt;/span&gt;(se&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;FALSE&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;guides&lt;/span&gt;(color&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;FALSE&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;labs&lt;/span&gt;(title&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Metallica&amp;#34;&lt;/span&gt;, 
+       subtitle &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;New albums are almost as fast as the early ones.&amp;#34;&lt;/span&gt;, 
+       caption  &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Data: Spotify&amp;#34;&lt;/span&gt;,
+       x&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Album&amp;#34;&lt;/span&gt;, y&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Tempo (bpm)&amp;#34;&lt;/span&gt;)
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# Agregar las tapas de los discos como imágenes.&lt;/span&gt;
+covers &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;list.files&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;covers&amp;#39;&lt;/span&gt;, full.names &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;TRUE&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  purrr&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;map&lt;/span&gt;(readJPEG) &lt;span style=&#34;color:#f92672&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  purrr&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;map&lt;/span&gt;(rasterGrob, interpolate&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;TRUE&lt;/span&gt;)
+
+y_coord_cover &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt;  &lt;span style=&#34;color:#ae81ff&#34;&gt;60&lt;/span&gt;
+y_offset &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;10.5&lt;/span&gt;
+
+
+&lt;span style=&#34;color:#a6e22e&#34;&gt;for &lt;/span&gt;(i in &lt;span style=&#34;color:#a6e22e&#34;&gt;seq_along&lt;/span&gt;(covers)) {
+  tempo &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; tempo &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;  &lt;span style=&#34;color:#a6e22e&#34;&gt;annotation_custom&lt;/span&gt;(grob&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;covers[[i]], xmin&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;i&lt;span style=&#34;color:#ae81ff&#34;&gt;-1+.5&lt;/span&gt;, xmax&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;i&lt;span style=&#34;color:#ae81ff&#34;&gt;+.5&lt;/span&gt;, ymin&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;y_coord_cover, ymax&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;y_coord_cover&lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;y_offset)
+}
+
+tempo &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; 
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;theme&lt;/span&gt;(
+    text &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_text&lt;/span&gt;(family&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;metal&amp;#34;&lt;/span&gt;),
+    plot.title &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_text&lt;/span&gt;(hjust &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;.5&lt;/span&gt;),
+    plot.subtitle &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;element_text&lt;/span&gt;(hjust&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;.5&lt;/span&gt;)
+  ) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;ggsave&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;metallica_tempo.png&amp;#34;&lt;/span&gt;)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
+       </item>
+       
+       <item>
+         <title>Vacunas</title>
+         <link>/posts/vacunas/</link>
+         <pubDate>Thu, 28 Nov 2019 00:00:00 +0000</pubDate>
+         
+         <guid>/posts/vacunas/</guid>
+         <description>
+
+
+&lt;p&gt;Este es mi primer post sobre tidy tuesday. Este proyecto, creado por &lt;a href=&#34;https://twitter.com/thomas_mock&#34;&gt;Thomas Mock&lt;/a&gt;, publica un data set todo los martes y invita a los participantes a postear una visualización usándolo.&lt;/p&gt;
+&lt;p&gt;Para esta semana se publicaron tres juegos de datos provenientes de &lt;a href=&#34;https://simplystatistics.org/2019/08/28/you-can-replicate-almost-any-plot-with-ggplot2/&#34;&gt;este blog post&lt;/a&gt;. La idea es mostrar el poder de &lt;code&gt;ggplot&lt;/code&gt; para reproducir visualizaciones que encontró el autor por ahí.&lt;/p&gt;
+&lt;div id=&#34;el-efecto-de-la-vacuna-contra-el-sarampión&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;El efecto de la vacuna contra el sarampión&lt;/h1&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Measels
+# devtools::install_github(&amp;quot;rafalab/dslabs&amp;quot;)
+library(dslabs)
+diseases &amp;lt;- dslabs::us_contagious_diseases
+
+# Research!
+jet.colors &amp;lt;- colorRampPalette(c(&amp;quot;#F0FFFF&amp;quot;, &amp;quot;cyan&amp;quot;, &amp;quot;#007FFF&amp;quot;, &amp;quot;yellow&amp;quot;, &amp;quot;#FFBF00&amp;quot;, &amp;quot;orange&amp;quot;, &amp;quot;red&amp;quot;, &amp;quot;#7F0000&amp;quot;), bias = 2.25)
+
+
+diseases %&amp;gt;% 
+  filter(disease == &amp;quot;Measles&amp;quot;) %&amp;gt;% 
+  filter(!state %in% c(&amp;quot;Hawaii&amp;quot;, &amp;quot;Alaska&amp;quot;)) %&amp;gt;% 
+  mutate(rate = count / population * 10000 * 52 / weeks_reporting) %&amp;gt;% 
+  mutate(state = reorder(state, desc(state))) %&amp;gt;% 
+  ggplot(aes(year, state, fill=rate)) + 
+  geom_tile(color = &amp;quot;white&amp;quot;) + 
+  scale_fill_gradientn(colors = jet.colors(16), na.value = &amp;quot;white&amp;quot;, name = &amp;quot;Tasa&amp;quot;) + ## research!
+  scale_x_continuous(expand = c(0, 0)) + 
+  labs(x = &amp;quot;&amp;quot;, y = &amp;quot;&amp;quot;, title = &amp;quot;Sarampión&amp;quot;, subtitle = &amp;quot;Enfermos cada 10000 habitantes&amp;quot;) +
+  geom_vline(xintercept = 1963) + 
+  annotate(geom = &amp;quot;text&amp;quot;, x=1970, y = 50, label = &amp;quot;Introducción de la vacuna&amp;quot;) + 
+  theme_minimal() + 
+  coord_cartesian(clip = &amp;#39;off&amp;#39;) + 
+  theme(
+    legend.position = &amp;quot;bottom&amp;quot;,
+  )&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-12-28-vacunas_files/figure-html/unnamed-chunk-2-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+</description>
+       </item>
+       
+       <item>
+         <title>Geometría con ggplot</title>
+         <link>/posts/ggplot-geometria/</link>
+         <pubDate>Wed, 16 Aug 2017 00:00:00 +0000</pubDate>
+         
+         <guid>/posts/ggplot-geometria/</guid>
+         <description>
+
+
+&lt;p&gt;&lt;code&gt;ggplot&lt;/code&gt; es el estándar para visualización de datos en R. Siempre quise explorar si podía servir para hacer diagramas más conceptuales. En este post uso &lt;code&gt;ggplot&lt;/code&gt; para dibujar algunas formas geométricas.&lt;/p&gt;
+&lt;p&gt;Para dibujar el gráfico de una función, podemos usar &lt;code&gt;stat_function&lt;/code&gt;. En el primer gráfico, dibujo &lt;span class=&#34;math inline&#34;&gt;\(sin(x)\)&lt;/span&gt; y &lt;span class=&#34;math inline&#34;&gt;\(cos(x)\)&lt;/span&gt;. Especifico &lt;code&gt;aes(colour = &amp;quot;sin(x)&amp;quot;)&lt;/code&gt; para que el color de ese cada &lt;code&gt;geom&lt;/code&gt; quede ligado al texto correcto en la leyenda.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;geom_segment&lt;/code&gt; y &lt;code&gt;scale_x_continuous&lt;/code&gt; permiten especificar la posición y etiqueta de las guías.&lt;/p&gt;
+&lt;p&gt;Este post de stackoverflow sobre &lt;a href=&#34;https://stackoverflow.com/questions/5293715/how-to-use-greek-symbols-in-ggplot2&#34;&gt;como poner letras griegas en ggplot&lt;/a&gt; explica como poner caractéres del alfabeto griego en los ejes usando &lt;code&gt;expression()&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(tidyverse)
+library(ggplot2)
+theme_set(theme_minimal())
+
+# Crear etiquetas para eje x
+lbls &amp;lt;- c( expression(-2 * pi),
+           expression(-3 * pi / 2),
+           expression(- pi),
+           expression(-pi/2),
+           0,
+           expression(pi/ 2),
+           expression(pi),
+           expression(3 * pi /2),
+           expression(2 * pi)
+           )
+
+
+# Gráfico
+ggplot(data_frame(x = c(-7, 7)), aes(x = x)) +
+  stat_function(fun = function(x) { sin(x) }, 
+                geom = &amp;quot;line&amp;quot;, 
+                linetype = &amp;quot;dashed&amp;quot;, 
+                size = 1,
+                aes(colour = &amp;quot;sin(x)&amp;quot;)) +
+  stat_function(fun = function(x) { cos(x) },
+                linetype = &amp;quot;dashed&amp;quot;,
+                size = 1,
+                aes(colour = &amp;quot;cos(x)&amp;quot;)
+                ) +
+  scale_x_continuous(
+    breaks = seq(-2 * pi, 2*pi, pi/2),
+    labels = lbls
+  ) + 
+  labs(x = &amp;quot;x&amp;quot;, y = &amp;quot;y&amp;quot;) + 
+  geom_segment(aes(x=-7, xend = 7, y=0, yend=0), 
+               size = 0.5,
+               arrow = arrow(length = unit(0.2, &amp;quot;cm&amp;quot;))) + 
+  geom_segment(aes(x=0, xend=0, y=-1, yend=1.2),
+               size = 0.5,
+               lineend = &amp;quot;butt&amp;quot;,
+               arrow = arrow(length = unit(0.2, &amp;quot;cm&amp;quot;))) + 
+  labs(title = &amp;quot;Funciones Trigonométricas&amp;quot;) + 
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    legend.title = element_blank(),
+  ) &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2018-08-16-trigonometric-funs_files/figure-html/unnamed-chunk-1-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;div id=&#34;circulo&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Círculo&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;stat_fun&lt;/code&gt; resuelve el problema de graficar funciones, pero no sirve cuando queremos graficar otro tipo de objeto. La ecuación de un círculo es&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[ (x-h)^2+(y-k)^2=r^2 \]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;donde &lt;span class=&#34;math inline&#34;&gt;\((h, k)\)&lt;/span&gt; es el centro y &lt;span class=&#34;math inline&#34;&gt;\(r\)&lt;/span&gt; el radio. Escribir esta ecuación explícitamente como una función puede resultar complicado.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://stackoverflow.com/questions/6862742/draw-a-circle-with-ggplot2&#34;&gt;Este post en Stack Overflow&lt;/a&gt; explica como graficar una función en forma paramétrica usando &lt;code&gt;annotate&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(ggplot2)
+library(latex2exp)
+
+center &amp;lt;- c(x=3, y=1)
+#pt1 &amp;lt;- c(x=1, y=1)
+#pt2 &amp;lt;- c(x=5, y=1)
+pt3 &amp;lt;- c(x=3, y=3)
+pt4 &amp;lt;- c(x=3, y=-1)
+pts &amp;lt;- dplyr::bind_rows(center,pt3, pt4)
+radius &amp;lt;- 2
+t &amp;lt;- seq(0, 2*pi, length.out = 100)
+
+g &amp;lt;- ggplot() + 
+  geom_segment(aes(x=-1, xend = 6, y=0, yend=0),
+               size = 0.5,
+               arrow = arrow(length = unit(0.2, &amp;quot;cm&amp;quot;))) + # Eje X
+  geom_segment(aes(x=0, xend=0, y=-1, yend=4),
+               size = 0.5,
+               lineend = &amp;quot;butt&amp;quot;,
+               arrow = arrow(length = unit(0.2, &amp;quot;cm&amp;quot;))) + # Eje Y
+  annotate(&amp;quot;path&amp;quot;, 
+           x = center[1] + radius * cos(t),
+           y = center[2] + radius * sin(t)) + 
+  geom_point(data = pts, aes(x=x, y =y)) + 
+  geom_text(data = pts,
+            parse = TRUE,
+            nudge_y = 0.2,
+            aes(x=x, y=y, label = paste0(&amp;quot;list(&amp;quot;, x ,&amp;quot;,&amp;quot;, y, &amp;quot;)&amp;quot;))) +
+  annotate(&amp;quot;point&amp;quot;, x=1, y=1) + 
+  annotate(&amp;quot;text&amp;quot;, x=1.25, y=1, label=&amp;quot;1,1&amp;quot;) + 
+  annotate(&amp;quot;point&amp;quot;, x=5, y=1) + 
+  annotate(&amp;quot;text&amp;quot;, x=4.75, y=1, label=&amp;quot;5, 1&amp;quot;) + 
+  labs(x=&amp;quot;&amp;quot;, y=&amp;quot;&amp;quot;) + 
+  ggtitle(TeX(&amp;quot;(x-3)^2+(y-1)^2=4&amp;quot;)) + 
+  coord_fixed()
+g&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2018-08-16-trigonometric-funs_files/figure-html/unnamed-chunk-2-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;parabola&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Parábola&lt;/h2&gt;
+&lt;p&gt;Una parábola es un conjunto de puntos que equidista de una línea (directriz) y un punto (foco). Estos puntos satisfacen:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math inline&#34;&gt;\((x-h)^2=4p(y-k),\, (p \neq 0)\)&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;El vértice de la parábola está en &lt;span class=&#34;math inline&#34;&gt;\((h,k)\)&lt;/span&gt; y la directriz &lt;span class=&#34;math inline&#34;&gt;\(y=k-p\)&lt;/span&gt;. El foco está en &lt;span class=&#34;math inline&#34;&gt;\((h, k+p)\)&lt;/span&gt; si la parábola es abierta hacia arriba.&lt;/p&gt;
+&lt;div id=&#34;ejemplo&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Ejemplo&lt;/h3&gt;
+&lt;p&gt;&lt;span class=&#34;math inline&#34;&gt;\(x^2=16y\)&lt;/span&gt; es una parábola con vértice en &lt;span class=&#34;math inline&#34;&gt;\((0,0)\)&lt;/span&gt;, &lt;span class=&#34;math inline&#34;&gt;\(p = 4\)&lt;/span&gt; y foco en &lt;span class=&#34;math inline&#34;&gt;\((0,4)\)&lt;/span&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;focus &amp;lt;- list(x=0, y=4, lab = &amp;quot;Foco&amp;quot;)
+vertex &amp;lt;- list(x=0, y=0, lab = &amp;quot;Vértice&amp;quot;)
+notable_points &amp;lt;- bind_rows(focus, 
+                            vertex)
+pt &amp;lt;- data_frame(x=5, y=round(5^2/16, 2))
+
+p &amp;lt;- ggplot(data_frame(x=0), aes(x=x)) +
+  geom_segment(aes(x=-9, xend = 9, y=0, yend=0),
+               size = 0.5,
+               arrow = arrow(length = unit(0.2, &amp;quot;cm&amp;quot;))) + # Eje X
+  geom_segment(aes(x=0, xend=0, y=-5, yend=10),
+               size = 0.5,
+               lineend = &amp;quot;butt&amp;quot;,
+               arrow = arrow(length = unit(0.2, &amp;quot;cm&amp;quot;))) + # Eje Y
+  stat_function(fun = function(x) { x^2 / 16}) + 
+  xlim(-9, 9) + 
+  ylim(-5, 10)
+
+x &amp;lt;- 5
+
+g_2 &amp;lt;- p +
+  geom_point(data = notable_points, aes(x=x, y=y)) + 
+  geom_text(data=notable_points, 
+            size = 3,
+            nudge_y = 1.25,
+            nudge_x = 1.25,
+            aes(label = paste0(lab, &amp;quot;\n(&amp;quot;, x, &amp;quot;,&amp;quot;, y, &amp;quot;)&amp;quot;), 
+                x = x, y = y)) + 
+  geom_hline(yintercept = -4, linetype = &amp;quot;dashed&amp;quot;) + 
+  annotate(&amp;quot;text&amp;quot;, x= 3, y= -3.3, label = &amp;quot;Directriz&amp;quot;, size = 3) +
+  ggtitle(TeX(&amp;#39;$y=x^2/16$&amp;#39;)) + 
+  theme(
+    plot.title = element_text(hjust = 0.5)
+  ) + geom_point(data = pt, aes(x=x, y=y)) + 
+  geom_segment(aes(x= focus$x, y=focus$y, xend=pt$x, yend=pt$y),
+               linetype = &amp;quot;dashed&amp;quot;) + 
+  geom_segment(aes(x=pt$x, y=pt$y, xend=pt$x, yend = -4),
+               linetype = &amp;quot;dashed&amp;quot;) + 
+  annotate(&amp;quot;text&amp;quot;, 
+           label = &amp;quot;phantom(0) == phantom(0)&amp;quot;, 
+           parse = TRUE,
+           angle = 60,
+           size = 5,
+           x = 2.5, y= 2.85) + 
+  annotate(&amp;quot;text&amp;quot;, 
+           label = &amp;quot;phantom(0) == phantom(0)&amp;quot;, 
+           parse = TRUE,
+           size = 5,
+           x = 5, y= -2)
+g_2&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2018-08-16-trigonometric-funs_files/figure-html/g_2-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Todos los puntos de la parábola estan a la misma distancia del foco que de la directriz.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;una-parabola-con-eje-horziontal&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Una parábola con eje horziontal&lt;/h2&gt;
+&lt;p&gt;Dibujar una parábola con eje vertical es simple porque podemos usar &lt;code&gt;stat_fun&lt;/code&gt;. Pero si queremos dibujarlas con eje horizontal no podemos escibir los puntos de la parábola como un función y pasarsela a &lt;code&gt;stat_function&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;La ecuación &lt;span class=&#34;math inline&#34;&gt;\(y^2+6y+8x+25 = 0\)&lt;/span&gt; no parece una parábola, pero si completamos el cuadrado:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\begin{align}
+y^2+6y+8x+25 &amp;amp;= 0\\
+y^2+6y+9+8x+25-9  &amp;amp;= 0\\
+(y+3)^2 &amp;amp;= -16-8x\\
+(y+3)^2 &amp;amp;= 4(-2)(x+2)
+\end{align}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Es una parábola con vértice &lt;span class=&#34;math inline&#34;&gt;\((-2, -3)\)&lt;/span&gt;, p es &lt;span class=&#34;math inline&#34;&gt;\(-2\)&lt;/span&gt;, el foco &lt;span class=&#34;math inline&#34;&gt;\((-4,-3)\)&lt;/span&gt; la directriz es &lt;span class=&#34;math inline&#34;&gt;\(x=0\)&lt;/span&gt;.&lt;/p&gt;
+&lt;p&gt;Pero como la orientación de esta parábola es horizontal, no es una función. Cómo la graficamos con &lt;code&gt;ggplot&lt;/code&gt;?&lt;/p&gt;
+&lt;p&gt;Si despejamos &lt;span class=&#34;math inline&#34;&gt;\(y\)&lt;/span&gt; en función de &lt;span class=&#34;math inline&#34;&gt;\(x\)&lt;/span&gt;, obtenemos dos funciones:
+&lt;span class=&#34;math display&#34;&gt;\[\begin{align}
+(y+3)^2 &amp;amp;= (-8)(x+2)\\
+y     &amp;amp;= -3 \pm \sqrt{-8(x+2)}\\
+y_1  &amp;amp;=-3 + \sqrt{-8(x+2)}\\
+y_2 &amp;amp;=-3 - \sqrt{-8(x+2)}\\
+\end{align}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Podemos graficar &lt;span class=&#34;math inline&#34;&gt;\(y1\)&lt;/span&gt; y &lt;span class=&#34;math inline&#34;&gt;\(y2\)&lt;/span&gt;:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;x &amp;lt;- seq(-5, 0, length.out=1e3)
+lbs &amp;lt;- list(bquote(-3 + sqrt(-8*(x+2))), # investigar bquote!
+            bquote(-3 - sqrt(-8*(x+2))))
+
+g_3 &amp;lt;- ggplot(data_frame(x=x), 
+            aes(x=x, color = color)) + 
+  stat_function(data = data_frame(x=x, color = factor(1)),
+                fun = function(x) { -3 + sqrt(-8*(x+2)) }) + 
+  stat_function(data = data_frame(x=x, color = factor(2)),
+                fun = function(x) { -3 - sqrt(-8*(x+2)) }) + 
+  scale_color_manual(labels = lbs,
+                     name = &amp;quot;&amp;quot;,
+                     values = c(scales::hue_pal()(2)[1], 
+                                scales::hue_pal()(2)[2])) + 
+  geom_hline(yintercept = 0) + 
+  geom_vline(xintercept = 0)
+g_3&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2018-08-16-trigonometric-funs_files/figure-html/g_3-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+</description>
+       </item>
+       
+     </channel>
+   </rss>

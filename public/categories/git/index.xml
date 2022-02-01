@@ -1,0 +1,215 @@
+
+   <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+     <channel>
+       <title>Git on rlabuonora.com</title>
+       <link>/categories/git/</link>
+       <description>Recent content in Git on rlabuonora.com</description>
+       <generator>Hugo -- gohugo.io</generator>
+       <copyright>Copyright &amp;copy; 2019 - Rafael La Buonora</copyright>
+       <lastBuildDate>Thu, 06 May 2021 00:00:00 +0000</lastBuildDate>
+       
+           <atom:link href="/categories/git/index.xml" rel="self" type="application/rss+xml" />
+       
+       
+       <item>
+         <title>Flujo de trabajo en Git</title>
+         <link>/posts/2021-05-06-flujo-de-trabajo-en-git/</link>
+         <pubDate>Thu, 06 May 2021 00:00:00 +0000</pubDate>
+         
+         <guid>/posts/2021-05-06-flujo-de-trabajo-en-git/</guid>
+         <description>
+
+
+&lt;p&gt;Muchas veces usamos &lt;em&gt;software&lt;/em&gt; sin entender totalmente como funciona. Cuando algo (inevitablemente) sale mal, creemos que nos merecemos los tormentos que sufrimos &lt;a href=&#34;https://es.wikipedia.org/wiki/RTFM&#34;&gt;Read the Fucking Manual!&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;En este post uso una de las &lt;em&gt;killer features&lt;/em&gt; de Git para seguir el ejemplo del &lt;a href=&#34;https://mastering-shiny.org/action-workflow.html#case-study&#34;&gt;capítulo de flujos de trabajo de Mastering Shiny&lt;/a&gt;. Esta &lt;em&gt;feature&lt;/em&gt; son las branches (si bien otros SVNs tienen branches, Git las hace muy fáciles de usar).&lt;/p&gt;
+&lt;p&gt;Las branches permiten tener versiones independientes de el programa que estamos desarrollando. Esto me permite moverme fácilmente entre una versión y otra y experimentar interferir con el trabajo de otros miembros del equipo.&lt;/p&gt;
+&lt;p&gt;En este caso, trato de arreglar un &lt;em&gt;bug&lt;/em&gt;, pero como mi idea original del problema se basa en un modelo mental incorrecto de la función que estoy usando, introduzco un montón de cambios innecesarios y/o contraproducentes en el proceso de aclarar ese malentendido en mi mente.&lt;/p&gt;
+&lt;p&gt;Trabajar en una &lt;em&gt;branch&lt;/em&gt; de Git me permite experimentar y una vez que llego a la solución correcta quedarme solo con los cambios que necesito, y descartar todos los cambios que no eran necesarios para la solución final.&lt;/p&gt;
+&lt;p&gt;El ejemplo es una app con un selector para elegir la región y listar los registros del archivo de &lt;code&gt;csv&lt;/code&gt; que pertenecen a esa región.&lt;/p&gt;
+&lt;div id=&#34;el-ejemplo.&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;El ejemplo.&lt;/h2&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(shiny)
+library(readr)
+
+sales &amp;lt;- readr::read_csv(&amp;quot;https://raw.githubusercontent.com/hadley/mastering-shiny/master/sales-dashboard/sales_data_sample.csv&amp;quot;)
+sales &amp;lt;- sales[c(
+    &amp;quot;TERRITORY&amp;quot;, &amp;quot;ORDERDATE&amp;quot;, &amp;quot;ORDERNUMBER&amp;quot;, &amp;quot;PRODUCTCODE&amp;quot;,
+    &amp;quot;QUANTITYORDERED&amp;quot;, &amp;quot;PRICEEACH&amp;quot;
+)]
+
+ui &amp;lt;- fluidPage(
+    selectInput(&amp;quot;territory&amp;quot;, &amp;quot;territory&amp;quot;, choices = unique(sales$TERRITORY)),
+    tableOutput(&amp;quot;selected&amp;quot;)
+)
+server &amp;lt;- function(input, output, session) {
+    selected &amp;lt;- reactive(sales[sales$TERRITORY == input$territory, ])
+    output$selected &amp;lt;- renderTable(head(selected(), 10))
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Si pegás el código en RStudio y corrés la app, ves que hay un montón de &lt;code&gt;NAs&lt;/code&gt;. El problema está muy bien explicado en el capítulo de Hadley que mencioné antes.&lt;/p&gt;
+&lt;p&gt;Entramos al directorio de la app y chequeamos el estado de Git:&lt;/p&gt;
+&lt;pre class=&#34;bash&#34;&gt;&lt;code&gt;# Bash
+cd app
+git status
+git log --oneline&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## On branch master
+## nothing to commit, working tree clean
+## bff90c4 Initial commit&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Solo está el commit inicial.&lt;/p&gt;
+&lt;p&gt;El problema está en esta expresión:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;sales[sales$TERRITORY == input$territory, ]&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Cuando &lt;code&gt;sales$TERRITORY&lt;/code&gt; es &lt;code&gt;NA&lt;/code&gt;, &lt;code&gt;sales$TERRITORY == input$territory&lt;/code&gt; es &lt;code&gt;NA&lt;/code&gt; y &lt;code&gt;sales[NA]&lt;/code&gt; da una fila de &lt;code&gt;NAs&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Vamos a usar &lt;code&gt;subset&lt;/code&gt; para arreglarlo, pero primero hago un branch.&lt;/p&gt;
+&lt;pre class=&#34;bash&#34;&gt;&lt;code&gt;cd app
+git checkout -b demasiados_nas
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Switched to a new branch &amp;#39;demasiados_nas&amp;#39;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;bash&#34;&gt;&lt;code&gt;cd app
+cp app_1.R app.R&lt;/code&gt;&lt;/pre&gt;
+&lt;!-- Miro GIT --&gt;
+&lt;pre class=&#34;bash&#34;&gt;&lt;code&gt;cd app
+git status
+git diff
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## On branch demasiados_nas
+## Changes not staged for commit:
+##   (use &amp;quot;git add &amp;lt;file&amp;gt;...&amp;quot; to update what will be committed)
+##   (use &amp;quot;git restore &amp;lt;file&amp;gt;...&amp;quot; to discard changes in working directory)
+##  modified:   app.R
+## 
+## no changes added to commit (use &amp;quot;git add&amp;quot; and/or &amp;quot;git commit -a&amp;quot;)
+## diff --git a/app.R b/app.R
+## index 7ef3837..27c80bb 100644
+## --- a/app.R
+## +++ b/app.R
+## @@ -12,7 +12,7 @@ ui &amp;lt;- fluidPage(
+##      tableOutput(&amp;quot;selected&amp;quot;)
+##  )
+##  server &amp;lt;- function(input, output, session) {
+## -    selected &amp;lt;- reactive(sales[sales$TERRITORY == input$territory, ])
+## +    selected &amp;lt;- reactive(subset(sales, sales$TERRITORY == input$territory))
+##      output$selected &amp;lt;- renderTable(head(selected(), 10))
+##  }
+## &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.atlassian.com/git/tutorials/saving-changes/git-diff&#34;&gt;Acá&lt;/a&gt; hay más información sobre como leer esta salida. Muestra 7 líneas a partir de la línea 12. Las que empiezan con &lt;code&gt;-&lt;/code&gt; son la versión anterior, y la que empieza con &lt;code&gt;+&lt;/code&gt; la nueva. Commiteo el cambio y sigo.&lt;/p&gt;
+&lt;pre class=&#34;bash&#34;&gt;&lt;code&gt;cd app
+git add app.R
+git commit -m &amp;quot;Usa subset en vez de ==&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [demasiados_nas 5a2006c] Usa subset en vez de ==
+##  1 file changed, 1 insertion(+), 1 deletion(-)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Pero ahora me encuentro con otro problema. Como dice Hadley, los &lt;code&gt;NA&lt;/code&gt; son infecciosos. Eso implica que &lt;code&gt;sales$TERRITORY == NA&lt;/code&gt; es siempre &lt;code&gt;NA&lt;/code&gt;, por lo si elegimo NA en el dropdown vamos a subsetear por un vector de &lt;code&gt;NA&lt;/code&gt;:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;subset(sales, TERRITORY == NA)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 0 x 6
+## # … with 6 variables: TERRITORY &amp;lt;chr&amp;gt;, ORDERDATE &amp;lt;chr&amp;gt;, ORDERNUMBER &amp;lt;dbl&amp;gt;,
+## #   PRODUCTCODE &amp;lt;chr&amp;gt;, QUANTITYORDERED &amp;lt;dbl&amp;gt;, PRICEEACH &amp;lt;dbl&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Para solucionar eso, podemos usar &lt;code&gt;%in%&lt;/code&gt;:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;subset(sales, TERRITORY %in% c(&amp;quot;EMEA&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 1,407 x 6
+##    TERRITORY ORDERDATE       ORDERNUMBER PRODUCTCODE QUANTITYORDERED PRICEEACH
+##    &amp;lt;chr&amp;gt;     &amp;lt;chr&amp;gt;                 &amp;lt;dbl&amp;gt; &amp;lt;chr&amp;gt;                 &amp;lt;dbl&amp;gt;     &amp;lt;dbl&amp;gt;
+##  1 EMEA      5/7/2003 0:00         10121 S10_1678                 34      81.4
+##  2 EMEA      7/1/2003 0:00         10134 S10_1678                 41      94.7
+##  3 EMEA      11/11/2003 0:00       10180 S10_1678                 29      86.1
+##  4 EMEA      11/18/2003 0:00       10188 S10_1678                 48     100  
+##  5 EMEA      1/15/2004 0:00        10211 S10_1678                 41     100  
+##  6 EMEA      7/23/2004 0:00        10275 S10_1678                 45      92.8
+##  7 EMEA      9/30/2004 0:00        10299 S10_1678                 23     100  
+##  8 EMEA      10/15/2004 0:00       10309 S10_1678                 41     100  
+##  9 EMEA      11/24/2004 0:00       10341 S10_1678                 41     100  
+## 10 EMEA      2/3/2005 0:00         10375 S10_1678                 21      34.9
+## # … with 1,397 more rows&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Commiteamos el resultado.&lt;/p&gt;
+&lt;pre class=&#34;bash&#34;&gt;&lt;code&gt;cd app
+git add app.R
+git commit -m &amp;quot;Usa %in% en vez de == en subset&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [demasiados_nas 41b2365] Usa %in% en vez de == en subset
+##  1 file changed, 1 insertion(+), 1 deletion(-)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Y mergear a master&lt;/p&gt;
+&lt;pre class=&#34;bash&#34;&gt;&lt;code&gt;cd app
+git checkout master
+git merge demasiados_nas
+git log --all --decorate --oneline --graph
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Switched to branch &amp;#39;master&amp;#39;
+## Updating bff90c4..41b2365
+## Fast-forward
+##  app.R | 2 +-
+##  1 file changed, 1 insertion(+), 1 deletion(-)
+## * 41b2365 (HEAD -&amp;gt; master, demasiados_nas) Usa %in% en vez de == en subset
+## * 5a2006c Usa subset en vez de ==
+## * bff90c4 Initial commit&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;plot-twist&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Plot Twist&lt;/h2&gt;
+&lt;p&gt;Bueno acá viene lo mejor, en el archivo original, &lt;code&gt;NA&lt;/code&gt; no es &lt;code&gt;NA&lt;/code&gt; de R, sino “NA” de North America. 🤦. Estuvimos todo el tiempo atrás de la pista incorrecta. En realidad &lt;code&gt;sales&lt;/code&gt; no tiene &lt;code&gt;NA&lt;/code&gt; en la variable &lt;code&gt;TERRITORY&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;La solución correcta es especificar los NAs en la llamada a &lt;code&gt;read_csv&lt;/code&gt;, para que no confunda “NA” con &lt;code&gt;NA&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;sales &amp;lt;- readr::read_csv(&amp;quot;https://raw.githubusercontent.com/hadley/mastering-shiny/master/sales-dashboard/sales_data_sample.csv&amp;quot;, na = &amp;quot;&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Pero ahora tenemos toda nuestra app plagada de cambios que hicimos cuando no entendíamos el problema!&lt;/p&gt;
+&lt;p&gt;Vamos a usar Git para arreglar este problema. Usammos &lt;code&gt;git reset&lt;/code&gt; para volver &lt;code&gt;master&lt;/code&gt; dos commits para atrás. Así, &lt;code&gt;master&lt;/code&gt; apunta al commit donde empezó el problema.&lt;/p&gt;
+&lt;pre class=&#34;bash&#34;&gt;&lt;code&gt;cd app
+git reset --hard HEAD~2
+git checkout -b no_hay_nas_en_territory
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## HEAD is now at bff90c4 Initial commit
+## Switched to a new branch &amp;#39;no_hay_nas_en_territory&amp;#39;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Hacer los cambios&lt;/p&gt;
+&lt;pre class=&#34;bash&#34;&gt;&lt;code&gt;cd app
+git status
+git diff&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## On branch no_hay_nas_en_territory
+## Changes not staged for commit:
+##   (use &amp;quot;git add &amp;lt;file&amp;gt;...&amp;quot; to update what will be committed)
+##   (use &amp;quot;git restore &amp;lt;file&amp;gt;...&amp;quot; to discard changes in working directory)
+##  modified:   app.R
+## 
+## no changes added to commit (use &amp;quot;git add&amp;quot; and/or &amp;quot;git commit -a&amp;quot;)
+## diff --git a/app.R b/app.R
+## index 7ef3837..387e0c9 100644
+## --- a/app.R
+## +++ b/app.R
+## @@ -1,7 +1,7 @@
+##  library(shiny)
+##  library(readr)
+##  
+## -sales &amp;lt;- readr::read_csv(&amp;quot;https://raw.githubusercontent.com/hadley/mastering-shiny/master/sales-dashboard/sales_data_sample.csv&amp;quot;)
+## +sales &amp;lt;- readr::read_csv(&amp;quot;https://raw.githubusercontent.com/hadley/mastering-shiny/master/sales-dashboard/sales_data_sample.csv&amp;quot;, na = &amp;quot;&amp;quot;)
+##  sales &amp;lt;- sales[c(
+##      &amp;quot;TERRITORY&amp;quot;, &amp;quot;ORDERDATE&amp;quot;, &amp;quot;ORDERNUMBER&amp;quot;, &amp;quot;PRODUCTCODE&amp;quot;,
+##      &amp;quot;QUANTITYORDERED&amp;quot;, &amp;quot;PRICEEACH&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;La línea que había que cambiar era la 7!&lt;/p&gt;
+&lt;pre class=&#34;bash&#34;&gt;&lt;code&gt;cd app
+git add app.R
+git commit -m &amp;quot;Agrega argumento na a la llamada a read_csv&amp;quot;
+git log --all --decorate --oneline --graph
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [no_hay_nas_en_territory fbc196e] Agrega argumento na a la llamada a read_csv
+##  1 file changed, 1 insertion(+), 1 deletion(-)
+## * fbc196e (HEAD -&amp;gt; no_hay_nas_en_territory) Agrega argumento na a la llamada a read_csv
+## | * 41b2365 (demasiados_nas) Usa %in% en vez de == en subset
+## | * 5a2006c Usa subset en vez de ==
+## |/  
+## * bff90c4 (master) Initial commit&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Ahora tengo que mergeamos estos estos cambios con master.&lt;/p&gt;
+&lt;pre class=&#34;bash&#34;&gt;&lt;code&gt;cd app
+git checkout master
+git merge no_hay_nas_en_territory
+git log --all --decorate --oneline --graph
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Switched to branch &amp;#39;master&amp;#39;
+## Updating bff90c4..fbc196e
+## Fast-forward
+##  app.R | 2 +-
+##  1 file changed, 1 insertion(+), 1 deletion(-)
+## * fbc196e (HEAD -&amp;gt; master, no_hay_nas_en_territory) Agrega argumento na a la llamada a read_csv
+## | * 41b2365 (demasiados_nas) Usa %in% en vez de == en subset
+## | * 5a2006c Usa subset en vez de ==
+## |/  
+## * bff90c4 Initial commit&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+</description>
+       </item>
+       
+     </channel>
+   </rss>

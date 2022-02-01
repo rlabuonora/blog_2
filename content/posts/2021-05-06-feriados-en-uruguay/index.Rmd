@@ -5,7 +5,6 @@ date: '2021-02-06'
 slug: []
 categories: []
 tags: []
-draft: true
 ---
 
 El primero de Mayo conmemoramos el días de los trabajadores. Lamentablemente, este año nos cayó sábado, por lo que nos perdimos el día libre. 

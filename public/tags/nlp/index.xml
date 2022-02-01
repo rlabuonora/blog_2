@@ -1,0 +1,328 @@
+
+   <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+     <channel>
+       <title>nlp on rlabuonora.com</title>
+       <link>/tags/nlp/</link>
+       <description>Recent content in nlp on rlabuonora.com</description>
+       <generator>Hugo -- gohugo.io</generator>
+       <copyright>Copyright &amp;copy; 2019 - Rafael La Buonora</copyright>
+       <lastBuildDate>Tue, 15 Oct 2019 00:00:00 +0000</lastBuildDate>
+       
+           <atom:link href="/tags/nlp/index.xml" rel="self" type="application/rss+xml" />
+       
+       
+       <item>
+         <title>Personas y lugares en las novelas de Mario Vargas Llosa</title>
+         <link>/posts/personas-y-lugares-vargas-llosa/</link>
+         <pubDate>Tue, 15 Oct 2019 00:00:00 +0000</pubDate>
+         
+         <guid>/posts/personas-y-lugares-vargas-llosa/</guid>
+         <description>
+
+
+&lt;p&gt;&lt;code&gt;spacyR&lt;/code&gt; es una interfaz para usar una librería de NLP de python -spacy- desde R. En este post exploro un poco como detectar nombres de personas y de lugares usando esta librería para analizar cuáles son los personajes principales y los lugares más mencionados en cada capítulo de Las Travesuras de la Niña Mala.&lt;/p&gt;
+&lt;div id=&#34;corpus&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Corpus&lt;/h2&gt;
+&lt;p&gt;A partir del texto de las novelas (en inglés), creo un data frame con una línea por fila y columnas con el texto y el capítulo al que corresponde cada línea.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bad_girl_url &amp;lt;- &amp;quot;https://raw.githubusercontent.com/rlabuonora/mvll_nlp/master/txt/bad_girl.txt&amp;quot;
+bad_girl_raw &amp;lt;- readLines(bad_girl_url, encoding = &amp;quot;UTF-8&amp;quot;)
+
+bad_girl_lines &amp;lt;- tibble(text = bad_girl_raw) %&amp;gt;%
+  mutate(chapter = str_detect(text, &amp;quot;\\d{1,2}.?$&amp;quot;), # Detect 1, 2, 3 ..7
+         chapter = cumsum(chapter)) %&amp;gt;%  # cumsum o fill
+  tibble::rowid_to_column(var=&amp;quot;doc_id&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;spacy&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Spacy&lt;/h2&gt;
+&lt;p&gt;Una vez que importé el texto de la novela, uso &lt;code&gt;spacy_parse&lt;/code&gt; para detectar las &lt;strong&gt;named entities&lt;/strong&gt;. Una &lt;strong&gt;named entity&lt;/strong&gt; es una entidad que aparece mencionada en el texto.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Spacy&lt;/code&gt; usa un algoritmo para detectar cuáles &lt;em&gt;tokens&lt;/em&gt; en el texto pertenecen a una entidad y de que tipo de entidad se trata.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;bad_girl_parsed &amp;lt;- spacy_parse(bad_girl_lines$text, lemma = FALSE, entity = TRUE, nounphrase = TRUE)
+
+ents &amp;lt;- entity_extract(bad_girl_parsed, type = &amp;quot;all&amp;quot;) %&amp;gt;% 
+  mutate(doc_id = as.numeric(str_extract(doc_id, &amp;quot;\\d{1,4}&amp;quot;))) %&amp;gt;% 
+  left_join(select(bad_girl_lines, chapter, doc_id))
+
+head(ents)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##   doc_id sentence_id                  entity entity_type chapter
+## 1      1           1                       1    CARDINAL       1
+## 2     10           1       a_fabulous_summer        DATE       1
+## 3     10           2             Pérez_Prado      PERSON       1
+## 4     10           2                  twelve    CARDINAL       1
+## 5     10           2                Carnival      PERSON       1
+## 6     10           2 the_Lawn_Tennis_of_Lima     PRODUCT       1&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;El data frame &lt;code&gt;ents&lt;/code&gt; tiene un &lt;code&gt;doc_id&lt;/code&gt; que nos permite vincular estos resultados con el input original (donde tenemos a què capítulo pertence cada frase, el nombre de la entidad detectada, y el tipo de entidad detectada.)&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;visualizacion&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Visualización&lt;/h1&gt;
+&lt;p&gt;Para la visualizión del resultado, veamos cuáles son las entidades de tipo &lt;em&gt;persona&lt;/em&gt; y &lt;em&gt;lugar&lt;/em&gt; más nombradas en cada capítulo:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;personas_por_capitulo &amp;lt;- ents %&amp;gt;% 
+  filter(entity_type  == &amp;quot;PERSON&amp;quot;) %&amp;gt;% 
+  filter(!entity %in% c(&amp;quot;’s&amp;quot;)) %&amp;gt;% # sacar entidades mal clasificadas
+  group_by(chapter, entity) %&amp;gt;% 
+  summarize(mentions = n()) %&amp;gt;% 
+  arrange(chapter, -mentions) %&amp;gt;% 
+  top_n(5, mentions) # Los 5 personajes más mencionados
+
+personas_por_capitulo %&amp;gt;% 
+  ggplot(aes(entity, mentions, fill = entity)) +
+  geom_col() +
+  coord_flip() +
+  facet_wrap(~chapter, scales=&amp;quot;free_y&amp;quot;) + 
+  guides(fill=FALSE) +
+  labs(y=&amp;quot;Menciones&amp;quot;, x=&amp;quot;Personajes&amp;quot;, 
+       title = &amp;quot;Travesuras de la Niña Mala&amp;quot;,
+       subtitle=&amp;quot;Personajes más mencionados por capítulo&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-10-15-personas-y-lugares-en-vargas-llosa_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Ahora hacemos lo mismo pero nos quedamos con las entidades de tipo &lt;em&gt;GPE&lt;/em&gt;: (&lt;em&gt;Geopolitical Entity&lt;/em&gt;).&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;lugares_por_capitulo &amp;lt;- ents %&amp;gt;% 
+  filter(entity_type  == &amp;quot;GPE&amp;quot;) %&amp;gt;% # GPE =&amp;gt; Geopolitical Entity
+  filter(!entity %in% c(&amp;quot;Salomón&amp;quot;, &amp;quot;Alberta&amp;quot;, &amp;quot;’s&amp;quot;, 
+                        &amp;quot;Mitsuko&amp;quot;, &amp;quot;Elena&amp;quot;)) %&amp;gt;% # Sacar ents mal clasificadas
+  group_by(chapter, entity) %&amp;gt;% 
+  summarize(mentions = n()) %&amp;gt;% 
+  arrange(chapter, -mentions) %&amp;gt;% 
+  top_n(5, mentions)
+
+lugares_por_capitulo %&amp;gt;% 
+  ggplot(aes(entity, mentions, fill = entity)) +
+  geom_col() +
+  coord_flip() +
+  facet_wrap(~chapter, scales=&amp;quot;free_y&amp;quot;) + 
+  guides(fill=FALSE) +
+  labs(y=&amp;quot;Menciones&amp;quot;, x=&amp;quot;Lugares&amp;quot;, 
+       title = &amp;quot;Travesuras de la Niña Mala&amp;quot;,
+       subtitle=&amp;quot;Lugares más mencionados por capítulo&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2019-10-15-personas-y-lugares-en-vargas-llosa_files/figure-html/unnamed-chunk-5-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+</description>
+       </item>
+       
+       <item>
+         <title>Mining Hamlet</title>
+         <link>/posts/hamlet/</link>
+         <pubDate>Sat, 20 Jan 2018 00:00:00 +0000</pubDate>
+         
+         <guid>/posts/hamlet/</guid>
+         <description>
+
+
+&lt;p&gt;A lot of Shakespeare’s tragic heores don’t dominate the first act of their plays. Instead, other characters speak about them, setting the scene for exploring their personalities as the play unfolds. This is the case of Julius Caesar, Macbeth and Othello (but not of King Lear).&lt;/p&gt;
+&lt;p&gt;In this post I go over the text of Hamlet, Prince of Denmark, using the quantity of lines spoken by character to visualize the dynamic of the play. We’ll get the chance to use &lt;code&gt;dplyr&lt;/code&gt; and some &lt;code&gt;regular expressions&lt;/code&gt;.&lt;/p&gt;
+&lt;div id=&#34;getting-the-text-of-the-plays&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Getting the text of the plays&lt;/h1&gt;
+&lt;p&gt;The text of Shakespeare’s plays is available from the &lt;code&gt;gutenberg&lt;/code&gt; package. I downloaded the text and made it available as a data frame &lt;a href=&#34;../../public/data/shakespeare_plays.rds&#34;&gt;here&lt;/a&gt;
+so you don’t have to.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;books &amp;lt;- readRDS(&amp;#39;../../public/data/shakespeare_plays.rds&amp;#39;)
+hamlet &amp;lt;- books %&amp;gt;%  
+  filter(title == &amp;quot;Hamlet, Prince of Denmark&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;extracting-the-character-names&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Extracting the Character names&lt;/h1&gt;
+&lt;p&gt;We can use a regular expressions to extract character names from the lines of the play. Most characters names appear abreviated (Ham. for Hamlet, Hor. for Horatio).&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;lag&lt;/code&gt; and &lt;code&gt;cumsum&lt;/code&gt; are useful inside call to &lt;code&gt;mutate&lt;/code&gt; to look at consecutive lines in the data frame. I also create a line number index with &lt;code&gt;row_number&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Fran., Ham., Pol.
+CHAR_REGEX &amp;lt;- regex(&amp;quot;^([A-Z][a-z]*)\\.&amp;quot;)
+# Stage Dir
+# [Enter Horatio and Marcellus.]
+STAGEDIR_REGEX &amp;lt;- regex(&amp;quot;(\\[.+\\])&amp;quot;)
+
+hamlet &amp;lt;- hamlet %&amp;gt;% 
+  mutate(char_name = str_match(text, CHAR_REGEX)[,2]) %&amp;gt;% 
+  mutate(stage_dir = str_match(text, STAGEDIR_REGEX)[,2],
+         char_name = if_else(!is.na(stage_dir), &amp;quot;director&amp;quot;, char_name)) %&amp;gt;%
+  mutate(start_speech = !is.na(char_name) &amp;amp; 
+           lag(text) == &amp;quot;&amp;quot;) %&amp;gt;%
+  mutate(speech_idx = cumsum(start_speech)) %&amp;gt;% 
+  mutate(line = row_number()) %&amp;gt;% 
+  select(text, char_name, start_speech, speech_idx, line)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now we need to create a &lt;code&gt;data frame&lt;/code&gt; of speeches. Each line is a speech in the play, with the character that speaks it and the number of lines it lasts.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;
+# Build a df with speech, start line, length char
+speeches_df &amp;lt;- hamlet %&amp;gt;% 
+  group_by(speech_idx) %&amp;gt;% 
+  summarise(char_name = first(char_name), 
+            line = first(line),
+          speech_length = as.integer(n()-2)) %&amp;gt;% 
+  dplyr::filter(char_name != &amp;quot;director&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The longest speech is by Hamlet (duh!), and starts at line 2677.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;speeches_df %&amp;gt;% 
+  arrange(-speech_length)
+## # A tibble: 1,077 x 4
+##    speech_idx char_name  line speech_length
+##         &amp;lt;int&amp;gt; &amp;lt;chr&amp;gt;     &amp;lt;int&amp;gt;         &amp;lt;int&amp;gt;
+##  1        498 Ham        2677            60
+##  2        234 Ghost      1296            50
+##  3         69 King        383            39
+##  4        761 Ham        4039            36
+##  5        154 Laer        846            35
+##  6        522 Ham        2857            35
+##  7        480 Pol        2553            34
+##  8        479 Ham        2518            33
+##  9        568 Ham        3139            32
+## 10         84 King        502            31
+## # … with 1,067 more rows&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Lets take a look at the text of the speech:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;hamlet %&amp;gt;% 
+  filter(line %in% 2677:2690) %&amp;gt;% 
+  select(text) 
+## # A tibble: 14 x 1
+##    text                                           
+##    &amp;lt;chr&amp;gt;                                          
+##  1 Ham.                                           
+##  2 Ay, so, God b&amp;#39; wi&amp;#39; ye!                         
+##  3 Now I am alone.                                
+##  4 O, what a rogue and peasant slave am I!        
+##  5 Is it not monstrous that this player here,     
+##  6 But in a fiction, in a dream of passion,       
+##  7 Could force his soul so to his own conceit     
+##  8 That from her working all his visage wan&amp;#39;d;    
+##  9 Tears in his eyes, distraction in&amp;#39;s aspect,    
+## 10 A broken voice, and his whole function suiting 
+## 11 With forms to his conceit? And all for nothing!
+## 12 For Hecuba?                                    
+## 13 What&amp;#39;s Hecuba to him, or he to Hecuba,         
+## 14 That he should weep for her? What would he do,&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Lets focus on the characters with the most lines:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;top_speakers &amp;lt;- speeches_df %&amp;gt;% 
+  group_by(char_name)  %&amp;gt;%
+  summarize(total_lines = sum(speech_length)) %&amp;gt;% 
+  arrange(-total_lines) %&amp;gt;% 
+  head(6)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Use &lt;code&gt;inner_join&lt;/code&gt; to discard the less important characters:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# Keep speeches by these speakers
+speeches_df_main &amp;lt;- speeches_df %&amp;gt;% 
+  inner_join(top_speakers, by = &amp;quot;char_name&amp;quot;) %&amp;gt;% 
+  filter(!is.na(char_name))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The last thing we need is a column with the cumulative lines spoken by each character:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;speeches_df_main &amp;lt;- speeches_df_main %&amp;gt;% 
+   group_by(char_name) %&amp;gt;% 
+   mutate(cum_lines = as.integer(cumsum(speech_length))) %&amp;gt;% 
+   ungroup() %&amp;gt;% 
+   mutate(char_name = fct_recode(char_name,
+             &amp;quot;Horatio&amp;quot;       = &amp;quot;Hor&amp;quot;,
+             &amp;quot;King Claudius&amp;quot; = &amp;quot;King&amp;quot;,
+             &amp;quot;Laertes&amp;quot;       = &amp;quot;Laer&amp;quot;,
+             &amp;quot;Polonius&amp;quot;      = &amp;quot;Pol&amp;quot;,
+             &amp;quot;Ophelia&amp;quot;       = &amp;quot;Oph&amp;quot;,
+             &amp;quot;Hamlet&amp;quot;        = &amp;quot;Ham&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now we can plot the play:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# color palette
+col.pal &amp;lt;- RColorBrewer::brewer.pal(8, &amp;quot;Set2&amp;quot;)
+
+# Plot Play
+g &amp;lt;- ggplot(speeches_df_main, aes(line, cum_lines, fill = char_name)) + 
+  guides(colour = guide_legend(title = NULL)) +
+  geom_area(alpha = 0.8) + 
+  guides(fill = guide_legend(title = NULL)) +
+  scale_fill_brewer(palette = &amp;quot;Set2&amp;quot;) + 
+  labs(title = &amp;quot;Cumulative lines&amp;quot;, subtitle = &amp;quot;By Character&amp;quot;) + 
+  xlab(&amp;quot;Line&amp;quot;) + 
+  ylab(&amp;quot;Spoken Lines&amp;quot;) +
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        panel.border = element_blank()) +
+  scale_x_continuous(expand = c(0, 0)) + 
+  scale_y_continuous(expand = c(0, 0))
+
+g&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2018-08-20-hamlet_files/figure-html/unnamed-chunk-9-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The plot shows the dynamic of the play quite nicely. Horatio, Hamlet’s friend figures quite prominenty at the beggining. Polonius has a lot of lines in the middle of the play, until he’s caught behind the arras just before line 4000. Towards the end, Hamlet eats up the whole play in his showdown with King Claudius.&lt;/p&gt;
+&lt;/div&gt;
+</description>
+       </item>
+       
+       <item>
+         <title>Tidy Vargas Llosa</title>
+         <link>/posts/tidy-vargas-llosa/</link>
+         <pubDate>Wed, 20 Dec 2017 00:00:00 +0000</pubDate>
+         
+         <guid>/posts/tidy-vargas-llosa/</guid>
+         <description>
+
+
+&lt;p&gt;Mario Vargas Llosa es uno de mis novelistas preferidos. El año pasado releí varios de sus libros y escribí &lt;a href=&#34;https://rlabuonora74.wordpress.com/&#34;&gt;algunos reviews&lt;/a&gt;. En este post aplico algunas de las técnicas de &lt;a href=&#34;https://www.tidytextmining.com/&#34;&gt;este libro&lt;/a&gt; a las novelas.&lt;/p&gt;
+&lt;div id=&#34;datos&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Datos&lt;/h1&gt;
+&lt;p&gt;Para este proyecto, conseguí todas las novelas de Vargas Llosa en Inglés en formato digital (epub, mobi) y las convertí a texto.&lt;/p&gt;
+&lt;p&gt;El primer paso para analizar texto es estructurarlo para el análisis. Este proceso se llama tokenización, porque implica separar el texto en “tokens”, pequeñas unidades de análisis. En este caso vamos a trabajar con texto tokenizado en palabras. El proceso de tokenización también puede incluír convertir las palabras a minúsculas y sacar las puntuaciones.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;wordcloud&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Wordcloud&lt;/h1&gt;
+&lt;p&gt;El análisis más básico de texto on R se llama WordCloud, y grafica las palabras más usadas en el texto analizando con el tamaño de la fuente proporcional a la frecuencia en que aparecen los términos.&lt;/p&gt;
+&lt;p&gt;Para hacer un WordCloud para una novela concreta, filtramos el data frame para que tenga solo el texto de la novela, y usamos &lt;code&gt;anti_join&lt;/code&gt; para sacar las stop words. Las &lt;code&gt;stop words&lt;/code&gt; son palabras como “la” y “de”. Suelen ser las palabras más usadas, pero no tienen información sobre el contenido del texto, por lo que es conveniente sacarlas.&lt;/p&gt;
+&lt;p&gt;Los otros tokens que llaman la atención en este análisis son los nombres de los personajes. Rigoberto y Lucrecia son los tokens más usados en Los cuadernos de don Rigoberto.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;s &amp;lt;- mvll_tidy %&amp;gt;% 
+  filter(title == &amp;quot;Notebooks of Don Rigoberto&amp;quot; ) %&amp;gt;%
+  filter(!str_detect(word, &amp;quot;\u2019&amp;quot;)) %&amp;gt;% # remove didn&amp;#39;t, they&amp;#39;re, etc.
+  anti_join(stop_words) %&amp;gt;%
+  count(word, sort = TRUE) %&amp;gt;% 
+  with(wordcloud(word, n, max.words = 40))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2018-11-20-tidy-vargas-llosa_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;palabras-caracteristicas-de-cada-libro&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Palabras características de cada libro&lt;/h1&gt;
+&lt;p&gt;Otro análisis similar es el índice de tf-idf. Esta métrica busca extraer los términos más característicos de un texto.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;book_words &amp;lt;- mvll_tidy %&amp;gt;%
+  count(title, word, sort = TRUE) %&amp;gt;%
+  ungroup %&amp;gt;%
+  bind_tf_idf(word, title, n)
+
+plt &amp;lt;- book_words %&amp;gt;%
+  arrange(desc(tf_idf)) %&amp;gt;%
+  mutate(word = factor(word, levels = rev(unique(word))))
+
+
+
+plt %&amp;gt;%
+  filter(title %in% libros$title[10:13]) %&amp;gt;%
+  group_by(title) %&amp;gt;%
+  top_n(10) %&amp;gt;%
+  ungroup %&amp;gt;%
+  ggplot(aes(word, tf_idf, fill = title)) +
+  geom_col(show.legend = FALSE) +
+  labs(x = NULL, y = &amp;quot;tf-idf&amp;quot;) + 
+  facet_wrap(~title, ncol = 2, scales=&amp;quot;free&amp;quot;) + 
+  coord_flip()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2018-11-20-tidy-vargas-llosa_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;sentiment-analysis&#34; class=&#34;section level1&#34;&gt;
+&lt;h1&gt;Sentiment Analysis&lt;/h1&gt;
+&lt;p&gt;El análisis de sentimiento busca crear métricas para que tan positivo o negativo es el texto que estamos analizando. Para eso, necesitamos un “léxico”, una base de datos con palabras y sus sentimientos correspondientes. Bing es uno de los léxicos disponibles, y para cada palabra define si es positivo o negativo:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;head(get_sentiments(&amp;quot;bing&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 6 x 2
+##   word       sentiment
+##   &amp;lt;chr&amp;gt;      &amp;lt;chr&amp;gt;    
+## 1 2-faces    negative 
+## 2 abnormal   negative 
+## 3 abolish    negative 
+## 4 abominable negative 
+## 5 abominably negative 
+## 6 abominate  negative&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Para analizar el texto de las novelas, usamos el léxico para determinar si cada palabra es positiva o negativa. Después tomamos unidades de 80 líneas y calculamos &lt;code&gt;sentiment&lt;/code&gt; como la diferencia entre la cantidad de palabras positivas y negativas. Esto nos da una métrica de que tan positivas son las palabras usadas en esa parte del texto.&lt;/p&gt;
+&lt;p&gt;La columna &lt;code&gt;idx&lt;/code&gt; son bloques de 80 líneas y sirven para encontrar pasajes en las novelas después de visualizarlas.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;mvll_sentiment &amp;lt;- mvll_tidy %&amp;gt;% 
+   filter(title %in% c(&amp;quot;Aunt Julia and the Scriptwriter&amp;quot;,
+                       &amp;quot;Conversation in the Cathedral&amp;quot;,
+                       &amp;quot;A Fish in the Water&amp;quot;,
+                       &amp;quot;Feast of the Goat&amp;quot;,
+                       &amp;quot;Notebooks of Don Rigoberto&amp;quot;,
+                       &amp;quot;Bad Girl&amp;quot;)) %&amp;gt;%
+  inner_join(get_sentiments(&amp;quot;bing&amp;quot;)) %&amp;gt;% 
+  count(title, index = line %/% 80, sentiment) %&amp;gt;%
+  spread(sentiment, n) %&amp;gt;%
+  mutate(sentiment = positive - negative)
+
+
+ggplot(mvll_sentiment, aes(index, sentiment, fill=title)) + 
+  geom_col() + 
+  facet_wrap(~title, ncol = 2, scales = &amp;quot;free_x&amp;quot;) + 
+  guides(fill=FALSE)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/posts/2018-11-20-tidy-vargas-llosa_files/figure-html/unnamed-chunk-6-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;En general, Vargas Llosa usa pocas palabras con sentimientos positivos. Esta visualización también identifica momentos particularmente buenos o malos en las novelas: en la mitad de los Cuadernos de don Rigoberto hay una parte que destaca como buena.&lt;/p&gt;
+&lt;/div&gt;
+</description>
+       </item>
+       
+     </channel>
+   </rss>

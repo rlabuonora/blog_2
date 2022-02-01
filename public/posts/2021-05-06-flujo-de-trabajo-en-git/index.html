@@ -1,0 +1,340 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+  <title>rlabuonora.com</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="The HTML5 Herald" />
+  <meta name="author" content="Rafael La Buonora" /><meta name="generator" content="Hugo 0.76.5" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" />
+  <script src="https://kit.fontawesome.com/b76b73e8e8.js" crossorigin="anonymous"></script>
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab|Ruda" />
+  <link rel="stylesheet" type="text/css" href="/css/styles.css" />
+  <link rel="stylesheet" type="text/css" href="/custom.css" /> <link rel="icon" href="/favicon.png"> 
+
+
+</head>
+
+<body>
+  <div id="container">
+    <header>
+      <h1>
+                <a href="/">rlabuonora.com</a>
+            </h1>
+
+      <ul id="social-media">
+        
+        
+        
+        <li><a href="https://twitter.com/rlabuonora"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+          
+        <li><a href="https://github.com/rlabuonora"><i class="fab fa-github fa-lg" aria-hidden="true"></i></a></li>
+           
+        <li><a href="http://cv.rlabuonora.com"><i class="fas fa-file-alt" aria-hidden="true"></i></a></li>
+        
+      </ul>
+      
+    </header>
+
+    
+<nav>
+    <ul>
+        
+        <li>
+            <a class="" href="/posts/">
+                <i class="fa-li fa  fa-lg"></i><span>Blog</span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="" href="/cursos/">
+                <i class="fa-li fa  fa-lg"></i><span>Cursos</span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="" href="/proyectos/">
+                <i class="fa-li fa  fa-lg"></i><span>Proyectos</span>
+            </a>
+        </li>
+        
+    </ul>
+</nav>
+
+    <main>
+
+
+
+
+<article>
+
+    <h1>Flujo de trabajo en Git</h1>
+
+    
+        <aside>
+    <ul>
+        <li>
+            <time class="post-date" datetime="2021-05-06T00:00:00Z">May 6, 2021</time>
+        </li>
+        
+        <li>
+            Categories:
+            <em>
+                
+                    
+                    <a href="/categories/git">Git</a>
+                
+                    , 
+                    <a href="/categories/r">R</a>
+                
+            </em>
+        </li>
+        
+
+        
+
+        <li>7 minutes read</li>
+    </ul>
+</aside>
+
+    
+
+    
+
+
+<p>Muchas veces usamos <em>software</em> sin entender totalmente como funciona. Cuando algo (inevitablemente) sale mal, creemos que nos merecemos los tormentos que sufrimos <a href="https://es.wikipedia.org/wiki/RTFM">Read the Fucking Manual!</a></p>
+<p>En este post uso una de las <em>killer features</em> de Git para seguir el ejemplo del <a href="https://mastering-shiny.org/action-workflow.html#case-study">capítulo de flujos de trabajo de Mastering Shiny</a>. Esta <em>feature</em> son las branches (si bien otros SVNs tienen branches, Git las hace muy fáciles de usar).</p>
+<p>Las branches permiten tener versiones independientes de el programa que estamos desarrollando. Esto me permite moverme fácilmente entre una versión y otra y experimentar interferir con el trabajo de otros miembros del equipo.</p>
+<p>En este caso, trato de arreglar un <em>bug</em>, pero como mi idea original del problema se basa en un modelo mental incorrecto de la función que estoy usando, introduzco un montón de cambios innecesarios y/o contraproducentes en el proceso de aclarar ese malentendido en mi mente.</p>
+<p>Trabajar en una <em>branch</em> de Git me permite experimentar y una vez que llego a la solución correcta quedarme solo con los cambios que necesito, y descartar todos los cambios que no eran necesarios para la solución final.</p>
+<p>El ejemplo es una app con un selector para elegir la región y listar los registros del archivo de <code>csv</code> que pertenecen a esa región.</p>
+<div id="el-ejemplo." class="section level2">
+<h2>El ejemplo.</h2>
+<pre class="r"><code>library(shiny)
+library(readr)
+
+sales &lt;- readr::read_csv(&quot;https://raw.githubusercontent.com/hadley/mastering-shiny/master/sales-dashboard/sales_data_sample.csv&quot;)
+sales &lt;- sales[c(
+    &quot;TERRITORY&quot;, &quot;ORDERDATE&quot;, &quot;ORDERNUMBER&quot;, &quot;PRODUCTCODE&quot;,
+    &quot;QUANTITYORDERED&quot;, &quot;PRICEEACH&quot;
+)]
+
+ui &lt;- fluidPage(
+    selectInput(&quot;territory&quot;, &quot;territory&quot;, choices = unique(sales$TERRITORY)),
+    tableOutput(&quot;selected&quot;)
+)
+server &lt;- function(input, output, session) {
+    selected &lt;- reactive(sales[sales$TERRITORY == input$territory, ])
+    output$selected &lt;- renderTable(head(selected(), 10))
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)</code></pre>
+<p>Si pegás el código en RStudio y corrés la app, ves que hay un montón de <code>NAs</code>. El problema está muy bien explicado en el capítulo de Hadley que mencioné antes.</p>
+<p>Entramos al directorio de la app y chequeamos el estado de Git:</p>
+<pre class="bash"><code># Bash
+cd app
+git status
+git log --oneline</code></pre>
+<pre><code>## On branch master
+## nothing to commit, working tree clean
+## bff90c4 Initial commit</code></pre>
+<p>Solo está el commit inicial.</p>
+<p>El problema está en esta expresión:</p>
+<pre class="r"><code>sales[sales$TERRITORY == input$territory, ]</code></pre>
+<p>Cuando <code>sales$TERRITORY</code> es <code>NA</code>, <code>sales$TERRITORY == input$territory</code> es <code>NA</code> y <code>sales[NA]</code> da una fila de <code>NAs</code>.</p>
+<p>Vamos a usar <code>subset</code> para arreglarlo, pero primero hago un branch.</p>
+<pre class="bash"><code>cd app
+git checkout -b demasiados_nas
+</code></pre>
+<pre><code>## Switched to a new branch &#39;demasiados_nas&#39;</code></pre>
+<pre class="bash"><code>cd app
+cp app_1.R app.R</code></pre>
+<!-- Miro GIT -->
+<pre class="bash"><code>cd app
+git status
+git diff
+</code></pre>
+<pre><code>## On branch demasiados_nas
+## Changes not staged for commit:
+##   (use &quot;git add &lt;file&gt;...&quot; to update what will be committed)
+##   (use &quot;git restore &lt;file&gt;...&quot; to discard changes in working directory)
+##  modified:   app.R
+## 
+## no changes added to commit (use &quot;git add&quot; and/or &quot;git commit -a&quot;)
+## diff --git a/app.R b/app.R
+## index 7ef3837..27c80bb 100644
+## --- a/app.R
+## +++ b/app.R
+## @@ -12,7 +12,7 @@ ui &lt;- fluidPage(
+##      tableOutput(&quot;selected&quot;)
+##  )
+##  server &lt;- function(input, output, session) {
+## -    selected &lt;- reactive(sales[sales$TERRITORY == input$territory, ])
+## +    selected &lt;- reactive(subset(sales, sales$TERRITORY == input$territory))
+##      output$selected &lt;- renderTable(head(selected(), 10))
+##  }
+## </code></pre>
+<p><a href="https://www.atlassian.com/git/tutorials/saving-changes/git-diff">Acá</a> hay más información sobre como leer esta salida. Muestra 7 líneas a partir de la línea 12. Las que empiezan con <code>-</code> son la versión anterior, y la que empieza con <code>+</code> la nueva. Commiteo el cambio y sigo.</p>
+<pre class="bash"><code>cd app
+git add app.R
+git commit -m &quot;Usa subset en vez de ==&quot;</code></pre>
+<pre><code>## [demasiados_nas 5a2006c] Usa subset en vez de ==
+##  1 file changed, 1 insertion(+), 1 deletion(-)</code></pre>
+<p>Pero ahora me encuentro con otro problema. Como dice Hadley, los <code>NA</code> son infecciosos. Eso implica que <code>sales$TERRITORY == NA</code> es siempre <code>NA</code>, por lo si elegimo NA en el dropdown vamos a subsetear por un vector de <code>NA</code>:</p>
+<pre class="r"><code>subset(sales, TERRITORY == NA)</code></pre>
+<pre><code>## # A tibble: 0 x 6
+## # … with 6 variables: TERRITORY &lt;chr&gt;, ORDERDATE &lt;chr&gt;, ORDERNUMBER &lt;dbl&gt;,
+## #   PRODUCTCODE &lt;chr&gt;, QUANTITYORDERED &lt;dbl&gt;, PRICEEACH &lt;dbl&gt;</code></pre>
+<p>Para solucionar eso, podemos usar <code>%in%</code>:</p>
+<pre class="r"><code>subset(sales, TERRITORY %in% c(&quot;EMEA&quot;))</code></pre>
+<pre><code>## # A tibble: 1,407 x 6
+##    TERRITORY ORDERDATE       ORDERNUMBER PRODUCTCODE QUANTITYORDERED PRICEEACH
+##    &lt;chr&gt;     &lt;chr&gt;                 &lt;dbl&gt; &lt;chr&gt;                 &lt;dbl&gt;     &lt;dbl&gt;
+##  1 EMEA      5/7/2003 0:00         10121 S10_1678                 34      81.4
+##  2 EMEA      7/1/2003 0:00         10134 S10_1678                 41      94.7
+##  3 EMEA      11/11/2003 0:00       10180 S10_1678                 29      86.1
+##  4 EMEA      11/18/2003 0:00       10188 S10_1678                 48     100  
+##  5 EMEA      1/15/2004 0:00        10211 S10_1678                 41     100  
+##  6 EMEA      7/23/2004 0:00        10275 S10_1678                 45      92.8
+##  7 EMEA      9/30/2004 0:00        10299 S10_1678                 23     100  
+##  8 EMEA      10/15/2004 0:00       10309 S10_1678                 41     100  
+##  9 EMEA      11/24/2004 0:00       10341 S10_1678                 41     100  
+## 10 EMEA      2/3/2005 0:00         10375 S10_1678                 21      34.9
+## # … with 1,397 more rows</code></pre>
+<p>Commiteamos el resultado.</p>
+<pre class="bash"><code>cd app
+git add app.R
+git commit -m &quot;Usa %in% en vez de == en subset&quot;</code></pre>
+<pre><code>## [demasiados_nas 41b2365] Usa %in% en vez de == en subset
+##  1 file changed, 1 insertion(+), 1 deletion(-)</code></pre>
+<p>Y mergear a master</p>
+<pre class="bash"><code>cd app
+git checkout master
+git merge demasiados_nas
+git log --all --decorate --oneline --graph
+</code></pre>
+<pre><code>## Switched to branch &#39;master&#39;
+## Updating bff90c4..41b2365
+## Fast-forward
+##  app.R | 2 +-
+##  1 file changed, 1 insertion(+), 1 deletion(-)
+## * 41b2365 (HEAD -&gt; master, demasiados_nas) Usa %in% en vez de == en subset
+## * 5a2006c Usa subset en vez de ==
+## * bff90c4 Initial commit</code></pre>
+</div>
+<div id="plot-twist" class="section level2">
+<h2>Plot Twist</h2>
+<p>Bueno acá viene lo mejor, en el archivo original, <code>NA</code> no es <code>NA</code> de R, sino “NA” de North America. 🤦. Estuvimos todo el tiempo atrás de la pista incorrecta. En realidad <code>sales</code> no tiene <code>NA</code> en la variable <code>TERRITORY</code>.</p>
+<p>La solución correcta es especificar los NAs en la llamada a <code>read_csv</code>, para que no confunda “NA” con <code>NA</code>.</p>
+<pre class="r"><code>sales &lt;- readr::read_csv(&quot;https://raw.githubusercontent.com/hadley/mastering-shiny/master/sales-dashboard/sales_data_sample.csv&quot;, na = &quot;&quot;)</code></pre>
+<p>Pero ahora tenemos toda nuestra app plagada de cambios que hicimos cuando no entendíamos el problema!</p>
+<p>Vamos a usar Git para arreglar este problema. Usammos <code>git reset</code> para volver <code>master</code> dos commits para atrás. Así, <code>master</code> apunta al commit donde empezó el problema.</p>
+<pre class="bash"><code>cd app
+git reset --hard HEAD~2
+git checkout -b no_hay_nas_en_territory
+</code></pre>
+<pre><code>## HEAD is now at bff90c4 Initial commit
+## Switched to a new branch &#39;no_hay_nas_en_territory&#39;</code></pre>
+<p>Hacer los cambios</p>
+<pre class="bash"><code>cd app
+git status
+git diff</code></pre>
+<pre><code>## On branch no_hay_nas_en_territory
+## Changes not staged for commit:
+##   (use &quot;git add &lt;file&gt;...&quot; to update what will be committed)
+##   (use &quot;git restore &lt;file&gt;...&quot; to discard changes in working directory)
+##  modified:   app.R
+## 
+## no changes added to commit (use &quot;git add&quot; and/or &quot;git commit -a&quot;)
+## diff --git a/app.R b/app.R
+## index 7ef3837..387e0c9 100644
+## --- a/app.R
+## +++ b/app.R
+## @@ -1,7 +1,7 @@
+##  library(shiny)
+##  library(readr)
+##  
+## -sales &lt;- readr::read_csv(&quot;https://raw.githubusercontent.com/hadley/mastering-shiny/master/sales-dashboard/sales_data_sample.csv&quot;)
+## +sales &lt;- readr::read_csv(&quot;https://raw.githubusercontent.com/hadley/mastering-shiny/master/sales-dashboard/sales_data_sample.csv&quot;, na = &quot;&quot;)
+##  sales &lt;- sales[c(
+##      &quot;TERRITORY&quot;, &quot;ORDERDATE&quot;, &quot;ORDERNUMBER&quot;, &quot;PRODUCTCODE&quot;,
+##      &quot;QUANTITYORDERED&quot;, &quot;PRICEEACH&quot;</code></pre>
+<p>La línea que había que cambiar era la 7!</p>
+<pre class="bash"><code>cd app
+git add app.R
+git commit -m &quot;Agrega argumento na a la llamada a read_csv&quot;
+git log --all --decorate --oneline --graph
+</code></pre>
+<pre><code>## [no_hay_nas_en_territory fbc196e] Agrega argumento na a la llamada a read_csv
+##  1 file changed, 1 insertion(+), 1 deletion(-)
+## * fbc196e (HEAD -&gt; no_hay_nas_en_territory) Agrega argumento na a la llamada a read_csv
+## | * 41b2365 (demasiados_nas) Usa %in% en vez de == en subset
+## | * 5a2006c Usa subset en vez de ==
+## |/  
+## * bff90c4 (master) Initial commit</code></pre>
+<p>Ahora tengo que mergeamos estos estos cambios con master.</p>
+<pre class="bash"><code>cd app
+git checkout master
+git merge no_hay_nas_en_territory
+git log --all --decorate --oneline --graph
+</code></pre>
+<pre><code>## Switched to branch &#39;master&#39;
+## Updating bff90c4..fbc196e
+## Fast-forward
+##  app.R | 2 +-
+##  1 file changed, 1 insertion(+), 1 deletion(-)
+## * fbc196e (HEAD -&gt; master, no_hay_nas_en_territory) Agrega argumento na a la llamada a read_csv
+## | * 41b2365 (demasiados_nas) Usa %in% en vez de == en subset
+## | * 5a2006c Usa subset en vez de ==
+## |/  
+## * bff90c4 Initial commit</code></pre>
+</div>
+
+
+</article>
+
+
+<section class="post-nav">
+    <ul>
+        
+        <li>
+            <a href="/posts/2021-05-06-feriados-en-uruguay/"><i class="fa fa-chevron-circle-left"></i> Feriados en Uruguay</a>
+        </li>
+        
+        
+        <li>
+            <a href="/posts/2021-05-06-causas-de-muerte-en-uruguay/">Causas de Muerte en Uruguay <i class="fa fa-chevron-circle-right"></i> </a>
+        </li>
+        
+    </ul>
+</section>
+    
+
+
+
+
+
+</main>
+    <footer>
+        <h6>Copyright © 2019 - Rafael La Buonora |
+            Rendered by <a href="https://gohugo.io" title="Hugo">Hugo</a> |
+            <a href="/index.xml">Subscribe</a></h6>
+    </footer>
+</div>
+<script src="/js/scripts.js"></script>
+
+  
+<script src="/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+
+</body>
+
+
+
+</html>

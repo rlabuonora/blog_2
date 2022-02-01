@@ -1,0 +1,291 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+  <title>rlabuonora.com</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="The HTML5 Herald" />
+  <meta name="author" content="Rafael La Buonora" /><meta name="generator" content="Hugo 0.76.5" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" />
+  <script src="https://kit.fontawesome.com/b76b73e8e8.js" crossorigin="anonymous"></script>
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab|Ruda" />
+  <link rel="stylesheet" type="text/css" href="/css/styles.css" />
+  <link rel="stylesheet" type="text/css" href="/custom.css" /> <link rel="icon" href="/favicon.png"> 
+
+
+</head>
+
+<body>
+  <div id="container">
+    <header>
+      <h1>
+                <a href="/">rlabuonora.com</a>
+            </h1>
+
+      <ul id="social-media">
+        
+        
+        
+        <li><a href="https://twitter.com/rlabuonora"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+          
+        <li><a href="https://github.com/rlabuonora"><i class="fab fa-github fa-lg" aria-hidden="true"></i></a></li>
+           
+        <li><a href="http://cv.rlabuonora.com"><i class="fas fa-file-alt" aria-hidden="true"></i></a></li>
+        
+      </ul>
+      
+    </header>
+
+    
+<nav>
+    <ul>
+        
+        <li>
+            <a class="" href="/posts/">
+                <i class="fa-li fa  fa-lg"></i><span>Blog</span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="" href="/cursos/">
+                <i class="fa-li fa  fa-lg"></i><span>Cursos</span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="" href="/proyectos/">
+                <i class="fa-li fa  fa-lg"></i><span>Proyectos</span>
+            </a>
+        </li>
+        
+    </ul>
+</nav>
+
+    <main>
+
+
+
+
+<article>
+
+    <h1>Un gráfico de barras anotado</h1>
+
+    
+        <aside>
+    <ul>
+        <li>
+            <time class="post-date" datetime="2020-05-28T00:00:00Z">May 28, 2020</time>
+        </li>
+        
+
+        
+        <li>
+            <em>
+                
+                    
+                    <a href="/tags/r">#R</a>
+                
+                    , 
+                    <a href="/tags/ggplot">#ggplot</a>
+                
+                    , 
+                    <a href="/tags/tidytuesday">#tidytuesday</a>
+                
+            </em>
+        </li>
+        
+
+        <li>4 minutes read</li>
+    </ul>
+</aside>
+
+    
+
+    
+
+
+<p>En este posteo hago un gráfico de barras con anotaciones para mostrar un problema en el sistema de exámenes de las escuelas de Nueva York.</p>
+<div id="diplopma-regents" class="section level1">
+<h1>Diplopma Regents</h1>
+<p>Los exámenes Regents son una serie de tests estándar de temas de secundaria en el estado de Nueva York. Este set de datos muestra las notas de exámenes en varias materias. Lo que llama la atención es que hay un gran número de examenes con 65, la nota mínima de aprobación.</p>
+<pre class="r"><code>nyc_regents &lt;-  read_csv(here(&quot;static&quot;, &quot;data&quot;, &quot;tidytuesday&quot;,&quot;nyc_regents.csv&quot;)
+)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   score = col_double(),
+##   integrated_algebra = col_double(),
+##   global_history = col_double(),
+##   living_environment = col_double(),
+##   english = col_double(),
+##   us_history = col_double()
+## )</code></pre>
+<pre class="r"><code># reshape
+
+nyc_reshape &lt;- nyc_regents %&gt;% 
+  gather(k=&quot;subject&quot;, v=&quot;tests&quot;, -score) %&gt;% 
+  group_by(score) %&gt;% 
+  summarize(tests = sum(tests, na.rm = TRUE))</code></pre>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<pre class="r"><code># plot basico
+g &lt;- ggplot(nyc_reshape, aes(score, tests)) + 
+  geom_col()
+
+# Texto
+
+g + 
+  labs(caption = &quot;Fuente: New York City Department of Education&quot;,
+       title = &quot;Salvar Raspando&quot;,
+       subtitle = &quot;2010 Regents scores on Algebra, \nGlobal History, Biology, English &amp; US History&quot;, 
+       y = &quot;&quot;, x = &quot;&quot;)</code></pre>
+<pre><code>## Warning: Removed 1 rows containing missing values (position_stack).</code></pre>
+<p><img src="/posts/2019-12-28-examenes_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code># Ejes
+# Scales en el grammar of graphics
+# Customizando los ejes con scale_x_* y scale_y_*
+# le pasamos una función a labels
+# expand es contraintuitivamente importante
+# labels, breaks, expand
+g + 
+  
+  labs(caption = &quot;Source: New York City Department of Education&quot;,
+       title = &quot;Scraping By&quot;,
+       subtitle = &quot;2010 Regents scores on Algebra, \nGlobal History, Biology, English &amp; US History&quot;, 
+       y = &quot;&quot;, x = &quot;&quot;) + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_y_continuous(position = &quot;right&quot;, 
+                     labels = scales::number_format(big.mark = &quot;,&quot;), # function
+                     breaks = c(1e4, 2e4, 3e4))</code></pre>
+<pre><code>## Warning: `expand_scale()` is deprecated; use `expansion()` instead.
+
+## Warning: Removed 1 rows containing missing values (position_stack).</code></pre>
+<p><img src="/posts/2019-12-28-examenes_files/figure-html/unnamed-chunk-2-2.png" width="672" /></p>
+<pre class="r"><code># Theme
+g + labs(caption = &quot;Fuente: New York City Department of Education&quot;,
+       title = &quot;Salvar Raspando&quot;,
+       subtitle = &quot;Notas 2010 Regents en Álgebra, \nHistoria, Biología, e Inglés&quot;,
+       y = &quot;&quot;, x = &quot;&quot;) + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_y_continuous(position = &quot;right&quot;, 
+                     labels = scales::number_format(big.mark = &quot;,&quot;), # function
+                     breaks = c(1e4, 2e4, 3e4)) + 
+  theme_minimal() + 
+  theme(
+    panel.grid.major.y = element_line(linetype = &quot;dashed&quot;, color = &quot;gray50&quot;),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.y = element_text(vjust = 1.5),
+    axis.text.x = element_text(vjust = 7),
+    plot.margin = margin(unit(c(20, 20, 20, 20), &quot;cm&quot;))
+  )</code></pre>
+<pre><code>## Warning: `expand_scale()` is deprecated; use `expansion()` instead.
+
+## Warning: Removed 1 rows containing missing values (position_stack).</code></pre>
+<p><img src="/posts/2019-12-28-examenes_files/figure-html/unnamed-chunk-2-3.png" width="672" /></p>
+<pre class="r"><code># color a las columnas
+ggplot(nyc_reshape, aes(score, tests)) + 
+  geom_col(color = &quot;black&quot;, fill = &quot;#C4843C&quot;) + 
+  labs(caption = &quot;Fuente: New York City Department of Education&quot;,
+       title = &quot;Salvar Raspando&quot;,
+       subtitle = &quot;Notas 2010 Regents en Álgebra, \nHistoria, Biología, e Inglés&quot;,
+       y = &quot;&quot;, x = &quot;&quot;) + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_y_continuous(position = &quot;right&quot;, 
+                     labels = scales::number_format(big.mark = &quot;,&quot;), # function
+                     breaks = c(1e4, 2e4, 3e4)) + 
+  theme_minimal() + 
+  theme(
+    panel.grid.major.y = element_line(linetype = &quot;dashed&quot;, color = &quot;gray50&quot;),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.y = element_text(vjust = 1.5),
+    axis.text.x = element_text(vjust = 7),
+    plot.margin = margin(unit(c(20, 20, 20, 20), &quot;cm&quot;))
+  )</code></pre>
+<pre><code>## Warning: `expand_scale()` is deprecated; use `expansion()` instead.
+
+## Warning: Removed 1 rows containing missing values (position_stack).</code></pre>
+<p><img src="/posts/2019-12-28-examenes_files/figure-html/unnamed-chunk-2-4.png" width="672" /></p>
+<pre class="r"><code># Todo junto
+nyc_regents %&gt;% 
+  gather(k=&quot;k&quot;, v=&quot;v&quot;, -score) %&gt;% 
+  group_by(score) %&gt;% 
+  summarize(v = sum(v, na.rm = TRUE)) %&gt;% 
+  ggplot(aes(score, v)) +
+  annotate(&quot;rect&quot;, xmin = 65, xmax=Inf, ymin=0, ymax=Inf, alpha = 0.6, fill = &quot;grey80&quot;) + 
+  annotate(&quot;text&quot;, 
+           label = &quot;Mìnimo para diploma Regents&quot;,
+           x = 45, y = 2.5e4) + 
+  annotate(&quot;segment&quot;, arrow=arrow(type = &quot;closed&quot;, length = unit(0.2, &quot;cm&quot;)), x=50, y=2.8e4, xend=64, yend=3.2e4) + 
+  geom_col(color = &quot;black&quot;, fill = &quot;#C4843C&quot;) + 
+  theme_minimal() + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_y_continuous(position = &quot;right&quot;, 
+                     labels = scales::number_format(big.mark = &quot;,&quot;), # function
+                     breaks = c(1e4, 2e4, 3e4)) + 
+  labs(caption = &quot;Fuente: New York City Department of Education&quot;,
+       title = &quot;Salvar Raspando&quot;,
+       subtitle = &quot;Notas Regents 2010 en Álgebra, \nHistoria, Biología, e Inglés&quot;,
+       y = &quot;&quot;, x = &quot;&quot;) +
+  labs(y = &quot;&quot;, x = &quot;&quot;) +
+  theme(
+    panel.grid.major.y = element_line(linetype = &quot;dashed&quot;, color = &quot;gray50&quot;),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.y = element_text(vjust = 1.5),
+    axis.text.x = element_text(vjust = 7),
+    plot.margin = margin(unit(c(20, 20, 20, 20), &quot;cm&quot;)) # 
+  )</code></pre>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<pre><code>## Warning: `expand_scale()` is deprecated; use `expansion()` instead.
+
+## Warning: Removed 1 rows containing missing values (position_stack).</code></pre>
+<p><img src="/posts/2019-12-28-examenes_files/figure-html/unnamed-chunk-2-5.png" width="672" /></p>
+</div>
+
+
+</article>
+
+
+<section class="post-nav">
+    <ul>
+        
+        <li>
+            <a href="/posts/metallica/"><i class="fa fa-chevron-circle-left"></i> El estilo de Metallica a lo largo de los discos</a>
+        </li>
+        
+        
+        <li>
+            <a href="/posts/vacunas/">Visualizando Homicidios <i class="fa fa-chevron-circle-right"></i> </a>
+        </li>
+        
+    </ul>
+</section>
+    
+
+
+
+
+
+</main>
+    <footer>
+        <h6>Copyright © 2019 - Rafael La Buonora |
+            Rendered by <a href="https://gohugo.io" title="Hugo">Hugo</a> |
+            <a href="/index.xml">Subscribe</a></h6>
+    </footer>
+</div>
+<script src="/js/scripts.js"></script>
+
+  
+<script src="/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+
+</body>
+
+
+
+</html>

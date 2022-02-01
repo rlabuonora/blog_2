@@ -1,0 +1,78 @@
+
+
+#home img {
+  margin-top: 1em;
+}
+
+@media (min-width: 600px) {
+
+  #container header h1 {
+    margin-bottom: -1em;
+  }
+
+}
+
+article p .static-image {
+  width: 50%;
+}
+
+/* Home */
+
+#home  {
+  text-align: center;
+}
+
+#home h2 {
+  margin-top: 2em;
+}
+
+#home a {
+  border-bottom: 0.2em solid #666666;
+}
+
+
+/* Shortcode for displaying projects */
+
+.media {
+  padding: 1em;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.24);
+  margin-bottom: 1em;
+}
+
+.media-image  {
+  float: left;
+  width: 10%;
+  box-shadow: none;
+  margin-right: 2em;
+}
+
+@media only screen and (max-width: 400px) {
+  .media-image  {
+    width: 8%;
+
+  }
+}
+
+.media-body {
+  overflow: auto;
+  margin-top: 0;
+}
+
+.media-body h4 {
+  margin-top: 0;
+  margin-bottom: 0;
+  
+}
+
+.media-body p {
+  margin-top: 0;
+}
+
+
+/* Posts */
+
+
+.img-post {
+  width: 40%;
+  margin: 0 auto;
+}

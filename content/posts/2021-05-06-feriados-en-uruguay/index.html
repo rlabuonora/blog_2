@@ -5,21 +5,49 @@ date: '2021-02-06'
 slug: []
 categories: []
 tags: []
-draft: true
 ---
 
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
 
 
 <p>El primero de Mayo conmemoramos el días de los trabajadores. Lamentablemente, este año nos cayó sábado, por lo que nos perdimos el día libre.</p>
 <p>En este post uso lubridate para ver cuantos feriados caen fin de semana por año.</p>
 <pre class="r"><code>library(rvest)</code></pre>
-<pre><code>## Warning: package &#39;rvest&#39; was built under R version 3.6.2</code></pre>
+<pre><code>## Warning: package &#39;rvest&#39; was built under R version 4.0.5</code></pre>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## Warning: package &#39;tidyverse&#39; was built under R version 4.0.5</code></pre>
+<pre><code>## -- Attaching packages --------------------------------------- tidyverse 1.3.1 --</code></pre>
+<pre><code>## v ggplot2 3.3.5     v purrr   0.3.4
+## v tibble  3.1.4     v dplyr   1.0.7
+## v tidyr   1.1.4     v stringr 1.4.0
+## v readr   2.0.1     v forcats 0.5.1</code></pre>
+<pre><code>## Warning: package &#39;ggplot2&#39; was built under R version 4.0.5</code></pre>
+<pre><code>## Warning: package &#39;tibble&#39; was built under R version 4.0.5</code></pre>
+<pre><code>## Warning: package &#39;tidyr&#39; was built under R version 4.0.5</code></pre>
+<pre><code>## Warning: package &#39;readr&#39; was built under R version 4.0.5</code></pre>
+<pre><code>## Warning: package &#39;dplyr&#39; was built under R version 4.0.5</code></pre>
+<pre><code>## Warning: package &#39;forcats&#39; was built under R version 4.0.5</code></pre>
+<pre><code>## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
+## x dplyr::filter()         masks stats::filter()
+## x readr::guess_encoding() masks rvest::guess_encoding()
+## x dplyr::lag()            masks stats::lag()</code></pre>
 <pre class="r"><code>url &lt;- &quot;https://es.wikipedia.org/wiki/D%C3%ADas_feriados_de_Uruguay&quot;
 
-# tablas &lt;- url %&gt;% 
-#   read_html() %&gt;%
-#   html_node(&quot;table&quot;) %&gt;% 
-#   html_table(fill=TRUE)</code></pre>
+lines &lt;- url %&gt;%
+  read_html() %&gt;%
+  html_nodes(xpath=&quot;//table[starts-with(@class, &#39;wikitable&#39;)]&quot;) %&gt;%
+  html_nodes(xpath = &#39;tbody/tr&#39;)
+
+content &lt;- url %&gt;%
+  read_html() %&gt;% 
+  html_node(&quot;table&quot;) 
+
+content %&gt;% 
+  html_node(css = &quot;table&quot;)</code></pre>
+<pre><code>## {xml_missing}
+## &lt;NA&gt;</code></pre>
+<pre class="r"><code>url &lt;- &quot;https://en.wikipedia.org/wiki/United_Kingdom_Parliament_constituencies&quot;
+items &lt;- read_html(url) %&gt;% html_nodes(xpath=&#39;//*[@id=&quot;mw-content-text&quot;]/div/table[2]&#39;) %&gt;% html_table()</code></pre>
 <div id="rvest" class="section level1">
 <h1>rvest</h1>
 <ul>

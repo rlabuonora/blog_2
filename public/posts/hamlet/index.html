@@ -1,0 +1,274 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+  <title>rlabuonora.com</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="The HTML5 Herald" />
+  <meta name="author" content="Rafa" /><meta name="generator" content="Hugo 0.76.5" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" />
+  <script src="https://kit.fontawesome.com/b76b73e8e8.js" crossorigin="anonymous"></script>
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab|Ruda" />
+  <link rel="stylesheet" type="text/css" href="/css/styles.css" />
+  <link rel="stylesheet" type="text/css" href="/custom.css" /> <link rel="icon" href="/favicon.png"> 
+
+
+</head>
+
+<body>
+  <div id="container">
+    <header>
+      <h1>
+                <a href="/">rlabuonora.com</a>
+            </h1>
+
+      <ul id="social-media">
+        
+        
+        
+        <li><a href="https://twitter.com/rlabuonora"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+          
+        <li><a href="https://github.com/rlabuonora"><i class="fab fa-github fa-lg" aria-hidden="true"></i></a></li>
+           
+        <li><a href="http://cv.rlabuonora.com"><i class="fas fa-file-alt" aria-hidden="true"></i></a></li>
+        
+      </ul>
+      
+    </header>
+
+    
+<nav>
+    <ul>
+        
+        <li>
+            <a class="" href="/posts/">
+                <i class="fa-li fa  fa-lg"></i><span>Blog</span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="" href="/cursos/">
+                <i class="fa-li fa  fa-lg"></i><span>Cursos</span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="" href="/proyectos/">
+                <i class="fa-li fa  fa-lg"></i><span>Proyectos</span>
+            </a>
+        </li>
+        
+    </ul>
+</nav>
+
+    <main>
+
+
+
+
+<article>
+
+    <h1>Mining Hamlet</h1>
+
+    
+        <aside>
+    <ul>
+        <li>
+            <time class="post-date" datetime="2018-01-20T00:00:00Z">Jan 20, 2018</time>
+        </li>
+        
+
+        
+        <li>
+            <em>
+                
+                    
+                    <a href="/tags/nlp">#nlp</a>
+                
+                    , 
+                    <a href="/tags/r">#R</a>
+                
+            </em>
+        </li>
+        
+
+        <li>4 minutes read</li>
+    </ul>
+</aside>
+
+    
+
+    
+
+
+<p>A lot of Shakespeare’s tragic heores don’t dominate the first act of their plays. Instead, other characters speak about them, setting the scene for exploring their personalities as the play unfolds. This is the case of Julius Caesar, Macbeth and Othello (but not of King Lear).</p>
+<p>In this post I go over the text of Hamlet, Prince of Denmark, using the quantity of lines spoken by character to visualize the dynamic of the play. We’ll get the chance to use <code>dplyr</code> and some <code>regular expressions</code>.</p>
+<div id="getting-the-text-of-the-plays" class="section level1">
+<h1>Getting the text of the plays</h1>
+<p>The text of Shakespeare’s plays is available from the <code>gutenberg</code> package. I downloaded the text and made it available as a data frame <a href="../../public/data/shakespeare_plays.rds">here</a>
+so you don’t have to.</p>
+<pre class="r"><code>books &lt;- readRDS(&#39;../../public/data/shakespeare_plays.rds&#39;)
+hamlet &lt;- books %&gt;%  
+  filter(title == &quot;Hamlet, Prince of Denmark&quot;)</code></pre>
+</div>
+<div id="extracting-the-character-names" class="section level1">
+<h1>Extracting the Character names</h1>
+<p>We can use a regular expressions to extract character names from the lines of the play. Most characters names appear abreviated (Ham. for Hamlet, Hor. for Horatio).</p>
+<p><code>lag</code> and <code>cumsum</code> are useful inside call to <code>mutate</code> to look at consecutive lines in the data frame. I also create a line number index with <code>row_number</code>.</p>
+<pre class="r"><code># Fran., Ham., Pol.
+CHAR_REGEX &lt;- regex(&quot;^([A-Z][a-z]*)\\.&quot;)
+# Stage Dir
+# [Enter Horatio and Marcellus.]
+STAGEDIR_REGEX &lt;- regex(&quot;(\\[.+\\])&quot;)
+
+hamlet &lt;- hamlet %&gt;% 
+  mutate(char_name = str_match(text, CHAR_REGEX)[,2]) %&gt;% 
+  mutate(stage_dir = str_match(text, STAGEDIR_REGEX)[,2],
+         char_name = if_else(!is.na(stage_dir), &quot;director&quot;, char_name)) %&gt;%
+  mutate(start_speech = !is.na(char_name) &amp; 
+           lag(text) == &quot;&quot;) %&gt;%
+  mutate(speech_idx = cumsum(start_speech)) %&gt;% 
+  mutate(line = row_number()) %&gt;% 
+  select(text, char_name, start_speech, speech_idx, line)</code></pre>
+<p>Now we need to create a <code>data frame</code> of speeches. Each line is a speech in the play, with the character that speaks it and the number of lines it lasts.</p>
+<pre class="r"><code>
+# Build a df with speech, start line, length char
+speeches_df &lt;- hamlet %&gt;% 
+  group_by(speech_idx) %&gt;% 
+  summarise(char_name = first(char_name), 
+            line = first(line),
+          speech_length = as.integer(n()-2)) %&gt;% 
+  dplyr::filter(char_name != &quot;director&quot;)</code></pre>
+<p>The longest speech is by Hamlet (duh!), and starts at line 2677.</p>
+<pre class="r"><code>speeches_df %&gt;% 
+  arrange(-speech_length)
+## # A tibble: 1,077 x 4
+##    speech_idx char_name  line speech_length
+##         &lt;int&gt; &lt;chr&gt;     &lt;int&gt;         &lt;int&gt;
+##  1        498 Ham        2677            60
+##  2        234 Ghost      1296            50
+##  3         69 King        383            39
+##  4        761 Ham        4039            36
+##  5        154 Laer        846            35
+##  6        522 Ham        2857            35
+##  7        480 Pol        2553            34
+##  8        479 Ham        2518            33
+##  9        568 Ham        3139            32
+## 10         84 King        502            31
+## # … with 1,067 more rows</code></pre>
+<p>Lets take a look at the text of the speech:</p>
+<pre class="r"><code>hamlet %&gt;% 
+  filter(line %in% 2677:2690) %&gt;% 
+  select(text) 
+## # A tibble: 14 x 1
+##    text                                           
+##    &lt;chr&gt;                                          
+##  1 Ham.                                           
+##  2 Ay, so, God b&#39; wi&#39; ye!                         
+##  3 Now I am alone.                                
+##  4 O, what a rogue and peasant slave am I!        
+##  5 Is it not monstrous that this player here,     
+##  6 But in a fiction, in a dream of passion,       
+##  7 Could force his soul so to his own conceit     
+##  8 That from her working all his visage wan&#39;d;    
+##  9 Tears in his eyes, distraction in&#39;s aspect,    
+## 10 A broken voice, and his whole function suiting 
+## 11 With forms to his conceit? And all for nothing!
+## 12 For Hecuba?                                    
+## 13 What&#39;s Hecuba to him, or he to Hecuba,         
+## 14 That he should weep for her? What would he do,</code></pre>
+<p>Lets focus on the characters with the most lines:</p>
+<pre class="r"><code>top_speakers &lt;- speeches_df %&gt;% 
+  group_by(char_name)  %&gt;%
+  summarize(total_lines = sum(speech_length)) %&gt;% 
+  arrange(-total_lines) %&gt;% 
+  head(6)</code></pre>
+<p>Use <code>inner_join</code> to discard the less important characters:</p>
+<pre class="r"><code># Keep speeches by these speakers
+speeches_df_main &lt;- speeches_df %&gt;% 
+  inner_join(top_speakers, by = &quot;char_name&quot;) %&gt;% 
+  filter(!is.na(char_name))</code></pre>
+<p>The last thing we need is a column with the cumulative lines spoken by each character:</p>
+<pre class="r"><code>speeches_df_main &lt;- speeches_df_main %&gt;% 
+   group_by(char_name) %&gt;% 
+   mutate(cum_lines = as.integer(cumsum(speech_length))) %&gt;% 
+   ungroup() %&gt;% 
+   mutate(char_name = fct_recode(char_name,
+             &quot;Horatio&quot;       = &quot;Hor&quot;,
+             &quot;King Claudius&quot; = &quot;King&quot;,
+             &quot;Laertes&quot;       = &quot;Laer&quot;,
+             &quot;Polonius&quot;      = &quot;Pol&quot;,
+             &quot;Ophelia&quot;       = &quot;Oph&quot;,
+             &quot;Hamlet&quot;        = &quot;Ham&quot;))</code></pre>
+<p>Now we can plot the play:</p>
+<pre class="r"><code># color palette
+col.pal &lt;- RColorBrewer::brewer.pal(8, &quot;Set2&quot;)
+
+# Plot Play
+g &lt;- ggplot(speeches_df_main, aes(line, cum_lines, fill = char_name)) + 
+  guides(colour = guide_legend(title = NULL)) +
+  geom_area(alpha = 0.8) + 
+  guides(fill = guide_legend(title = NULL)) +
+  scale_fill_brewer(palette = &quot;Set2&quot;) + 
+  labs(title = &quot;Cumulative lines&quot;, subtitle = &quot;By Character&quot;) + 
+  xlab(&quot;Line&quot;) + 
+  ylab(&quot;Spoken Lines&quot;) +
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        panel.border = element_blank()) +
+  scale_x_continuous(expand = c(0, 0)) + 
+  scale_y_continuous(expand = c(0, 0))
+
+g</code></pre>
+<p><img src="/posts/2018-08-20-hamlet_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>The plot shows the dynamic of the play quite nicely. Horatio, Hamlet’s friend figures quite prominenty at the beggining. Polonius has a lot of lines in the middle of the play, until he’s caught behind the arras just before line 4000. Towards the end, Hamlet eats up the whole play in his showdown with King Claudius.</p>
+</div>
+
+
+</article>
+
+
+<section class="post-nav">
+    <ul>
+        
+        <li>
+            <a href="/posts/tidy-vargas-llosa/"><i class="fa fa-chevron-circle-left"></i> Tidy Vargas Llosa</a>
+        </li>
+        
+        
+        <li>
+            <a href="/posts/mapas/">Un mapa de Montevideo con leaflet <i class="fa fa-chevron-circle-right"></i> </a>
+        </li>
+        
+    </ul>
+</section>
+    
+
+
+
+
+
+</main>
+    <footer>
+        <h6>Copyright © 2019 - Rafael La Buonora |
+            Rendered by <a href="https://gohugo.io" title="Hugo">Hugo</a> |
+            <a href="/index.xml">Subscribe</a></h6>
+    </footer>
+</div>
+<script src="/js/scripts.js"></script>
+
+  
+<script src="/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+
+</body>
+
+
+
+</html>

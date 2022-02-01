@@ -1,0 +1,350 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+  <title>rlabuonora.com</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="The HTML5 Herald" />
+  <meta name="author" content="Rafa" /><meta name="generator" content="Hugo 0.76.5" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" />
+  <script src="https://kit.fontawesome.com/b76b73e8e8.js" crossorigin="anonymous"></script>
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab|Ruda" />
+  <link rel="stylesheet" type="text/css" href="/css/styles.css" />
+  <link rel="stylesheet" type="text/css" href="/custom.css" /> <link rel="icon" href="/favicon.png"> 
+
+
+</head>
+
+<body>
+  <div id="container">
+    <header>
+      <h1>
+                <a href="/">rlabuonora.com</a>
+            </h1>
+
+      <ul id="social-media">
+        
+        
+        
+        <li><a href="https://twitter.com/rlabuonora"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+          
+        <li><a href="https://github.com/rlabuonora"><i class="fab fa-github fa-lg" aria-hidden="true"></i></a></li>
+           
+        <li><a href="http://cv.rlabuonora.com"><i class="fas fa-file-alt" aria-hidden="true"></i></a></li>
+        
+      </ul>
+      
+    </header>
+
+    
+<nav>
+    <ul>
+        
+        <li>
+            <a class="" href="/posts/">
+                <i class="fa-li fa  fa-lg"></i><span>Blog</span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="" href="/cursos/">
+                <i class="fa-li fa  fa-lg"></i><span>Cursos</span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="" href="/proyectos/">
+                <i class="fa-li fa  fa-lg"></i><span>Proyectos</span>
+            </a>
+        </li>
+        
+    </ul>
+</nav>
+
+    <main>
+
+
+
+
+<article>
+
+    <h1>Geometría con ggplot</h1>
+
+    
+        <aside>
+    <ul>
+        <li>
+            <time class="post-date" datetime="2017-08-16T00:00:00Z">Aug 16, 2017</time>
+        </li>
+        
+
+        
+        <li>
+            <em>
+                
+                    
+                    <a href="/tags/vis">#vis</a>
+                
+                    , 
+                    <a href="/tags/r">#R</a>
+                
+                    , 
+                    <a href="/tags/ggplot">#ggplot</a>
+                
+            </em>
+        </li>
+        
+
+        <li>5 minutes read</li>
+    </ul>
+</aside>
+
+    
+
+    
+
+
+<p><code>ggplot</code> es el estándar para visualización de datos en R. Siempre quise explorar si podía servir para hacer diagramas más conceptuales. En este post uso <code>ggplot</code> para dibujar algunas formas geométricas.</p>
+<p>Para dibujar el gráfico de una función, podemos usar <code>stat_function</code>. En el primer gráfico, dibujo <span class="math inline">\(sin(x)\)</span> y <span class="math inline">\(cos(x)\)</span>. Especifico <code>aes(colour = &quot;sin(x)&quot;)</code> para que el color de ese cada <code>geom</code> quede ligado al texto correcto en la leyenda.</p>
+<p><code>geom_segment</code> y <code>scale_x_continuous</code> permiten especificar la posición y etiqueta de las guías.</p>
+<p>Este post de stackoverflow sobre <a href="https://stackoverflow.com/questions/5293715/how-to-use-greek-symbols-in-ggplot2">como poner letras griegas en ggplot</a> explica como poner caractéres del alfabeto griego en los ejes usando <code>expression()</code>.</p>
+<pre class="r"><code>library(tidyverse)
+library(ggplot2)
+theme_set(theme_minimal())
+
+# Crear etiquetas para eje x
+lbls &lt;- c( expression(-2 * pi),
+           expression(-3 * pi / 2),
+           expression(- pi),
+           expression(-pi/2),
+           0,
+           expression(pi/ 2),
+           expression(pi),
+           expression(3 * pi /2),
+           expression(2 * pi)
+           )
+
+
+# Gráfico
+ggplot(data_frame(x = c(-7, 7)), aes(x = x)) +
+  stat_function(fun = function(x) { sin(x) }, 
+                geom = &quot;line&quot;, 
+                linetype = &quot;dashed&quot;, 
+                size = 1,
+                aes(colour = &quot;sin(x)&quot;)) +
+  stat_function(fun = function(x) { cos(x) },
+                linetype = &quot;dashed&quot;,
+                size = 1,
+                aes(colour = &quot;cos(x)&quot;)
+                ) +
+  scale_x_continuous(
+    breaks = seq(-2 * pi, 2*pi, pi/2),
+    labels = lbls
+  ) + 
+  labs(x = &quot;x&quot;, y = &quot;y&quot;) + 
+  geom_segment(aes(x=-7, xend = 7, y=0, yend=0), 
+               size = 0.5,
+               arrow = arrow(length = unit(0.2, &quot;cm&quot;))) + 
+  geom_segment(aes(x=0, xend=0, y=-1, yend=1.2),
+               size = 0.5,
+               lineend = &quot;butt&quot;,
+               arrow = arrow(length = unit(0.2, &quot;cm&quot;))) + 
+  labs(title = &quot;Funciones Trigonométricas&quot;) + 
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    legend.title = element_blank(),
+  ) </code></pre>
+<p><img src="/posts/2018-08-16-trigonometric-funs_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<div id="circulo" class="section level2">
+<h2>Círculo</h2>
+<p><code>stat_fun</code> resuelve el problema de graficar funciones, pero no sirve cuando queremos graficar otro tipo de objeto. La ecuación de un círculo es</p>
+<p><span class="math display">\[ (x-h)^2+(y-k)^2=r^2 \]</span></p>
+<p>donde <span class="math inline">\((h, k)\)</span> es el centro y <span class="math inline">\(r\)</span> el radio. Escribir esta ecuación explícitamente como una función puede resultar complicado.</p>
+<p><a href="https://stackoverflow.com/questions/6862742/draw-a-circle-with-ggplot2">Este post en Stack Overflow</a> explica como graficar una función en forma paramétrica usando <code>annotate</code>.</p>
+<pre class="r"><code>library(ggplot2)
+library(latex2exp)
+
+center &lt;- c(x=3, y=1)
+#pt1 &lt;- c(x=1, y=1)
+#pt2 &lt;- c(x=5, y=1)
+pt3 &lt;- c(x=3, y=3)
+pt4 &lt;- c(x=3, y=-1)
+pts &lt;- dplyr::bind_rows(center,pt3, pt4)
+radius &lt;- 2
+t &lt;- seq(0, 2*pi, length.out = 100)
+
+g &lt;- ggplot() + 
+  geom_segment(aes(x=-1, xend = 6, y=0, yend=0),
+               size = 0.5,
+               arrow = arrow(length = unit(0.2, &quot;cm&quot;))) + # Eje X
+  geom_segment(aes(x=0, xend=0, y=-1, yend=4),
+               size = 0.5,
+               lineend = &quot;butt&quot;,
+               arrow = arrow(length = unit(0.2, &quot;cm&quot;))) + # Eje Y
+  annotate(&quot;path&quot;, 
+           x = center[1] + radius * cos(t),
+           y = center[2] + radius * sin(t)) + 
+  geom_point(data = pts, aes(x=x, y =y)) + 
+  geom_text(data = pts,
+            parse = TRUE,
+            nudge_y = 0.2,
+            aes(x=x, y=y, label = paste0(&quot;list(&quot;, x ,&quot;,&quot;, y, &quot;)&quot;))) +
+  annotate(&quot;point&quot;, x=1, y=1) + 
+  annotate(&quot;text&quot;, x=1.25, y=1, label=&quot;1,1&quot;) + 
+  annotate(&quot;point&quot;, x=5, y=1) + 
+  annotate(&quot;text&quot;, x=4.75, y=1, label=&quot;5, 1&quot;) + 
+  labs(x=&quot;&quot;, y=&quot;&quot;) + 
+  ggtitle(TeX(&quot;(x-3)^2+(y-1)^2=4&quot;)) + 
+  coord_fixed()
+g</code></pre>
+<p><img src="/posts/2018-08-16-trigonometric-funs_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+</div>
+<div id="parabola" class="section level2">
+<h2>Parábola</h2>
+<p>Una parábola es un conjunto de puntos que equidista de una línea (directriz) y un punto (foco). Estos puntos satisfacen:</p>
+<p><span class="math inline">\((x-h)^2=4p(y-k),\, (p \neq 0)\)</span></p>
+<p>El vértice de la parábola está en <span class="math inline">\((h,k)\)</span> y la directriz <span class="math inline">\(y=k-p\)</span>. El foco está en <span class="math inline">\((h, k+p)\)</span> si la parábola es abierta hacia arriba.</p>
+<div id="ejemplo" class="section level3">
+<h3>Ejemplo</h3>
+<p><span class="math inline">\(x^2=16y\)</span> es una parábola con vértice en <span class="math inline">\((0,0)\)</span>, <span class="math inline">\(p = 4\)</span> y foco en <span class="math inline">\((0,4)\)</span>.</p>
+<pre class="r"><code>focus &lt;- list(x=0, y=4, lab = &quot;Foco&quot;)
+vertex &lt;- list(x=0, y=0, lab = &quot;Vértice&quot;)
+notable_points &lt;- bind_rows(focus, 
+                            vertex)
+pt &lt;- data_frame(x=5, y=round(5^2/16, 2))
+
+p &lt;- ggplot(data_frame(x=0), aes(x=x)) +
+  geom_segment(aes(x=-9, xend = 9, y=0, yend=0),
+               size = 0.5,
+               arrow = arrow(length = unit(0.2, &quot;cm&quot;))) + # Eje X
+  geom_segment(aes(x=0, xend=0, y=-5, yend=10),
+               size = 0.5,
+               lineend = &quot;butt&quot;,
+               arrow = arrow(length = unit(0.2, &quot;cm&quot;))) + # Eje Y
+  stat_function(fun = function(x) { x^2 / 16}) + 
+  xlim(-9, 9) + 
+  ylim(-5, 10)
+
+x &lt;- 5
+
+g_2 &lt;- p +
+  geom_point(data = notable_points, aes(x=x, y=y)) + 
+  geom_text(data=notable_points, 
+            size = 3,
+            nudge_y = 1.25,
+            nudge_x = 1.25,
+            aes(label = paste0(lab, &quot;\n(&quot;, x, &quot;,&quot;, y, &quot;)&quot;), 
+                x = x, y = y)) + 
+  geom_hline(yintercept = -4, linetype = &quot;dashed&quot;) + 
+  annotate(&quot;text&quot;, x= 3, y= -3.3, label = &quot;Directriz&quot;, size = 3) +
+  ggtitle(TeX(&#39;$y=x^2/16$&#39;)) + 
+  theme(
+    plot.title = element_text(hjust = 0.5)
+  ) + geom_point(data = pt, aes(x=x, y=y)) + 
+  geom_segment(aes(x= focus$x, y=focus$y, xend=pt$x, yend=pt$y),
+               linetype = &quot;dashed&quot;) + 
+  geom_segment(aes(x=pt$x, y=pt$y, xend=pt$x, yend = -4),
+               linetype = &quot;dashed&quot;) + 
+  annotate(&quot;text&quot;, 
+           label = &quot;phantom(0) == phantom(0)&quot;, 
+           parse = TRUE,
+           angle = 60,
+           size = 5,
+           x = 2.5, y= 2.85) + 
+  annotate(&quot;text&quot;, 
+           label = &quot;phantom(0) == phantom(0)&quot;, 
+           parse = TRUE,
+           size = 5,
+           x = 5, y= -2)
+g_2</code></pre>
+<p><img src="/posts/2018-08-16-trigonometric-funs_files/figure-html/g_2-1.png" width="672" /></p>
+<p>Todos los puntos de la parábola estan a la misma distancia del foco que de la directriz.</p>
+</div>
+</div>
+<div id="una-parabola-con-eje-horziontal" class="section level2">
+<h2>Una parábola con eje horziontal</h2>
+<p>Dibujar una parábola con eje vertical es simple porque podemos usar <code>stat_fun</code>. Pero si queremos dibujarlas con eje horizontal no podemos escibir los puntos de la parábola como un función y pasarsela a <code>stat_function</code>.</p>
+<p>La ecuación <span class="math inline">\(y^2+6y+8x+25 = 0\)</span> no parece una parábola, pero si completamos el cuadrado:</p>
+<p><span class="math display">\[\begin{align}
+y^2+6y+8x+25 &amp;= 0\\
+y^2+6y+9+8x+25-9  &amp;= 0\\
+(y+3)^2 &amp;= -16-8x\\
+(y+3)^2 &amp;= 4(-2)(x+2)
+\end{align}\]</span></p>
+<p>Es una parábola con vértice <span class="math inline">\((-2, -3)\)</span>, p es <span class="math inline">\(-2\)</span>, el foco <span class="math inline">\((-4,-3)\)</span> la directriz es <span class="math inline">\(x=0\)</span>.</p>
+<p>Pero como la orientación de esta parábola es horizontal, no es una función. Cómo la graficamos con <code>ggplot</code>?</p>
+<p>Si despejamos <span class="math inline">\(y\)</span> en función de <span class="math inline">\(x\)</span>, obtenemos dos funciones:
+<span class="math display">\[\begin{align}
+(y+3)^2 &amp;= (-8)(x+2)\\
+y     &amp;= -3 \pm \sqrt{-8(x+2)}\\
+y_1  &amp;=-3 + \sqrt{-8(x+2)}\\
+y_2 &amp;=-3 - \sqrt{-8(x+2)}\\
+\end{align}\]</span></p>
+<p>Podemos graficar <span class="math inline">\(y1\)</span> y <span class="math inline">\(y2\)</span>:</p>
+<pre class="r"><code>x &lt;- seq(-5, 0, length.out=1e3)
+lbs &lt;- list(bquote(-3 + sqrt(-8*(x+2))), # investigar bquote!
+            bquote(-3 - sqrt(-8*(x+2))))
+
+g_3 &lt;- ggplot(data_frame(x=x), 
+            aes(x=x, color = color)) + 
+  stat_function(data = data_frame(x=x, color = factor(1)),
+                fun = function(x) { -3 + sqrt(-8*(x+2)) }) + 
+  stat_function(data = data_frame(x=x, color = factor(2)),
+                fun = function(x) { -3 - sqrt(-8*(x+2)) }) + 
+  scale_color_manual(labels = lbs,
+                     name = &quot;&quot;,
+                     values = c(scales::hue_pal()(2)[1], 
+                                scales::hue_pal()(2)[2])) + 
+  geom_hline(yintercept = 0) + 
+  geom_vline(xintercept = 0)
+g_3</code></pre>
+<p><img src="/posts/2018-08-16-trigonometric-funs_files/figure-html/g_3-1.png" width="672" /></p>
+</div>
+
+
+</article>
+
+
+<section class="post-nav">
+    <ul>
+        
+        <li>
+            <a href="/posts/ciudades-inteligentes/"><i class="fa fa-chevron-circle-left"></i> Ciudades Inteligentes</a>
+        </li>
+        
+        
+        <li>
+            <a href="/posts/tidy-vargas-llosa/">Tidy Vargas Llosa <i class="fa fa-chevron-circle-right"></i> </a>
+        </li>
+        
+    </ul>
+</section>
+    
+
+
+
+
+
+</main>
+    <footer>
+        <h6>Copyright © 2019 - Rafael La Buonora |
+            Rendered by <a href="https://gohugo.io" title="Hugo">Hugo</a> |
+            <a href="/index.xml">Subscribe</a></h6>
+    </footer>
+</div>
+<script src="/js/scripts.js"></script>
+
+  
+<script src="/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+
+</body>
+
+
+
+</html>

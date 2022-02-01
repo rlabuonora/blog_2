@@ -1,0 +1,294 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+  <title>rlabuonora.com</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="The HTML5 Herald" />
+  <meta name="author" content="Rafael La Buonora" /><meta name="generator" content="Hugo 0.76.5" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" />
+  <script src="https://kit.fontawesome.com/b76b73e8e8.js" crossorigin="anonymous"></script>
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab|Ruda" />
+  <link rel="stylesheet" type="text/css" href="/css/styles.css" />
+  <link rel="stylesheet" type="text/css" href="/custom.css" /> <link rel="icon" href="/favicon.png"> 
+
+
+</head>
+
+<body>
+  <div id="container">
+    <header>
+      <h1>
+                <a href="/">rlabuonora.com</a>
+            </h1>
+
+      <ul id="social-media">
+        
+        
+        
+        <li><a href="https://twitter.com/rlabuonora"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+          
+        <li><a href="https://github.com/rlabuonora"><i class="fab fa-github fa-lg" aria-hidden="true"></i></a></li>
+           
+        <li><a href="http://cv.rlabuonora.com"><i class="fas fa-file-alt" aria-hidden="true"></i></a></li>
+        
+      </ul>
+      
+    </header>
+
+    
+<nav>
+    <ul>
+        
+        <li>
+            <a class="" href="/posts/">
+                <i class="fa-li fa  fa-lg"></i><span>Blog</span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="" href="/cursos/">
+                <i class="fa-li fa  fa-lg"></i><span>Cursos</span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="" href="/proyectos/">
+                <i class="fa-li fa  fa-lg"></i><span>Proyectos</span>
+            </a>
+        </li>
+        
+    </ul>
+</nav>
+
+    <main>
+
+
+
+
+<article>
+
+    <h1>El estilo de Metallica a lo largo de los discos</h1>
+
+    
+        <aside>
+    <ul>
+        <li>
+            <time class="post-date" datetime="2020-01-26T00:00:00Z">Jan 26, 2020</time>
+        </li>
+        
+
+        
+        <li>
+            <em>
+                
+                    
+                    <a href="/tags/tidytuesday">#tidytuesday</a>
+                
+                    , 
+                    <a href="/tags/ggplot">#ggplot</a>
+                
+                    , 
+                    <a href="/tags/r">#R</a>
+                
+            </em>
+        </li>
+        
+
+        <li>2 minutes read</li>
+    </ul>
+</aside>
+
+    
+
+    <p>Para este post de <a href="https://twitter.com/hashtag/tidytuesday?lang=en">#tidytuesday</a> usé la API de spotify para bajar datos sobre la música de Metallica.</p>
+<p><img src="/posts/2020-01-26-metallica_files/metallica_tempo.png" alt=""></p>
+<p>Este es el código para bajar los datos y la tapa de los discos:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#a6e22e">library</span>(spotifyr)
+<span style="color:#a6e22e">library</span>(tidyverse)
+<span style="color:#a6e22e">library</span>(lubridate)
+
+
+METALLICA_ID <span style="color:#f92672">&lt;-</span> <span style="color:#e6db74">&#34;2ye2Wgw4gimLv2eAKyk1NB&#34;</span>
+metallica_albums <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">get_artist_albums</span>(id<span style="color:#f92672">=</span>METALLICA_ID,
+                                      include_groups <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;album&#34;</span>,
+                                      limit <span style="color:#f92672">=</span> <span style="color:#ae81ff">50</span>) <span style="color:#f92672">%&gt;%</span>
+  <span style="color:#a6e22e">slice</span>(<span style="color:#ae81ff">6</span>, <span style="color:#ae81ff">11</span>, <span style="color:#ae81ff">13</span>, <span style="color:#ae81ff">17</span>, <span style="color:#ae81ff">19</span>, <span style="color:#ae81ff">21</span>, <span style="color:#ae81ff">26</span>, <span style="color:#ae81ff">30</span>, <span style="color:#ae81ff">35</span>, <span style="color:#ae81ff">39</span>, <span style="color:#ae81ff">43</span>) <span style="color:#f92672">%&gt;%</span> 
+  <span style="color:#a6e22e">mutate</span>(release_year <span style="color:#f92672">=</span> <span style="color:#a6e22e">year</span>(<span style="color:#a6e22e">as_date</span>(release_date)))
+
+
+metallica_albums<span style="color:#f92672">$</span>cover_url <span style="color:#f92672">&lt;-</span> metallica_albums<span style="color:#f92672">$</span>images <span style="color:#f92672">%&gt;%</span> 
+  purrr<span style="color:#f92672">::</span><span style="color:#a6e22e">map</span>(<span style="color:#e6db74">&#34;url&#34;</span>) <span style="color:#f92672">%&gt;%</span> 
+  purrr<span style="color:#f92672">::</span><span style="color:#a6e22e">map</span>(<span style="color:#ae81ff">3</span>)
+
+
+metallica_albums <span style="color:#f92672">&lt;-</span> metallica_albums <span style="color:#f92672">%&gt;%</span> 
+  <span style="color:#a6e22e">select</span>(album_name<span style="color:#f92672">=</span>name, album_id<span style="color:#f92672">=</span>id, release_year, cover_url) 
+  
+
+get_album_tracks <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">function</span>(album_id, album_name) {
+  <span style="color:#75715e"># get track name, track id &amp; album name (add all album.level data here)</span>
+  album <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">get_album</span>(id<span style="color:#f92672">=</span>album_id)
+  <span style="color:#a6e22e">tibble</span>(track_name<span style="color:#f92672">=</span>album<span style="color:#f92672">$</span>tracks<span style="color:#f92672">$</span>items<span style="color:#f92672">$</span>name,
+         track_id   <span style="color:#f92672">=</span> album<span style="color:#f92672">$</span>tracks<span style="color:#f92672">$</span>items<span style="color:#f92672">$</span>id,
+         album_name <span style="color:#f92672">=</span> album_name)
+}
+
+get_track_info <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">function</span>(track_id, track_name, album_name) {
+  features <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">get_track_audio_features</span>(id<span style="color:#f92672">=</span>track_id)
+  <span style="color:#a6e22e">mutate</span>(features, 
+         album_name <span style="color:#f92672">=</span> album_name,
+         track_name <span style="color:#f92672">=</span> track_name) <span style="color:#f92672">%&gt;%</span> 
+    <span style="color:#a6e22e">select</span>(album_name, track_name, danceability<span style="color:#f92672">:</span>tempo, duration_ms)
+}
+
+
+metallica_tracks <span style="color:#f92672">&lt;-</span> metallica_albums <span style="color:#f92672">%&gt;%</span> 
+  <span style="color:#a6e22e">pmap</span>(<span style="color:#a6e22e">function</span>(<span style="color:#66d9ef">...</span>) {
+    current <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">tibble</span>(<span style="color:#66d9ef">...</span>)
+    <span style="color:#a6e22e">get_album_tracks</span>(current<span style="color:#f92672">$</span>album_id, current<span style="color:#f92672">$</span>album_name)
+  }) <span style="color:#f92672">%&gt;%</span> 
+  <span style="color:#a6e22e">map</span>(purrr<span style="color:#f92672">::</span>transpose) <span style="color:#f92672">%&gt;%</span> 
+  flatten <span style="color:#f92672">%&gt;%</span> 
+  <span style="color:#a6e22e">map_df</span>(<span style="color:#a6e22e">function</span>(x) {
+    <span style="color:#a6e22e">get_track_info</span>(x<span style="color:#f92672">$</span>track_id, x<span style="color:#f92672">$</span>track_name, x<span style="color:#f92672">$</span>album_name)
+  }) 
+
+metallica_tracks_df <span style="color:#f92672">&lt;-</span> metallica_tracks <span style="color:#f92672">%&gt;%</span> 
+  <span style="color:#a6e22e">left_join</span>(metallica_albums) <span style="color:#f92672">%&gt;%</span> 
+  <span style="color:#a6e22e">mutate</span>(track_name <span style="color:#f92672">=</span> <span style="color:#a6e22e">str_remove</span>(track_name, <span style="color:#e6db74">&#34; - Remastered&#34;</span>)) <span style="color:#f92672">%&gt;%</span> 
+  <span style="color:#a6e22e">mutate</span>(track_name <span style="color:#f92672">=</span> <span style="color:#a6e22e">str_remove</span>(track_name, <span style="color:#e6db74">&#34;\\(Remastered\\)&#34;</span>)) <span style="color:#f92672">%&gt;%</span>
+  <span style="color:#a6e22e">mutate</span>(album_name <span style="color:#f92672">=</span> <span style="color:#a6e22e">str_remove</span>(album_name, <span style="color:#e6db74">&#34;\\(Remastered\\)&#34;</span>)) <span style="color:#f92672">%&gt;%</span> 
+  <span style="color:#a6e22e">group_by</span>(album_name) <span style="color:#f92672">%&gt;%</span> 
+  <span style="color:#a6e22e">mutate</span>(track_num <span style="color:#f92672">=</span> <span style="color:#a6e22e">row_number</span>()) <span style="color:#f92672">%&gt;%</span> 
+  <span style="color:#a6e22e">arrange</span>(release_year, track_num)
+
+<span style="color:#a6e22e">dir.create</span>(<span style="color:#e6db74">&#39;data&#39;</span>)
+<span style="color:#a6e22e">saveRDS</span>(metallica_tracks_df, file<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;data/metallica.rds&#34;</span>)
+
+download_cover <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">function</span>(url, release_year) {
+  file_name <span style="color:#f92672">&lt;-</span> glue<span style="color:#f92672">::</span><span style="color:#a6e22e">glue</span>(<span style="color:#e6db74">&#34;{release_year}.jpg&#34;</span>)
+  dest <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">file.path</span>(<span style="color:#e6db74">&#34;covers&#34;</span>, file_name)
+  <span style="color:#a6e22e">download.file</span>(url, destfile<span style="color:#f92672">=</span>dest)
+}
+
+<span style="color:#a6e22e">dir.create</span>(<span style="color:#e6db74">&#39;covers&#39;</span>)
+purrr<span style="color:#f92672">::</span><span style="color:#a6e22e">walk2</span>(metallica_albums<span style="color:#f92672">$</span>cover_url,
+            metallica_albums<span style="color:#f92672">$</span>release_year, 
+            download_cover)
+</code></pre></div><p>Y este es el código para crear el gráfico:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#75715e"># Evolution of song tempo</span>
+
+<span style="color:#a6e22e">library</span>(tidyverse)
+<span style="color:#a6e22e">library</span>(ggplot2)
+<span style="color:#a6e22e">library</span>(jpeg)
+<span style="color:#a6e22e">library</span>(grid)
+<span style="color:#a6e22e">library</span>(ggdark)
+<span style="color:#a6e22e">library</span>(showtext)
+<span style="color:#a6e22e">library</span>(ggrepel)
+
+<span style="color:#a6e22e">theme_set</span>(<span style="color:#a6e22e">dark_theme_grey</span>())
+
+<span style="color:#75715e"># Agregar fuente</span>
+<span style="color:#a6e22e">font_add_google</span>(<span style="color:#e6db74">&#34;Metal Mania&#34;</span>, <span style="color:#e6db74">&#34;metal&#34;</span>)
+<span style="color:#a6e22e">showtext_auto</span>()
+
+metallica <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">readRDS</span>(<span style="color:#e6db74">&#34;./data/metallica.rds&#34;</span>)
+
+
+<span style="color:#75715e"># metallica$track_name &lt;- fct_inorder(factor(metallica$track_name))</span>
+metallica<span style="color:#f92672">$</span>album_name <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">fct_inorder</span>(<span style="color:#a6e22e">factor</span>(metallica<span style="color:#f92672">$</span>album_name))
+
+fast_songs <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">c</span>(<span style="color:#e6db74">&#34;Holier Than Thou&#34;</span>, 
+                <span style="color:#e6db74">&#34;My Apocalypse&#34;</span>, 
+                <span style="color:#e6db74">&#34;The Four Horsemen&#34;</span>)
+
+highligts <span style="color:#f92672">&lt;-</span> metallica <span style="color:#f92672">%&gt;%</span> 
+  <span style="color:#a6e22e">filter</span>(track_name <span style="color:#f92672">%in%</span>  fast_songs)
+
+<span style="color:#75715e"># Gráfico de base.</span>
+tempo <span style="color:#f92672">&lt;-</span> metallica <span style="color:#f92672">%&gt;%</span> 
+  <span style="color:#a6e22e">ggplot</span>(<span style="color:#a6e22e">aes</span>(album_name, tempo, group <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>)) <span style="color:#f92672">+</span> 
+  <span style="color:#a6e22e">scale_x_discrete</span>(breaks <span style="color:#f92672">=</span> <span style="color:#66d9ef">NULL</span>, expand<span style="color:#f92672">=</span><span style="color:#a6e22e">c</span>(<span style="color:#ae81ff">0.1</span>, <span style="color:#ae81ff">0</span>)) <span style="color:#f92672">+</span>
+  <span style="color:#a6e22e">scale_y_continuous</span>(limits <span style="color:#f92672">=</span> <span style="color:#a6e22e">c</span>(<span style="color:#ae81ff">60</span>, <span style="color:#ae81ff">220</span>)) <span style="color:#f92672">+</span>
+  <span style="color:#a6e22e">geom_point</span>() <span style="color:#f92672">+</span>
+  <span style="color:#a6e22e">geom_text_repel</span>(data <span style="color:#f92672">=</span> highligts, 
+                  <span style="color:#a6e22e">aes</span>(label<span style="color:#f92672">=</span>track_name), 
+                  nudge_y <span style="color:#f92672">=</span> <span style="color:#ae81ff">10</span>,
+                  nudge_x <span style="color:#f92672">=</span> <span style="color:#ae81ff">.2</span>,
+                  color<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;white&#34;</span>, size <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span>) <span style="color:#f92672">+</span>
+  <span style="color:#a6e22e">geom_smooth</span>(se<span style="color:#f92672">=</span><span style="color:#66d9ef">FALSE</span>) <span style="color:#f92672">+</span> 
+  <span style="color:#a6e22e">guides</span>(color<span style="color:#f92672">=</span><span style="color:#66d9ef">FALSE</span>) <span style="color:#f92672">+</span> 
+  <span style="color:#a6e22e">labs</span>(title<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Metallica&#34;</span>, 
+       subtitle <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;New albums are almost as fast as the early ones.&#34;</span>, 
+       caption  <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Data: Spotify&#34;</span>,
+       x<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Album&#34;</span>, y<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Tempo (bpm)&#34;</span>)
+
+<span style="color:#75715e"># Agregar las tapas de los discos como imágenes.</span>
+covers <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">list.files</span>(<span style="color:#e6db74">&#39;covers&#39;</span>, full.names <span style="color:#f92672">=</span> <span style="color:#66d9ef">TRUE</span>) <span style="color:#f92672">%&gt;%</span> 
+  purrr<span style="color:#f92672">::</span><span style="color:#a6e22e">map</span>(readJPEG) <span style="color:#f92672">%&gt;%</span> 
+  purrr<span style="color:#f92672">::</span><span style="color:#a6e22e">map</span>(rasterGrob, interpolate<span style="color:#f92672">=</span><span style="color:#66d9ef">TRUE</span>)
+
+y_coord_cover <span style="color:#f92672">&lt;-</span>  <span style="color:#ae81ff">60</span>
+y_offset <span style="color:#f92672">&lt;-</span> <span style="color:#ae81ff">10.5</span>
+
+
+<span style="color:#a6e22e">for </span>(i in <span style="color:#a6e22e">seq_along</span>(covers)) {
+  tempo <span style="color:#f92672">&lt;-</span> tempo <span style="color:#f92672">+</span>  <span style="color:#a6e22e">annotation_custom</span>(grob<span style="color:#f92672">=</span>covers[[i]], xmin<span style="color:#f92672">=</span>i<span style="color:#ae81ff">-1+.5</span>, xmax<span style="color:#f92672">=</span>i<span style="color:#ae81ff">+.5</span>, ymin<span style="color:#f92672">=</span>y_coord_cover, ymax<span style="color:#f92672">=</span>y_coord_cover<span style="color:#f92672">+</span>y_offset)
+}
+
+tempo <span style="color:#f92672">+</span> 
+  <span style="color:#a6e22e">theme</span>(
+    text <span style="color:#f92672">=</span> <span style="color:#a6e22e">element_text</span>(family<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;metal&#34;</span>),
+    plot.title <span style="color:#f92672">=</span> <span style="color:#a6e22e">element_text</span>(hjust <span style="color:#f92672">=</span> <span style="color:#ae81ff">.5</span>),
+    plot.subtitle <span style="color:#f92672">=</span> <span style="color:#a6e22e">element_text</span>(hjust<span style="color:#f92672">=</span><span style="color:#ae81ff">.5</span>)
+  ) <span style="color:#f92672">+</span>
+  <span style="color:#a6e22e">ggsave</span>(<span style="color:#e6db74">&#34;metallica_tempo.png&#34;</span>)
+</code></pre></div>
+
+</article>
+
+
+<section class="post-nav">
+    <ul>
+        
+        <li>
+            <a href="/posts/vacunas/"><i class="fa fa-chevron-circle-left"></i> Vacunas</a>
+        </li>
+        
+        
+        <li>
+            <a href="/posts/examenes-visualizaciones/">Un gráfico de barras anotado <i class="fa fa-chevron-circle-right"></i> </a>
+        </li>
+        
+    </ul>
+</section>
+    
+
+
+
+
+
+</main>
+    <footer>
+        <h6>Copyright © 2019 - Rafael La Buonora |
+            Rendered by <a href="https://gohugo.io" title="Hugo">Hugo</a> |
+            <a href="/index.xml">Subscribe</a></h6>
+    </footer>
+</div>
+<script src="/js/scripts.js"></script>
+
+  
+<script src="/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+
+</body>
+
+
+
+</html>
