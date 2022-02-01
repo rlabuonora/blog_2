@@ -7,39 +7,52 @@ categories: []
 tags: []
 ---
 
-El primero de Mayo conmemoramos el días de los trabajadores. Lamentablemente, este año nos cayó sábado, por lo que nos perdimos el día libre. 
+El primero de Mayo conmemoramos el días de los trabajadores. Lamentablemente, este año nos cayó sábado, por lo que nos perdimos el día libre. En este post uso `lubridate` para visualizar este lamentable fenómeno de la vida labora de este país.
 
-En este post uso lubridate para ver cuantos feriados caen fin de semana por año.
+
+Wikipedia tiene una tabla con los [feriados en Uruguay](https://es.wikipedia.org/wiki/D%C3%ADas_feriados_de_Uruguay). Traté de scrapearla directo con `rvest` pero la última columna de la tabla da problemas así que copié los datos a mano.
 
 ```{r}
-library(rvest)
 library(tidyverse)
 
-url <- "https://es.wikipedia.org/wiki/D%C3%ADas_feriados_de_Uruguay"
-
-lines <- url %>%
-  read_html() %>%
-  html_nodes(xpath="//table[starts-with(@class, 'wikitable')]") %>%
-  html_nodes(xpath = 'tbody/tr')
-
-content <- url %>%
-  read_html() %>% 
-  html_node("table") 
-
-content %>% 
-  html_node(css = "table")
-
-url <- "https://en.wikipedia.org/wiki/United_Kingdom_Parliament_constituencies"
-items <- read_html(url) %>% html_nodes(xpath='//*[@id="mw-content-text"]/div/table[2]') %>% html_table()
-
+feriados <- tibble::tribble(
+  ~fecha,       ~nombre,    
+  "1 de enero", "Año Nuevo",
+  "6 de enero", "Día de los Niños",
+  "19 de abril", "Desembarco de los Treinta y Tres Orientales",
+  "1 de mayo",    "Día de los Trabajadores",
+  "18 de mayo",  "Batalla de Las Piedras",
+  "19 de junio", "Natalicio de Artigas",
+  "18 de julio", "Jura de la Constitución",
+  "25 de agosto","Declaratoria de la Independencia", 
+  "12 de octubre", "Día de la Raza",
+  "2 de noviembre", "Día de los Difuntos",
+  "25 de diciembre", "Día de la Familia") %>% 
+  # Sacamos " de" para que no moleste a lubridate
+  mutate(fecha = str_replace(fecha, " de", ""))
 
 ```
 
+# Parsear fechas (en español).
 
-# rvest
+En Uruguay hay `r nrow(feriados)` feriados. Para convertirlas en fechas, usamos `expand_grid` para combinar las fechas con todos los años entre 2015 y 2030, y para parsear el texto de la fecha usamos `readr::parse_date`. La función `wday` nos da el día de la semana en que cae determinada fecha.
 
-- [ver este link](https://github.com/tidyverse/rvest/blob/master/R/table.R)
 
-- [y este](https://stackoverflow.com/questions/59728183/rvest-html-table-produces-errors)
 
-- [y este]()
+
+```{r}
+
+
+expand_grid(t=2015:2030, fecha=feriados$fecha) %>% 
+  left_join(feriados, by="fecha") %>% 
+  mutate(fecha = paste(fecha, t)) %>% 
+  mutate(fecha=parse_date(fecha, "%d %B %Y", locale=locale("es"))) %>% 
+  mutate(wdia=wday(fecha, label=TRUE, abbr=FALSE)) %>% 
+  mutate(wdia = stringr::str_to_title(wdia))
+```
+
+# Visualización
+
+Esta es la parte más divertida, queda para la próxima.
+
+

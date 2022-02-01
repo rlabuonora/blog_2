@@ -288,7 +288,6 @@ items &amp;lt;- read_html(url) %&amp;gt;% html_nodes(xpath=&amp;#39;//*[@id=&amp
 &lt;ul&gt;
 &lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://github.com/tidyverse/rvest/blob/master/R/table.R&#34;&gt;ver este link&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
 &lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://stackoverflow.com/questions/59728183/rvest-html-table-produces-errors&#34;&gt;y este&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;a href=&#34;&#34;&gt;y este&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
 </description>
