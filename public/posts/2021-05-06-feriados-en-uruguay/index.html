@@ -97,7 +97,7 @@
 <p>Wikipedia tiene una tabla con los <a href="https://es.wikipedia.org/wiki/D%C3%ADas_feriados_de_Uruguay">feriados en Uruguay</a>. Traté de scrapearla directo con <code>rvest</code> pero la última columna de la tabla da problemas así que copié los datos a mano.</p>
 <pre class="r"><code>library(tidyverse)
 
-feriados &lt;- tibble::tribble(
+feriados_tabla &lt;- tibble::tribble(
   ~fecha,       ~nombre,    
   &quot;1 de enero&quot;, &quot;Año Nuevo&quot;,
   &quot;6 de enero&quot;, &quot;Día de los Niños&quot;,
@@ -115,32 +115,30 @@ feriados &lt;- tibble::tribble(
 <div id="parsear-fechas-en-español." class="section level1">
 <h1>Parsear fechas (en español).</h1>
 <p>En Uruguay hay 11 feriados. Para convertirlas en fechas, usamos <code>expand_grid</code> para combinar las fechas con todos los años entre 2015 y 2030, y para parsear el texto de la fecha usamos <code>readr::parse_date</code>. La función <code>wday</code> nos da el día de la semana en que cae determinada fecha.</p>
+<p>Para que <code>parse_date</code> entienda bien el texto de los meses (enero, febrero, etc.) especifico el argumento <code>locale=locale("es")</code>. Para que <code>wday</code> nos de el día de la semana de cada fecha, hay que setear la locale del sistema con <code>Sys.setlocale</code>.</p>
 <pre class="r"><code>library(lubridate)
 
-expand_grid(t=2015:2030, fecha=feriados$fecha) %&gt;% 
-  left_join(feriados, by=&quot;fecha&quot;) %&gt;% 
+Sys.setlocale(&quot;LC_TIME&quot;, &quot;Spanish_Spain.1252&quot;)</code></pre>
+<pre><code>## [1] &quot;Spanish_Spain.1252&quot;</code></pre>
+<pre class="r"><code>feriados &lt;- expand_grid(t=2015:2030, fecha=feriados_tabla$fecha) %&gt;% 
+  left_join(feriados_tabla, by=&quot;fecha&quot;) %&gt;% 
   mutate(fecha = paste(fecha, t)) %&gt;% 
   mutate(fecha=parse_date(fecha, &quot;%d %B %Y&quot;, locale=locale(&quot;es&quot;))) %&gt;% 
   mutate(wdia=wday(fecha, label=TRUE, abbr=FALSE)) %&gt;% 
   mutate(wdia = stringr::str_to_title(wdia))</code></pre>
-<pre><code>## # A tibble: 176 x 4
-##        t fecha      nombre                                      wdia    
-##    &lt;int&gt; &lt;date&gt;     &lt;chr&gt;                                       &lt;chr&gt;   
-##  1  2015 2015-01-01 Año Nuevo                                   Thursday
-##  2  2015 2015-01-06 Día de los Niños                            Tuesday 
-##  3  2015 2015-04-19 Desembarco de los Treinta y Tres Orientales Sunday  
-##  4  2015 2015-05-01 Día de los Trabajadores                     Friday  
-##  5  2015 2015-05-18 Batalla de Las Piedras                      Monday  
-##  6  2015 2015-06-19 Natalicio de Artigas                        Friday  
-##  7  2015 2015-07-18 Jura de la Constitución                     Saturday
-##  8  2015 2015-08-25 Declaratoria de la Independencia            Tuesday 
-##  9  2015 2015-10-12 Día de la Raza                              Monday  
-## 10  2015 2015-11-02 Día de los Difuntos                         Monday  
-## # ... with 166 more rows</code></pre>
 </div>
 <div id="visualización" class="section level1">
 <h1>Visualización</h1>
-<p>Esta es la parte más divertida, queda para la próxima.</p>
+<p>Ahora una visualización bien simple para ver que nos deparan los próximos años:</p>
+<pre class="r"><code>feriados %&gt;% 
+  mutate(fin_de_semana = wdia %in% c(&quot;Sábado&quot;, &quot;Domingo&quot;)) %&gt;% 
+  count(t, fin_de_semana) %&gt;% 
+  ggplot(aes(t, n, fill=fin_de_semana)) + 
+  geom_col() + 
+  scale_x_continuous(breaks=2015:2030) + 
+  theme(legend.position = &quot;bottom&quot;)</code></pre>
+<p><img src="/posts/2021-05-06-feriados-en-uruguay/index_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>Parecería que después de dos años medios 2021 y 2022, en 2023 vamos a tener muy pocos feriados que caen fin de semana y 2024 va a ser nefasto.</p>
 </div>
 
 
