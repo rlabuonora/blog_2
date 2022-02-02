@@ -98,11 +98,15 @@ feriados %>%
 Esto implica que los años bisiestos cambian la distribución de feriados por día, y esta queda estable y se mueve hacia la derecha cada año hasta el próximo año bisiesto:
 
 ```{r}
+
+dias <- c("Domingo", "Lunes", "Martes",
+          "Miércoles", "Jueves", "Viernes",
+          "Sábado")
+
 feriados %>% 
+  mutate(wdia=str_sub(wdia, 1, 3)) %>% 
   count(t, wdia) %>% 
-  mutate(wdia=factor(wdia, levels=c("Domingo", "Lunes", "Martes",
-                                    "Miércoles", "Jueves", "Viernes",
-                                    "Sábado"))) %>% 
+  mutate(wdia=factor(wdia, levels=str_sub(dias, 1, 3))) %>% 
   ggplot(aes(wdia, n)) +
   geom_col() +
   facet_wrap(~t, ncol = 4) + 

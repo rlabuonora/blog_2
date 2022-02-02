@@ -104,11 +104,14 @@ Sys.setlocale(&quot;LC_TIME&quot;, &quot;Spanish_Spain.1252&quot;)</code></pre>
 ## 15  2031 2031-05-01 Día de los Trabajadores Jueves   
 ## 16  2032 2032-05-01 Día de los Trabajadores Sábado</code></pre>
 <p>Esto implica que los años bisiestos cambian la distribución de feriados por día, y esta queda estable y se mueve hacia la derecha cada año hasta el próximo año bisiesto:</p>
-<pre class="r"><code>feriados %&gt;% 
+<pre class="r"><code>dias &lt;- c(&quot;Domingo&quot;, &quot;Lunes&quot;, &quot;Martes&quot;,
+          &quot;Miércoles&quot;, &quot;Jueves&quot;, &quot;Viernes&quot;,
+          &quot;Sábado&quot;)
+
+feriados %&gt;% 
+  mutate(wdia=str_sub(wdia, 1, 3)) %&gt;% 
   count(t, wdia) %&gt;% 
-  mutate(wdia=factor(wdia, levels=c(&quot;Domingo&quot;, &quot;Lunes&quot;, &quot;Martes&quot;,
-                                    &quot;Miércoles&quot;, &quot;Jueves&quot;, &quot;Viernes&quot;,
-                                    &quot;Sábado&quot;))) %&gt;% 
+  mutate(wdia=factor(wdia, levels=str_sub(dias, 1, 3))) %&gt;% 
   ggplot(aes(wdia, n)) +
   geom_col() +
   facet_wrap(~t, ncol = 4) + 
