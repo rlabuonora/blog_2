@@ -37,7 +37,7 @@ feriados_tabla &lt;- tibble::tribble(
 
 Sys.setlocale(&quot;LC_TIME&quot;, &quot;Spanish_Spain.1252&quot;)</code></pre>
 <pre><code>## [1] &quot;Spanish_Spain.1252&quot;</code></pre>
-<pre class="r"><code>feriados &lt;- expand_grid(t=2015:2030, fecha=feriados_tabla$fecha) %&gt;% 
+<pre class="r"><code>feriados &lt;- expand_grid(t=2017:2032, fecha=feriados_tabla$fecha) %&gt;% 
   left_join(feriados_tabla, by=&quot;fecha&quot;) %&gt;% 
   mutate(fecha = paste(fecha, t)) %&gt;% 
   mutate(fecha=parse_date(fecha, &quot;%d %B %Y&quot;, locale=locale(&quot;es&quot;))) %&gt;% 
@@ -52,8 +52,66 @@ Sys.setlocale(&quot;LC_TIME&quot;, &quot;Spanish_Spain.1252&quot;)</code></pre>
   count(t, fin_de_semana) %&gt;% 
   ggplot(aes(t, n, fill=fin_de_semana)) + 
   geom_col() + 
-  scale_x_continuous(breaks=2015:2030) + 
+  scale_x_continuous(breaks=2017:2032) + 
   theme(legend.position = &quot;bottom&quot;)</code></pre>
 <p><img src="/posts/2021-05-06-feriados-en-uruguay/index_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
-<p>Parecería que después de dos años medios 2021 y 2022, en 2023 vamos a tener muy pocos feriados que caen fin de semana y 2024 va a ser nefasto.</p>
+<p>Parecería que después de dos años medios 2021 y 2022, en 2023 vamos a tener muy pocos feriados que caen fin de semana y 2024 va a ser nefasto. Quiero saber dos cosas: ¿cuáles son los feriados que caen juntos?</p>
+</div>
+<div id="cómo-juegan-los-años-bisiestos" class="section level1">
+<h1>¿Cómo juegan los años bisiestos?</h1>
+<p>Los feriados van cambiando de a un día en los años normales y de a dos los años bisiestos:</p>
+<pre class="r"><code>feriados %&gt;% 
+  filter(nombre==&quot;Año Nuevo&quot;)</code></pre>
+<pre><code>## # A tibble: 16 x 4
+##        t fecha      nombre    wdia     
+##    &lt;int&gt; &lt;date&gt;     &lt;chr&gt;     &lt;chr&gt;    
+##  1  2017 2017-01-01 Año Nuevo Domingo  
+##  2  2018 2018-01-01 Año Nuevo Lunes    
+##  3  2019 2019-01-01 Año Nuevo Martes   
+##  4  2020 2020-01-01 Año Nuevo Miércoles
+##  5  2021 2021-01-01 Año Nuevo Viernes  
+##  6  2022 2022-01-01 Año Nuevo Sábado   
+##  7  2023 2023-01-01 Año Nuevo Domingo  
+##  8  2024 2024-01-01 Año Nuevo Lunes    
+##  9  2025 2025-01-01 Año Nuevo Miércoles
+## 10  2026 2026-01-01 Año Nuevo Jueves   
+## 11  2027 2027-01-01 Año Nuevo Viernes  
+## 12  2028 2028-01-01 Año Nuevo Sábado   
+## 13  2029 2029-01-01 Año Nuevo Lunes    
+## 14  2030 2030-01-01 Año Nuevo Martes   
+## 15  2031 2031-01-01 Año Nuevo Miércoles
+## 16  2032 2032-01-01 Año Nuevo Jueves</code></pre>
+<p>El primero de Enero cayó Viernes en 2016, y cómo 2016 fue bisiesto, en 2017 cayó domingo. En 2018 cayó Lunes, 2019 Martes, etc. El día de los Trabajadores es después del 29 de Febrero, por lo que los años bisiestos lo afectan diferente.</p>
+<pre class="r"><code>feriados %&gt;% 
+  filter(nombre==&quot;Día de los Trabajadores&quot;)</code></pre>
+<pre><code>## # A tibble: 16 x 4
+##        t fecha      nombre                  wdia     
+##    &lt;int&gt; &lt;date&gt;     &lt;chr&gt;                   &lt;chr&gt;    
+##  1  2017 2017-05-01 Día de los Trabajadores Lunes    
+##  2  2018 2018-05-01 Día de los Trabajadores Martes   
+##  3  2019 2019-05-01 Día de los Trabajadores Miércoles
+##  4  2020 2020-05-01 Día de los Trabajadores Viernes  
+##  5  2021 2021-05-01 Día de los Trabajadores Sábado   
+##  6  2022 2022-05-01 Día de los Trabajadores Domingo  
+##  7  2023 2023-05-01 Día de los Trabajadores Lunes    
+##  8  2024 2024-05-01 Día de los Trabajadores Miércoles
+##  9  2025 2025-05-01 Día de los Trabajadores Jueves   
+## 10  2026 2026-05-01 Día de los Trabajadores Viernes  
+## 11  2027 2027-05-01 Día de los Trabajadores Sábado   
+## 12  2028 2028-05-01 Día de los Trabajadores Lunes    
+## 13  2029 2029-05-01 Día de los Trabajadores Martes   
+## 14  2030 2030-05-01 Día de los Trabajadores Miércoles
+## 15  2031 2031-05-01 Día de los Trabajadores Jueves   
+## 16  2032 2032-05-01 Día de los Trabajadores Sábado</code></pre>
+<p>Esto implica que los años bisiestos cambian la distribución de feriados por día, y esta queda estable y se mueve hacia la derecha cada año hasta el próximo año bisiesto:</p>
+<pre class="r"><code>feriados %&gt;% 
+  count(t, wdia) %&gt;% 
+  mutate(wdia=factor(wdia, levels=c(&quot;Domingo&quot;, &quot;Lunes&quot;, &quot;Martes&quot;,
+                                    &quot;Miércoles&quot;, &quot;Jueves&quot;, &quot;Viernes&quot;,
+                                    &quot;Sábado&quot;))) %&gt;% 
+  ggplot(aes(wdia, n)) +
+  geom_col() +
+  facet_wrap(~t, ncol = 4) + 
+  guides(fill=&quot;none&quot;)</code></pre>
+<p><img src="/posts/2021-05-06-feriados-en-uruguay/index_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
 </div>
