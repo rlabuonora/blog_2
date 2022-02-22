@@ -39,7 +39,7 @@ article p .static-image {
   margin-bottom: 1em;
 }
 
-.media-image  {
+.media .media-image  {
   float: left;
   width: 10%;
   box-shadow: none;
