@@ -2,10 +2,14 @@
 
     <h1>{{ .Title }}</h1>
 
-    {{ if not .Params.meta }}
-        {{ partial "aside" . }}
+    {{ if or (not (isset .Params "meta")) (eq .Params.meta true) }}
+      {{ partial "aside" . }}
     {{ end }}
 
-    {{.Content}}
+    {{ if not (.Params.replace_site_logo) }}
+      {{ partial "featured_image" . }}
+    {{ end }}
+
+    {{ .Content }}
 
 </article>

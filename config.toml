@@ -3,7 +3,7 @@ title = "rlabuonora.com"
 copyright = "Copyright &copy; 2019 - Rafael La Buonora"
 canonifyurls = true
 theme = "hugo-kiera"
-ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
+ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_cache$"]
 
 paginate = 16
 
