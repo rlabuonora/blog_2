@@ -3,38 +3,54 @@
 <html lang="en">
 
 <head>
-  <title>rlabuonora.com</title>
+  <title>Personas y lugares en las novelas de Mario Vargas Llosa - rlabuonora.com</title>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="The HTML5 Herald" />
-  <meta name="author" content="Rafa" /><meta name="generator" content="Hugo 0.76.5" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" />
-  <script src="https://kit.fontawesome.com/b76b73e8e8.js" crossorigin="anonymous"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="The HTML5 Herald" />
+<meta name="author" content="Rafa" /><meta property="og:title" content="Personas y lugares en las novelas de Mario Vargas Llosa" />
+<meta property="og:description" content="Uso spacyR para visualizar los personajes y los lugares con más menciones en una novela de Mario Vargas Llosa." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://rlabuonora.com/posts/personas-y-lugares-vargas-llosa/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2019-10-15T00:00:00+00:00" />
+<meta property="article:modified_time" content="2019-10-15T00:00:00+00:00" />
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Personas y lugares en las novelas de Mario Vargas Llosa"/>
+<meta name="twitter:description" content="Uso spacyR para visualizar los personajes y los lugares con más menciones en una novela de Mario Vargas Llosa."/>
+
+<meta name="generator" content="Hugo 0.92.2" />
+    
+    <link rel="shortcut icon" href="https://rlabuonora.com/favicon.png" />
   
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab|Ruda" />
-  <link rel="stylesheet" type="text/css" href="/css/styles.css" />
-  <link rel="stylesheet" type="text/css" href="/custom.css" /> <link rel="icon" href="/favicon.png"> 
 
-
-</head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://rlabuonora.com/fontawesome/css/all.min.css" />
+  
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab|Ruda" />
+  
+  
+  <link rel="stylesheet" type="text/css" href="https://rlabuonora.com/css/styles.css" /><link rel='stylesheet' href='https://rlabuonora.com/custom.css'></head>
 
 <body>
   <div id="container">
     <header>
+      
       <h1>
-                <a href="/">rlabuonora.com</a>
-            </h1>
+        <a href="https://rlabuonora.com/">rlabuonora.com</a>
+      </h1>
 
       <ul id="social-media">
-        
-        
-        
-        <li><a href="https://twitter.com/rlabuonora"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
-          
-        <li><a href="https://github.com/rlabuonora"><i class="fab fa-github fa-lg" aria-hidden="true"></i></a></li>
-           
-        <li><a href="http://cv.rlabuonora.com"><i class="fas fa-file-alt" aria-hidden="true"></i></a></li>
-        
+             <li>
+               <a href="https://github.com/rlabuonora" title="GitHub">
+               <i class="fab fa-github fa-lg"></i>
+               </a>
+             </li>
+             <li>
+               <a href="https://twitter.com/rlabuonora" title="Twitter">
+               <i class="fab fa-twitter fa-lg"></i>
+               </a>
+             </li>
       </ul>
       
     </header>
@@ -44,25 +60,26 @@
     <ul>
         
         <li>
-            <a class="" href="/posts/">
+            <a class="active" href="https://rlabuonora.com/posts/">
                 <i class="fa-li fa  fa-lg"></i><span>Blog</span>
             </a>
         </li>
         
         <li>
-            <a class="" href="/cursos/">
+            <a class="" href="https://rlabuonora.com/cursos/">
                 <i class="fa-li fa  fa-lg"></i><span>Cursos</span>
             </a>
         </li>
         
         <li>
-            <a class="" href="/proyectos/">
+            <a class="" href="https://rlabuonora.com/proyectos/">
                 <i class="fa-li fa  fa-lg"></i><span>Proyectos</span>
             </a>
         </li>
         
     </ul>
 </nav>
+
 
     <main>
 
@@ -74,11 +91,12 @@
     <h1>Personas y lugares en las novelas de Mario Vargas Llosa</h1>
 
     
-        <aside>
+      <aside>
     <ul>
         <li>
             <time class="post-date" datetime="2019-10-15T00:00:00Z">Oct 15, 2019</time>
         </li>
+        
         
 
         
@@ -86,21 +104,26 @@
             <em>
                 
                     
-                    <a href="/tags/nlp">#nlp</a>
+                    <a href="https://rlabuonora.com/tags/nlp">#nlp</a>
                 
                     , 
-                    <a href="/tags/r">#R</a>
+                    <a href="https://rlabuonora.com/tags/r">#R</a>
                 
                     , 
-                    <a href="/tags/spacyr">#spacyR</a>
+                    <a href="https://rlabuonora.com/tags/spacyr">#spacyR</a>
                 
             </em>
         </li>
         
 
-        <li>3 minutes read</li>
+        <li>3 minute read</li>
     </ul>
 </aside>
+
+    
+
+    
+      
 
     
 
@@ -159,7 +182,7 @@ personas_por_capitulo %&gt;%
   labs(y=&quot;Menciones&quot;, x=&quot;Personajes&quot;, 
        title = &quot;Travesuras de la Niña Mala&quot;,
        subtitle=&quot;Personajes más mencionados por capítulo&quot;)</code></pre>
-<p><img src="/posts/2019-10-15-personas-y-lugares-en-vargas-llosa_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p><img src="https://rlabuonora.com/posts/2019-10-15-personas-y-lugares-en-vargas-llosa_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
 <p>Ahora hacemos lo mismo pero nos quedamos con las entidades de tipo <em>GPE</em>: (<em>Geopolitical Entity</em>).</p>
 <pre class="r"><code>lugares_por_capitulo &lt;- ents %&gt;% 
   filter(entity_type  == &quot;GPE&quot;) %&gt;% # GPE =&gt; Geopolitical Entity
@@ -179,7 +202,7 @@ lugares_por_capitulo %&gt;%
   labs(y=&quot;Menciones&quot;, x=&quot;Lugares&quot;, 
        title = &quot;Travesuras de la Niña Mala&quot;,
        subtitle=&quot;Lugares más mencionados por capítulo&quot;)</code></pre>
-<p><img src="/posts/2019-10-15-personas-y-lugares-en-vargas-llosa_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p><img src="https://rlabuonora.com/posts/2019-10-15-personas-y-lugares-en-vargas-llosa_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
 </div>
 
 
@@ -188,19 +211,22 @@ lugares_por_capitulo %&gt;%
 
 <section class="post-nav">
     <ul>
-        
         <li>
-            <a href="/posts/predicting-house-prices/"><i class="fa fa-chevron-circle-left"></i> Prediciendo Precios de Propiedades</a>
+        
+            <a href="https://rlabuonora.com/posts/predicting-house-prices/"><i class="fa fa-chevron-circle-left"></i> Prediciendo Precios de Propiedades</a>
+        
         </li>
-        
-        
         <li>
-            <a href="/posts/vacunas/">Vacunas <i class="fa fa-chevron-circle-right"></i> </a>
-        </li>
         
+            <a href="https://rlabuonora.com/posts/vacunas/">Vacunas <i class="fa fa-chevron-circle-right"></i> </a>
+        
+        </li>
     </ul>
 </section>
+  
     
+    
+  
 
 
 
@@ -208,21 +234,21 @@ lugares_por_capitulo %&gt;%
 
 </main>
     <footer>
-        <h6>Copyright © 2019 - Rafael La Buonora |
-            Rendered by <a href="https://gohugo.io" title="Hugo">Hugo</a> |
-            <a href="/index.xml">Subscribe</a></h6>
+        <ul>
+            <li>
+                <h6>Copyright © 2019 - Rafael La Buonora | 
+                    Rendered by <a href="https://gohugo.io" title="Hugo">Hugo</a> |
+                    <a href="https://rlabuonora.com/index.xml">Subscribe </a></h6>
+            </li>
+            
+            
+        </ul>
     </footer>
 </div>
-<script src="/js/scripts.js"></script>
-
-  
-<script src="/js/math-code.js"></script>
-<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-
+<script src="https://rlabuonora.com/js/scripts.js"></script>
 
 
 </body>
 
-
-
 </html>
+

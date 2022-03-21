@@ -3,38 +3,54 @@
 <html lang="en">
 
 <head>
-  <title>rlabuonora.com</title>
+  <title>Prediciendo Precios de Propiedades - rlabuonora.com</title>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="The HTML5 Herald" />
-  <meta name="author" content="Rafa" /><meta name="generator" content="Hugo 0.76.5" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" />
-  <script src="https://kit.fontawesome.com/b76b73e8e8.js" crossorigin="anonymous"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="The HTML5 Herald" />
+<meta name="author" content="Rafa" /><meta property="og:title" content="Prediciendo Precios de Propiedades" />
+<meta property="og:description" content="Estimamos tres modelos de regresión para predecir los precios de un data set de propiedades inmobiliarias, usando la API de Pipelines en scikit-learn" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://rlabuonora.com/posts/predicting-house-prices/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2019-06-16T00:00:00+00:00" />
+<meta property="article:modified_time" content="2019-06-16T00:00:00+00:00" />
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Prediciendo Precios de Propiedades"/>
+<meta name="twitter:description" content="Estimamos tres modelos de regresión para predecir los precios de un data set de propiedades inmobiliarias, usando la API de Pipelines en scikit-learn"/>
+
+<meta name="generator" content="Hugo 0.92.2" />
+    
+    <link rel="shortcut icon" href="https://rlabuonora.com/favicon.png" />
   
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab|Ruda" />
-  <link rel="stylesheet" type="text/css" href="/css/styles.css" />
-  <link rel="stylesheet" type="text/css" href="/custom.css" /> <link rel="icon" href="/favicon.png"> 
 
-
-</head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://rlabuonora.com/fontawesome/css/all.min.css" />
+  
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab|Ruda" />
+  
+  
+  <link rel="stylesheet" type="text/css" href="https://rlabuonora.com/css/styles.css" /><link rel='stylesheet' href='https://rlabuonora.com/custom.css'></head>
 
 <body>
   <div id="container">
     <header>
+      
       <h1>
-                <a href="/">rlabuonora.com</a>
-            </h1>
+        <a href="https://rlabuonora.com/">rlabuonora.com</a>
+      </h1>
 
       <ul id="social-media">
-        
-        
-        
-        <li><a href="https://twitter.com/rlabuonora"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
-          
-        <li><a href="https://github.com/rlabuonora"><i class="fab fa-github fa-lg" aria-hidden="true"></i></a></li>
-           
-        <li><a href="http://cv.rlabuonora.com"><i class="fas fa-file-alt" aria-hidden="true"></i></a></li>
-        
+             <li>
+               <a href="https://github.com/rlabuonora" title="GitHub">
+               <i class="fab fa-github fa-lg"></i>
+               </a>
+             </li>
+             <li>
+               <a href="https://twitter.com/rlabuonora" title="Twitter">
+               <i class="fab fa-twitter fa-lg"></i>
+               </a>
+             </li>
       </ul>
       
     </header>
@@ -44,25 +60,26 @@
     <ul>
         
         <li>
-            <a class="" href="/posts/">
+            <a class="active" href="https://rlabuonora.com/posts/">
                 <i class="fa-li fa  fa-lg"></i><span>Blog</span>
             </a>
         </li>
         
         <li>
-            <a class="" href="/cursos/">
+            <a class="" href="https://rlabuonora.com/cursos/">
                 <i class="fa-li fa  fa-lg"></i><span>Cursos</span>
             </a>
         </li>
         
         <li>
-            <a class="" href="/proyectos/">
+            <a class="" href="https://rlabuonora.com/proyectos/">
                 <i class="fa-li fa  fa-lg"></i><span>Proyectos</span>
             </a>
         </li>
         
     </ul>
 </nav>
+
 
     <main>
 
@@ -74,11 +91,12 @@
     <h1>Prediciendo Precios de Propiedades</h1>
 
     
-        <aside>
+      <aside>
     <ul>
         <li>
             <time class="post-date" datetime="2019-06-16T00:00:00Z">Jun 16, 2019</time>
         </li>
+        
         
 
         
@@ -86,18 +104,23 @@
             <em>
                 
                     
-                    <a href="/tags/python">#python</a>
+                    <a href="https://rlabuonora.com/tags/python">#python</a>
                 
                     , 
-                    <a href="/tags/scikit-learn">#scikit-learn</a>
+                    <a href="https://rlabuonora.com/tags/scikit-learn">#scikit-learn</a>
                 
             </em>
         </li>
         
 
-        <li>10 minutes read</li>
+        <li>10 minute read</li>
     </ul>
 </aside>
+
+    
+
+    
+      
 
     
 
@@ -211,7 +234,7 @@ ax[1].text(12.6, 0.6, helper_curtosis(log1_x), fontsize = 14)
 ax[1].set_xlabel(&quot;log(1+SalePrice)&quot;)
 
 _ = fig.suptitle(&quot;La transformación x = log(1+x) corrige la asimetría en SalePrice&quot;, fontsize=16)</code></pre>
-<p><img src="/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-7-1.png" width="1152" /></p>
+<p><img src="https://rlabuonora.com/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-7-1.png" width="1152" /></p>
 <p>El <a href="https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.skewtest.html#scipy.stats.skewtest">test de curtosis</a> es una prueba estadística para determinar si la distibución es simétrica. En la variable original rechazamos que la distribución sea simétrica y en la transformada con <code>log(1+x)</code> no rechazamos la hipótesis nula de que la distribución es simétrica.</p>
 <pre class="python"><code># Correlaciones con SalePrice
 corr_sales_price = casas.corr()[&quot;SalePrice&quot;]
@@ -254,7 +277,7 @@ _ = ax[1].set_xlabel(&quot;log&quot;) #, ylabel = &quot;log&quot;)
 _ = sns.scatterplot(x=&quot;GrLivArea&quot;, y=&quot;SalePrice&quot;, hue=&quot;outlier&quot;, data=casas, ax = ax[1])
 _ = plt.title(&quot;Transformación logarítmica&quot;, fontsize = 16)
 </code></pre>
-<p><img src="/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-9-1.png" width="1152" /></p>
+<p><img src="https://rlabuonora.com/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-9-1.png" width="1152" /></p>
 </div>
 <div id="variables-numericas-discontinuas" class="section level2">
 <h2>Variables numéricas discontinuas</h2>
@@ -277,7 +300,7 @@ cols = np.reshape(np.array(cuentas)[:8], dim_panel) # tomo los primeros 6 para q
 _ = [sns.countplot(x=cols[i, j], data=casas, ax = ax[i, j]) for i in range(dim_panel[0]) 
                                                               for j in range(dim_panel[1])]
 plt.show()</code></pre>
-<p><img src="/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-10-1.png" width="1152" /></p>
+<p><img src="https://rlabuonora.com/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-10-1.png" width="1152" /></p>
 </div>
 <div id="variables-categoricas" class="section level2">
 <h2>Variables categóricas</h2>
@@ -314,7 +337,7 @@ _ = [sns.countplot(x=cols[i, j], data=casas, ax = ax[i, j]) for i in range(dim_p
                                                               for j in range(dim_panel[1])]
                                                               
 plt.show()</code></pre>
-<p><img src="/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-11-1.png" width="1152" /></p>
+<p><img src="https://rlabuonora.com/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-11-1.png" width="1152" /></p>
 <p><code>Street</code>, <code>Utilities</code>, <code>Heating</code> y <code>RoofMatl</code> tienen muy poca variación y pueden generar problemas en el modelo.</p>
 <pre class="python"><code># Sacar las problematicas
 cat_problemas = [&quot;Street&quot;, &quot;Utilities&quot;, &quot;Heating&quot;, &quot;RoofMatl&quot;] 
@@ -378,7 +401,7 @@ _ = [sns.countplot(x=cols[i, j], data=casas, ax = ax[i, j]) for i in range(dim_p
                                                               for j in range(dim_panel[1])]
 
 plt.show()</code></pre>
-<p><img src="/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-17-1.png" width="1536" /></p>
+<p><img src="https://rlabuonora.com/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-17-1.png" width="1536" /></p>
 <p>Posibles problemas con <code>PoolQC</code> y <code>Functional</code>. <code>BsmtCond</code> y <code>GarageCond</code>.</p>
 <p>Missing en <code>PoolQC</code> (1453) , <code>FireplaceQu</code> (690) , <code>GarageCond</code> (81) , <code>GarageQual</code> (81), <code>GarageFinish</code> (81), <code>GarageType</code>(81), <code>BsmtExposure</code> (38) , <code>BsmtFinType1</code> (37), <code>BsmtCond</code> (37), <code>BsmtQual</code> (37).</p>
 <pre class="python"><code>ordinales_missing = [&quot;PoolQC&quot;,       &quot;FireplaceQu&quot;, &quot;GarageCond&quot;,
@@ -532,7 +555,7 @@ preds = pd.DataFrame({&quot;preds&quot;:preds, &quot;true&quot;:y})
 preds[&quot;residuals&quot;] = preds[&quot;true&quot;] - preds[&quot;preds&quot;]
 _ = preds.plot(x = &quot;preds&quot;, y = &quot;residuals&quot;, kind = &quot;scatter&quot;, ax = ax[2])
 _ = ax[2].set_title(&quot;Ridge&quot;)</code></pre>
-<p><img src="/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-25-1.png" width="1536" /></p>
+<p><img src="https://rlabuonora.com/posts/2019-06-16-prediciendo-precios-propiedades_files/figure-html/unnamed-chunk-25-1.png" width="1536" /></p>
 <p>Los errores de los tres modelos muestran que hay margen para mejora porque los errores de predicción son sistemáticamente altos para valores alto de la predicción. Agregar cuadrados de los features podría mejorar los resultados.</p>
 </div>
 </div>
@@ -547,19 +570,22 @@ _ = ax[2].set_title(&quot;Ridge&quot;)</code></pre>
 
 <section class="post-nav">
     <ul>
-        
         <li>
-            <a href="/posts/mapeando-ingresos-en-las-ciudades-de-uruguay/"><i class="fa fa-chevron-circle-left"></i> Barrios ricos y pobres de Montevideo</a>
+        
+            <a href="https://rlabuonora.com/posts/mapeando-ingresos-en-las-ciudades-de-uruguay/"><i class="fa fa-chevron-circle-left"></i> Barrios ricos y pobres de Montevideo</a>
+        
         </li>
-        
-        
         <li>
-            <a href="/posts/personas-y-lugares-vargas-llosa/">Personas y lugares en las novelas de Mario Vargas Llosa <i class="fa fa-chevron-circle-right"></i> </a>
-        </li>
         
+            <a href="https://rlabuonora.com/posts/personas-y-lugares-vargas-llosa/">Personas y lugares en las novelas de Mario Vargas Llosa <i class="fa fa-chevron-circle-right"></i> </a>
+        
+        </li>
     </ul>
 </section>
+  
     
+    
+  
 
 
 
@@ -567,21 +593,21 @@ _ = ax[2].set_title(&quot;Ridge&quot;)</code></pre>
 
 </main>
     <footer>
-        <h6>Copyright © 2019 - Rafael La Buonora |
-            Rendered by <a href="https://gohugo.io" title="Hugo">Hugo</a> |
-            <a href="/index.xml">Subscribe</a></h6>
+        <ul>
+            <li>
+                <h6>Copyright © 2019 - Rafael La Buonora | 
+                    Rendered by <a href="https://gohugo.io" title="Hugo">Hugo</a> |
+                    <a href="https://rlabuonora.com/index.xml">Subscribe </a></h6>
+            </li>
+            
+            
+        </ul>
     </footer>
 </div>
-<script src="/js/scripts.js"></script>
-
-  
-<script src="/js/math-code.js"></script>
-<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-
+<script src="https://rlabuonora.com/js/scripts.js"></script>
 
 
 </body>
 
-
-
 </html>
+

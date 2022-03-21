@@ -3,38 +3,54 @@
 <html lang="en">
 
 <head>
-  <title>rlabuonora.com</title>
+  <title>Un mapa de Montevideo con leaflet - rlabuonora.com</title>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="The HTML5 Herald" />
-  <meta name="author" content="Rafa" /><meta name="generator" content="Hugo 0.76.5" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" />
-  <script src="https://kit.fontawesome.com/b76b73e8e8.js" crossorigin="anonymous"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="The HTML5 Herald" />
+<meta name="author" content="Rafa" /><meta property="og:title" content="Un mapa de Montevideo con leaflet" />
+<meta property="og:description" content="Distintas formas de dibujar mapas interactivos con R." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://rlabuonora.com/posts/mapas/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2018-07-17T00:00:00+00:00" />
+<meta property="article:modified_time" content="2018-07-17T00:00:00+00:00" />
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Un mapa de Montevideo con leaflet"/>
+<meta name="twitter:description" content="Distintas formas de dibujar mapas interactivos con R."/>
+
+<meta name="generator" content="Hugo 0.92.2" />
+    
+    <link rel="shortcut icon" href="https://rlabuonora.com/favicon.png" />
   
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab|Ruda" />
-  <link rel="stylesheet" type="text/css" href="/css/styles.css" />
-  <link rel="stylesheet" type="text/css" href="/custom.css" /> <link rel="icon" href="/favicon.png"> 
 
-
-</head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha256-l85OmPOjvil/SOvVt3HnSSjzF1TUMyT9eV0c2BzEGzU=" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://rlabuonora.com/fontawesome/css/all.min.css" />
+  
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab|Ruda" />
+  
+  
+  <link rel="stylesheet" type="text/css" href="https://rlabuonora.com/css/styles.css" /><link rel='stylesheet' href='https://rlabuonora.com/custom.css'></head>
 
 <body>
   <div id="container">
     <header>
+      
       <h1>
-                <a href="/">rlabuonora.com</a>
-            </h1>
+        <a href="https://rlabuonora.com/">rlabuonora.com</a>
+      </h1>
 
       <ul id="social-media">
-        
-        
-        
-        <li><a href="https://twitter.com/rlabuonora"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
-          
-        <li><a href="https://github.com/rlabuonora"><i class="fab fa-github fa-lg" aria-hidden="true"></i></a></li>
-           
-        <li><a href="http://cv.rlabuonora.com"><i class="fas fa-file-alt" aria-hidden="true"></i></a></li>
-        
+             <li>
+               <a href="https://github.com/rlabuonora" title="GitHub">
+               <i class="fab fa-github fa-lg"></i>
+               </a>
+             </li>
+             <li>
+               <a href="https://twitter.com/rlabuonora" title="Twitter">
+               <i class="fab fa-twitter fa-lg"></i>
+               </a>
+             </li>
       </ul>
       
     </header>
@@ -44,25 +60,26 @@
     <ul>
         
         <li>
-            <a class="" href="/posts/">
+            <a class="active" href="https://rlabuonora.com/posts/">
                 <i class="fa-li fa  fa-lg"></i><span>Blog</span>
             </a>
         </li>
         
         <li>
-            <a class="" href="/cursos/">
+            <a class="" href="https://rlabuonora.com/cursos/">
                 <i class="fa-li fa  fa-lg"></i><span>Cursos</span>
             </a>
         </li>
         
         <li>
-            <a class="" href="/proyectos/">
+            <a class="" href="https://rlabuonora.com/proyectos/">
                 <i class="fa-li fa  fa-lg"></i><span>Proyectos</span>
             </a>
         </li>
         
     </ul>
 </nav>
+
 
     <main>
 
@@ -74,18 +91,19 @@
     <h1>Un mapa de Montevideo con leaflet</h1>
 
     
-        <aside>
+      <aside>
     <ul>
         <li>
             <time class="post-date" datetime="2018-07-17T00:00:00Z">Jul 17, 2018</time>
         </li>
+        
         
         <li>
             Categories:
             <em>
                 
                     
-                    <a href="/categories/r">R</a>
+                    <a href="https://rlabuonora.com/categories/r">R</a>
                 
             </em>
         </li>
@@ -96,34 +114,39 @@
             <em>
                 
                     
-                    <a href="/tags/r">#R</a>
+                    <a href="https://rlabuonora.com/tags/r">#R</a>
                 
                     , 
-                    <a href="/tags/vis">#Vis</a>
+                    <a href="https://rlabuonora.com/tags/vis">#Vis</a>
                 
                     , 
-                    <a href="/tags/leaflet">#Leaflet</a>
+                    <a href="https://rlabuonora.com/tags/leaflet">#Leaflet</a>
                 
             </em>
         </li>
         
 
-        <li>3 minutes read</li>
+        <li>3 minute read</li>
     </ul>
 </aside>
 
     
 
     
-<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
-<script src="/rmarkdown-libs/jquery/jquery.min.js"></script>
-<link href="/rmarkdown-libs/leaflet/leaflet.css" rel="stylesheet" />
-<script src="/rmarkdown-libs/leaflet/leaflet.js"></script>
-<link href="/rmarkdown-libs/leafletfix/leafletfix.css" rel="stylesheet" />
-<script src="/rmarkdown-libs/Proj4Leaflet/proj4-compressed.js"></script>
-<script src="/rmarkdown-libs/Proj4Leaflet/proj4leaflet.js"></script>
-<link href="/rmarkdown-libs/rstudio_leaflet/rstudio_leaflet.css" rel="stylesheet" />
-<script src="/rmarkdown-libs/leaflet-binding/leaflet.js"></script>
+      
+
+    
+
+    
+<script src="https://rlabuonora.com/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="https://rlabuonora.com/rmarkdown-libs/jquery/jquery.min.js"></script>
+<link href="https://rlabuonora.com/rmarkdown-libs/leaflet/leaflet.css" rel="stylesheet" />
+<script src="https://rlabuonora.com/rmarkdown-libs/leaflet/leaflet.js"></script>
+<link href="https://rlabuonora.com/rmarkdown-libs/leafletfix/leafletfix.css" rel="stylesheet" />
+<script src="https://rlabuonora.com/rmarkdown-libs/Proj4Leaflet/proj4-compressed.js"></script>
+<script src="https://rlabuonora.com/rmarkdown-libs/Proj4Leaflet/proj4leaflet.js"></script>
+<link href="https://rlabuonora.com/rmarkdown-libs/rstudio_leaflet/rstudio_leaflet.css" rel="stylesheet" />
+<script src="https://rlabuonora.com/rmarkdown-libs/leaflet-binding/leaflet.js"></script>
 
 
 <p>R tiene abstracciones para trabajar con información geográfica sin entender a fondo los detalles de cómo se hacen las proyecciones cartográficas y qué son los sistemas de coordenadas.</p>
@@ -205,19 +228,22 @@ leaflet(st) %&gt;%
 
 <section class="post-nav">
     <ul>
-        
         <li>
-            <a href="/posts/hamlet/"><i class="fa fa-chevron-circle-left"></i> Mining Hamlet</a>
+        
+            <a href="https://rlabuonora.com/posts/hamlet/"><i class="fa fa-chevron-circle-left"></i> Mining Hamlet</a>
+        
         </li>
-        
-        
         <li>
-            <a href="/posts/scraping-nba-data/">Scraping NBA data with rvest and purrr <i class="fa fa-chevron-circle-right"></i> </a>
-        </li>
         
+            <a href="https://rlabuonora.com/posts/scraping-nba-data/">Scraping NBA data with rvest and purrr <i class="fa fa-chevron-circle-right"></i> </a>
+        
+        </li>
     </ul>
 </section>
+  
     
+    
+  
 
 
 
@@ -225,21 +251,21 @@ leaflet(st) %&gt;%
 
 </main>
     <footer>
-        <h6>Copyright © 2019 - Rafael La Buonora |
-            Rendered by <a href="https://gohugo.io" title="Hugo">Hugo</a> |
-            <a href="/index.xml">Subscribe</a></h6>
+        <ul>
+            <li>
+                <h6>Copyright © 2019 - Rafael La Buonora | 
+                    Rendered by <a href="https://gohugo.io" title="Hugo">Hugo</a> |
+                    <a href="https://rlabuonora.com/index.xml">Subscribe </a></h6>
+            </li>
+            
+            
+        </ul>
     </footer>
 </div>
-<script src="/js/scripts.js"></script>
-
-  
-<script src="/js/math-code.js"></script>
-<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-
+<script src="https://rlabuonora.com/js/scripts.js"></script>
 
 
 </body>
 
-
-
 </html>
+

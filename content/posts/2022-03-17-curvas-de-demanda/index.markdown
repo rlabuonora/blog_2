@@ -1,12 +1,12 @@
 ---
 title: Curvas de Demanda
 author: ''
-date: '2022-03-17'
+date: '2022-02-17'
 slug: []
 categories: []
 tags: []
 images: []
-draft: true
+
 ---
 
 
