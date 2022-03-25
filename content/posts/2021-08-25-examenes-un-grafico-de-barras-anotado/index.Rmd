@@ -1,15 +1,24 @@
 ---
-title: "Un gráfico de barras anotado"
+title: "Exámenes, un gráfico de barras anotado"
 author: ''
-date: '2020-05-28'
-slug: examenes-visualizaciones
-tags: ["R", "ggplot", "tidytuesday"]
+date: '2022-03-25'
+slug: []
+categories: []
+tags: []
+images: []
 ---
-```{r, include=FALSE}
-library(tidyverse)
-library(here)
 
+```{r, setup, include=FALSE}
+
+knitr::opts_chunk$set(
+  comment = '', 
+  warning= FALSE, 
+  fig.width = 6, fig.height = 6
+)
+
+library(tidyverse)
 ```
+
 
 En este posteo hago un gráfico de barras con anotaciones para mostrar un problema en el sistema de exámenes de las escuelas de Nueva York.
 
@@ -23,8 +32,8 @@ Los exámenes Regents son una serie de tests estándar de temas de secundaria en
 
 ```{r}
 
-nyc_regents <-  read_csv(here("static", "data", "tidytuesday","nyc_regents.csv")
-)
+
+nyc_regents <-  read_csv("nyc_regents.csv")
 
 # reshape
 
