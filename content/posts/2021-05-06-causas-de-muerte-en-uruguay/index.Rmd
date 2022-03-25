@@ -8,9 +8,20 @@ tags: []
 draft: true
 ---
 
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(
+  comment = '', fig.width = 6, fig.height = 6
+)
+```
+
+
 Parsear un pdf para analizar los datos de las causas de muerte en Uruguay.
 
+
+
 ```{r}
+
+
 library(pdftools)
 text <- pdf_text("informe_preliminiar_de_mortalidad.pdf")
 head(text)

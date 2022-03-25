@@ -1,15 +1,22 @@
 ---
-title: "Visualizando Homicidios"
+title: Homicidios
 author: ''
-date: '2020-07-28'
-slug: vacunas
-tags: ["R", "ggplot", "tidytuesday"]
+date: '2020-04-25'
+slug: []
+categories: []
+tags: []
+images: []
 ---
-```{r, include=FALSE}
-library(tidyverse)
-library(here)
 
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(
+  warning=FALSE, 
+  comment = '', 
+  fig.width = 6, fig.height = 6
+)
 ```
+
 
 Este es mi primer post sobre tidy tuesday. Este proyecto, creado por [Thomas Mock](https://twitter.com/thomas_mock), publica un data set todo los martes y invita a los participantes a postear una visualización usándolo.
 
@@ -21,7 +28,8 @@ Para esta semana se publicaron tres juegos de datos provenientes de [este blog p
 El primer dataset tiene la tasa de homicidios en 6 países del G-8: 
 
 ```{r, message=FALSE}
-homicidios <- read_csv(here("static", "data", "tidytuesday","international_murders.csv"))
+library(tidyverse)
+homicidios <- read_csv("international_murders.csv")
 
 head(homicidios)
 ```
@@ -103,4 +111,3 @@ plot <- homicidios %>%
 ```{r}
 plot
 ```
-

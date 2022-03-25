@@ -1,11 +1,14 @@
 ---
-title: "Visualizando Homicidios"
+title: Homicidios
 author: ''
-date: '2020-07-28'
-slug: vacunas
-tags: ["R", "ggplot", "tidytuesday"]
+date: '2020-04-25'
+slug: []
+categories: []
+tags: []
+images: []
 ---
 
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
 
 
 <p>Este es mi primer post sobre tidy tuesday. Este proyecto, creado por <a href="https://twitter.com/thomas_mock">Thomas Mock</a>, publica un data set todo los martes y invita a los participantes a postear una visualización usándolo.</p>
@@ -13,21 +16,22 @@ tags: ["R", "ggplot", "tidytuesday"]
 <div id="homicidios" class="section level1">
 <h1>Homicidios</h1>
 <p>El primer dataset tiene la tasa de homicidios en 6 países del G-8:</p>
-<pre class="r"><code>homicidios &lt;- read_csv(here(&quot;static&quot;, &quot;data&quot;, &quot;tidytuesday&quot;,&quot;international_murders.csv&quot;))
+<pre class="r"><code>library(tidyverse)
+homicidios &lt;- read_csv(&quot;international_murders.csv&quot;)
 
 head(homicidios)</code></pre>
-<pre><code>## # A tibble: 6 x 4
-##   country count label code 
-##   &lt;chr&gt;   &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;
-## 1 US       3.2  3.2   us   
-## 2 ITALY    0.71 0.71  it   
-## 3 CANADA   0.5  0.5   ca   
-## 4 UK       0.1  0.1   gb   
-## 5 JAPAN    0    0     jp   
-## 6 GERMANY  0.2  0.2   de</code></pre>
+<pre><code># A tibble: 6 x 4
+  country count label code 
+  &lt;chr&gt;   &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;
+1 US       3.2  3.2   us   
+2 ITALY    0.71 0.71  it   
+3 CANADA   0.5  0.5   ca   
+4 UK       0.1  0.1   gb   
+5 JAPAN    0    0     jp   
+6 GERMANY  0.2  0.2   de   </code></pre>
 <p>Este es el gráfico original:</p>
 <div class="figure">
-<img src="https://abcnews.go.com/images/International/homocides_g8_countries_640x360_wmain.jpg" alt="grafico original" />
+<img src="https://abcnews.go.com/images/International/homocides_g8_countries_640x360_wmain.jpg" alt="" />
 <p class="caption">grafico original</p>
 </div>
 <p>Revisando la fuente de los datos encontré <a href="https://dataunodc.un.org/GSH_app">esta app</a>, sería interesante comparar a Uruguay en estos números, pero los datos no coinciden.</p>
@@ -40,11 +44,11 @@ homicidios %&gt;%
   labs(x=&quot;&quot;, y=&quot;# de homicidios con armas de fuego \n cada 100,000 habitantes&quot;, 
        caption = &quot;Fuente: \nUNODC Homicide Statistics&quot;,
        title = &quot;Tasa de Homicidios en países del G-8.&quot;)</code></pre>
-<p><img src="/posts/2019-12-28-homicidios_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-2-1.png" width="576" /></p>
 <p>Como mapeamos el eje x a una columna de texto, <code>ggplot</code> la convierte a un factor. El orden en el que aparecen los países en el eje depende de los niveles del factor, por defecto es alfabético:</p>
 <pre class="r"><code>levels(factor(homicidios$country))</code></pre>
-<pre><code>## [1] &quot;CANADA&quot;  &quot;FRANCE&quot;  &quot;GERMANY&quot; &quot;ITALY&quot;   &quot;JAPAN&quot;   &quot;RUSSIA&quot;  &quot;UK&quot;     
-## [8] &quot;US&quot;</code></pre>
+<pre><code>[1] &quot;CANADA&quot;  &quot;FRANCE&quot;  &quot;GERMANY&quot; &quot;ITALY&quot;   &quot;JAPAN&quot;   &quot;RUSSIA&quot;  &quot;UK&quot;     
+[8] &quot;US&quot;     </code></pre>
 <p>Esto es algo que puede confundir a alguien que no tiene experiencia trabajando con factores: el orden de los niveles es independiente del orden en que aparecen en el data frame.</p>
 <p>En este caso, el orden del factor es alfabético (Canadá, Francia, etc.), y el data frame está ordenado por la tasa de homicidios (descendente): US, Italia, Canadá.</p>
 <p>Para controlar el orden en el que aparecen los países ordenar las etiquetas, usamos una función muy útil de <code>forcats</code>: <code>fct_inorder</code>. Esta función reordena los niveles del factor para que coincida con el orden en el que aparecen en el data-frame:</p>
@@ -53,8 +57,8 @@ homicidios %&gt;%
   mutate(country_ordenado = fct_inorder(country))
 
 levels(homicidios_2$country_ordenado)</code></pre>
-<pre><code>## [1] &quot;US&quot;      &quot;ITALY&quot;   &quot;CANADA&quot;  &quot;GERMANY&quot; &quot;UK&quot;      &quot;FRANCE&quot;  &quot;JAPAN&quot;  
-## [8] &quot;RUSSIA&quot;</code></pre>
+<pre><code>[1] &quot;US&quot;      &quot;ITALY&quot;   &quot;CANADA&quot;  &quot;GERMANY&quot; &quot;UK&quot;      &quot;FRANCE&quot;  &quot;JAPAN&quot;  
+[8] &quot;RUSSIA&quot; </code></pre>
 <p>Para la versión final, agrego las etiquetas del texto con <code>geom_text</code> (nudge_y me permite ajustar el texto un poco para que no toque las barras).</p>
 <p>También descubrí <code>ggflags</code>, que nos da una función <code>geom_flag</code> con el <code>aes</code> country para especificar el país. La coordenada y de todas las banderas la fijo en -.4.</p>
 <pre class="r"><code># install_github(&quot;rensa/ggflags&quot;)
@@ -83,5 +87,5 @@ plot &lt;- homicidios %&gt;%
     plot.caption = element_text(vjust = 170) # mover caption
   )</code></pre>
 <pre class="r"><code>plot</code></pre>
-<p><img src="/posts/2019-12-28-homicidios_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-6-1.png" width="576" /></p>
 </div>

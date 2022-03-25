@@ -1,13 +1,14 @@
 ---
-title: "Vacunas"
+title: Las Vacunas Salvan Vidas
 author: ''
-date: '2019-11-28'
+date: '2022-03-25'
 slug: vacunas
-tags: ["R", "ggplot", "tidytuesday"]
+categories: []
+tags: []
+images: []
 ---
 ```{r, include=FALSE}
 library(tidyverse)
-library(here)
 
 ```
 
