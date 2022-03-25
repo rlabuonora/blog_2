@@ -1,10 +1,11 @@
 ---
-title: "El estilo de Metallica a lo largo de los discos"
+title: El estilo de Metallica a lo largo de los discos
 author: ''
-date: '2020-01-26'
-slug: metallica
+date: '2020-01-16'
+slug: []
 categories: []
-tags: ["tidytuesday", "ggplot", "R"]
+tags: []
+images: []
 ---
 
 
@@ -15,8 +16,7 @@ Para este post de [#tidytuesday](https://twitter.com/hashtag/tidytuesday?lang=en
 
 Este es el código para bajar los datos y la tapa de los discos:
 
-
-```r
+```{r, eval=FALSE}
 library(spotifyr)
 library(tidyverse)
 library(lubridate)
@@ -93,8 +93,7 @@ purrr::walk2(metallica_albums$cover_url,
 
 Y este es el código para crear el gráfico:
 
-
-```r
+```{r eval=FALSE}
 # Evolution of song tempo
 
 library(tidyverse)
@@ -162,5 +161,6 @@ tempo +
     plot.subtitle = element_text(hjust=.5)
   ) +
   ggsave("metallica_tempo.png")
+
 ```
 

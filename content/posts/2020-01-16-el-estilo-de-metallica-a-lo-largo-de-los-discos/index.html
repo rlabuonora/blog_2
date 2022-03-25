@@ -1,0 +1,156 @@
+---
+title: El estilo de Metallica a lo largo de los discos
+author: ''
+date: '2020-01-16'
+slug: []
+categories: []
+tags: []
+images: []
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>Para este post de <a href="https://twitter.com/hashtag/tidytuesday?lang=en">#tidytuesday</a> usé la API de spotify para bajar datos sobre la música de Metallica.</p>
+<p><img src="/posts/2020-01-26-metallica_files/metallica_tempo.png" /></p>
+<p>Este es el código para bajar los datos y la tapa de los discos:</p>
+<pre class="r"><code>library(spotifyr)
+library(tidyverse)
+library(lubridate)
+
+
+METALLICA_ID &lt;- &quot;2ye2Wgw4gimLv2eAKyk1NB&quot;
+metallica_albums &lt;- get_artist_albums(id=METALLICA_ID,
+                                      include_groups = &quot;album&quot;,
+                                      limit = 50) %&gt;%
+  slice(6, 11, 13, 17, 19, 21, 26, 30, 35, 39, 43) %&gt;% 
+  mutate(release_year = year(as_date(release_date)))
+
+
+metallica_albums$cover_url &lt;- metallica_albums$images %&gt;% 
+  purrr::map(&quot;url&quot;) %&gt;% 
+  purrr::map(3)
+
+
+metallica_albums &lt;- metallica_albums %&gt;% 
+  select(album_name=name, album_id=id, release_year, cover_url) 
+  
+
+get_album_tracks &lt;- function(album_id, album_name) {
+  # get track name, track id &amp; album name (add all album.level data here)
+  album &lt;- get_album(id=album_id)
+  tibble(track_name=album$tracks$items$name,
+         track_id   = album$tracks$items$id,
+         album_name = album_name)
+}
+
+get_track_info &lt;- function(track_id, track_name, album_name) {
+  features &lt;- get_track_audio_features(id=track_id)
+  mutate(features, 
+         album_name = album_name,
+         track_name = track_name) %&gt;% 
+    select(album_name, track_name, danceability:tempo, duration_ms)
+}
+
+
+metallica_tracks &lt;- metallica_albums %&gt;% 
+  pmap(function(...) {
+    current &lt;- tibble(...)
+    get_album_tracks(current$album_id, current$album_name)
+  }) %&gt;% 
+  map(purrr::transpose) %&gt;% 
+  flatten %&gt;% 
+  map_df(function(x) {
+    get_track_info(x$track_id, x$track_name, x$album_name)
+  }) 
+
+metallica_tracks_df &lt;- metallica_tracks %&gt;% 
+  left_join(metallica_albums) %&gt;% 
+  mutate(track_name = str_remove(track_name, &quot; - Remastered&quot;)) %&gt;% 
+  mutate(track_name = str_remove(track_name, &quot;\\(Remastered\\)&quot;)) %&gt;%
+  mutate(album_name = str_remove(album_name, &quot;\\(Remastered\\)&quot;)) %&gt;% 
+  group_by(album_name) %&gt;% 
+  mutate(track_num = row_number()) %&gt;% 
+  arrange(release_year, track_num)
+
+dir.create(&#39;data&#39;)
+saveRDS(metallica_tracks_df, file=&quot;data/metallica.rds&quot;)
+
+download_cover &lt;- function(url, release_year) {
+  file_name &lt;- glue::glue(&quot;{release_year}.jpg&quot;)
+  dest &lt;- file.path(&quot;covers&quot;, file_name)
+  download.file(url, destfile=dest)
+}
+
+dir.create(&#39;covers&#39;)
+purrr::walk2(metallica_albums$cover_url,
+            metallica_albums$release_year, 
+            download_cover)</code></pre>
+<p>Y este es el código para crear el gráfico:</p>
+<pre class="r"><code># Evolution of song tempo
+
+library(tidyverse)
+library(ggplot2)
+library(jpeg)
+library(grid)
+library(ggdark)
+library(showtext)
+library(ggrepel)
+
+theme_set(dark_theme_grey())
+
+# Agregar fuente
+font_add_google(&quot;Metal Mania&quot;, &quot;metal&quot;)
+showtext_auto()
+
+metallica &lt;- readRDS(&quot;./data/metallica.rds&quot;)
+
+
+# metallica$track_name &lt;- fct_inorder(factor(metallica$track_name))
+metallica$album_name &lt;- fct_inorder(factor(metallica$album_name))
+
+fast_songs &lt;- c(&quot;Holier Than Thou&quot;, 
+                &quot;My Apocalypse&quot;, 
+                &quot;The Four Horsemen&quot;)
+
+highligts &lt;- metallica %&gt;% 
+  filter(track_name %in%  fast_songs)
+
+# Gráfico de base.
+tempo &lt;- metallica %&gt;% 
+  ggplot(aes(album_name, tempo, group = 1)) + 
+  scale_x_discrete(breaks = NULL, expand=c(0.1, 0)) +
+  scale_y_continuous(limits = c(60, 220)) +
+  geom_point() +
+  geom_text_repel(data = highligts, 
+                  aes(label=track_name), 
+                  nudge_y = 10,
+                  nudge_x = .2,
+                  color=&quot;white&quot;, size = 3) +
+  geom_smooth(se=FALSE) + 
+  guides(color=FALSE) + 
+  labs(title=&quot;Metallica&quot;, 
+       subtitle = &quot;New albums are almost as fast as the early ones.&quot;, 
+       caption  = &quot;Data: Spotify&quot;,
+       x=&quot;Album&quot;, y=&quot;Tempo (bpm)&quot;)
+
+# Agregar las tapas de los discos como imágenes.
+covers &lt;- list.files(&#39;covers&#39;, full.names = TRUE) %&gt;% 
+  purrr::map(readJPEG) %&gt;% 
+  purrr::map(rasterGrob, interpolate=TRUE)
+
+y_coord_cover &lt;-  60
+y_offset &lt;- 10.5
+
+
+for (i in seq_along(covers)) {
+  tempo &lt;- tempo +  annotation_custom(grob=covers[[i]], xmin=i-1+.5, xmax=i+.5, ymin=y_coord_cover, ymax=y_coord_cover+y_offset)
+}
+
+tempo + 
+  theme(
+    text = element_text(family=&quot;metal&quot;),
+    plot.title = element_text(hjust = .5),
+    plot.subtitle = element_text(hjust=.5)
+  ) +
+  ggsave(&quot;metallica_tempo.png&quot;)</code></pre>
