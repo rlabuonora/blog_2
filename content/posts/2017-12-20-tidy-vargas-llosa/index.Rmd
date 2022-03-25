@@ -7,13 +7,13 @@ categories: []
 tags: []
 images: []
 ---
-```{r echo = FALSE, message=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning=FALSE)
+```{r echo = FALSE, message=FALSE, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      message = FALSE, 
+                      warning=FALSE)
 
-suppressPackageStartupMessages(library(dplyr))
-suppressPackageStartupMessages(library(tidyr))
+suppressPackageStartupMessages(library(tidyverse))
 library(wordcloud)
-library(ggplot2)
 library(tidytext)
 library(stringr)
 library(forcats)
