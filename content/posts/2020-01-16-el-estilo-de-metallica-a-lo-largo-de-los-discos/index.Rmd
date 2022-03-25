@@ -14,7 +14,7 @@ Para este post de [#tidytuesday](https://twitter.com/hashtag/tidytuesday?lang=en
 
 ![](/posts/2020-01-26-metallica_files/metallica_tempo.png)
 
-Este es el código para bajar los datos y la tapa de los discos:
+Este es el código para bajar los datos y la tapa de los discos. Faltaría explicar un poco más.
 
 ```{r, eval=FALSE}
 library(spotifyr)
