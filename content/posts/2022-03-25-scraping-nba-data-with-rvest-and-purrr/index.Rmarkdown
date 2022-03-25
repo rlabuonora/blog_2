@@ -1,11 +1,11 @@
 ---
 title: Scraping NBA data with rvest and purrr
-author: Rafa
+author: ''
 date: '2018-08-01'
 slug: scraping-nba-data
 categories: []
 tags: ["R", "purrr"]
-description: "Usamos rvest y purrr para scrapear datos de https://www.basketball-reference.com"
+images: []
 ---
 
 ```{r setup, include=FALSE}
@@ -41,7 +41,7 @@ knit_hooks$set(output = function(x, options) {
 
 The NBA does a great job releasing statistics on every aspect of the game. Most teams have analytics experts crunching those numbers for insights to get a competitive advantage.
 
-In this post I go through the process of scraping data from [basketball-reference.com](https://www.basketball-reference.com/) using the R package `rvest`. We also do some data munging with `purrr` and string interpolation with `glue`.
+In this post I go through the process of scraping data from [basketball-reference.com](https://www.basketball-reference.com/) using the R package `rvest`. I also do some data munging with `purrr` and string interpolation with `glue`.
 
 
 # NBA Reference
@@ -307,7 +307,6 @@ data <- as.list(2000:2018) %>%
   mutate_at(vars(G:`PS/G`, Age), as.numeric) %>% 
   mutate_at(vars(Tm, Pos), factor)
 
-#saveRDS(data, file="~/Desktop/data_science/nba_data_00_18.rds")
 ```
 
 # What to do with the data
