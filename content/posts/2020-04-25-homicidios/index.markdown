@@ -1,24 +1,18 @@
 ---
 title: Homicidios
-author: ''
+author: 'Rafa'
 date: '2020-04-25'
 slug: []
 categories: []
-tags: []
-images: []
+tags: 
+  - R
 ---
 
 
-```{r, setup, include=FALSE}
-knitr::opts_chunk$set(
-  warning=FALSE, 
-  comment = '', 
-  fig.width = 6, fig.height = 6
-)
-```
 
 
-Este es mi primer post sobre tidy tuesday. Este proyecto, creado por [Thomas Mock](https://twitter.com/thomas_mock), publica un data set todo los martes y invita a los participantes a postear una visualización usándolo.
+
+Este es mi primer post sobre tidy tuesday. Este proyecto, creado por [Thomas Mock](https://twitter.com/thomas_mock), publica un data set todo los martes y invita a los participantes a postear una visualización usándolo. 
 
 Para esta semana se publicaron tres juegos de datos provenientes de [este blog post](https://simplystatistics.org/2019/08/28/you-can-replicate-almost-any-plot-with-ggplot2/). La idea es mostrar el poder de `ggplot` para reproducir visualizaciones que encontró el autor por ahí.
 
@@ -27,11 +21,24 @@ Para esta semana se publicaron tres juegos de datos provenientes de [este blog p
 
 El primer dataset tiene la tasa de homicidios en 6 países del G-8: 
 
-```{r, message=FALSE}
+
+```r
 library(tidyverse)
 homicidios <- read_csv("international_murders.csv")
 
 head(homicidios)
+```
+
+```
+# A tibble: 6 x 4
+  country count label code 
+  <chr>   <dbl> <chr> <chr>
+1 US       3.2  3.2   us   
+2 ITALY    0.71 0.71  it   
+3 CANADA   0.5  0.5   ca   
+4 UK       0.1  0.1   gb   
+5 JAPAN    0    0     jp   
+6 GERMANY  0.2  0.2   de   
 ```
 
 Este es el gráfico original:
@@ -43,7 +50,8 @@ Revisando la fuente de los datos encontré [esta app](https://dataunodc.un.org/G
 El diseño del gráfico es un bar chart, pero le agrega las banderas de los países y las tasas sobre las barras. 
 
 Este es el gráfico base con títulos:
-```{r}
+
+```r
 # plot basico
 homicidios %>% 
   ggplot(aes(country, count)) +
@@ -53,10 +61,18 @@ homicidios %>%
        title = "Tasa de Homicidios en países del G-8.")
 ```
 
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-2-1.png" width="576" />
+
 Como mapeamos el eje x a una columna de texto, `ggplot` la convierte a un factor. El orden en el que aparecen los países en el eje depende de los niveles del factor, por defecto es alfabético:
 
-```{r}
+
+```r
 levels(factor(homicidios$country))
+```
+
+```
+[1] "CANADA"  "FRANCE"  "GERMANY" "ITALY"   "JAPAN"   "RUSSIA"  "UK"     
+[8] "US"     
 ```
 
 Esto es algo que puede confundir a alguien que no tiene experiencia trabajando con factores: el orden de los niveles es independiente del orden en que aparecen en el data frame.
@@ -65,7 +81,8 @@ En este caso, el orden del factor es alfabético (Canadá, Francia, etc.), y el 
 
 Para controlar el orden en el que aparecen los países ordenar las etiquetas, usamos una función muy útil de `forcats`: `fct_inorder`. Esta función reordena los niveles del factor para que coincida con el orden en el que aparecen en el data-frame:
 
-```{r}
+
+```r
 homicidios_2 <- homicidios %>% 
   arrange(-count) %>% 
   mutate(country_ordenado = fct_inorder(country))
@@ -73,11 +90,17 @@ homicidios_2 <- homicidios %>%
 levels(homicidios_2$country_ordenado)
 ```
 
+```
+[1] "US"      "ITALY"   "CANADA"  "GERMANY" "UK"      "FRANCE"  "JAPAN"  
+[8] "RUSSIA" 
+```
+
 Para la versión final, agrego las etiquetas del texto con `geom_text` (nudge_y me permite ajustar el texto un poco para que no toque las barras). 
 
 También descubrí `ggflags`, que nos da una función `geom_flag` con el `aes` country para especificar el país. La coordenada y de todas las banderas la fijo en -.4.
 
-```{r include=TRUE}
+
+```r
 # install_github("rensa/ggflags")
 
 library(ggflags)
@@ -103,11 +126,12 @@ plot <- homicidios %>%
     axis.ticks.x = element_blank(),
     plot.caption = element_text(vjust = 170) # mover caption
   )
-
-
 ```
 
 
-```{r}
+
+```r
 plot
 ```
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-6-1.png" width="576" />

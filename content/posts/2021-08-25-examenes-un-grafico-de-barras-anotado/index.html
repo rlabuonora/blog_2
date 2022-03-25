@@ -1,7 +1,7 @@
 ---
-title: "Exámenes, un gráfico de barras anotado"
+title: "Salvar raspando, un gráfico de barras anotado"
 author: ''
-date: '2022-03-25'
+date: '2020-06-25'
 slug: []
 categories: []
 tags: []
@@ -15,15 +15,17 @@ images: []
 <div id="diplopma-regents" class="section level1">
 <h1>Diplopma Regents</h1>
 <p>Los exámenes Regents son una serie de tests estándar de temas de secundaria en el estado de Nueva York. Este set de datos muestra las notas de exámenes en varias materias. Lo que llama la atención es que hay un gran número de examenes con 65, la nota mínima de aprobación.</p>
-<pre class="r"><code>nyc_regents &lt;-  read_csv(&quot;nyc_regents.csv&quot;)</code></pre>
-<pre><code>Rows: 102 Columns: 6
--- Column specification --------------------------------------------------------
-Delimiter: &quot;,&quot;
-dbl (6): score, integrated_algebra, global_history, living_environment, engl...
+<pre class="r"><code>nyc_regents &lt;-  read_csv(&quot;nyc_regents.csv&quot;,
+                          col_types=
+                           cols(
+                             score = col_double(),
+                             integrated_algebra = col_double(),
+                             global_history = col_double(),
+                             living_environment = col_double(),
+                             english = col_double(),
+                             us_history = col_double()))
 
-i Use `spec()` to retrieve the full column specification for this data.
-i Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code># reshape
+# reshape
 
 nyc_reshape &lt;- nyc_regents %&gt;% 
   gather(k=&quot;subject&quot;, v=&quot;tests&quot;, -score) %&gt;% 
@@ -32,39 +34,46 @@ nyc_reshape &lt;- nyc_regents %&gt;%
 
 # plot basico
 g &lt;- ggplot(nyc_reshape, aes(score, tests)) + 
-  geom_col()
+       geom_col()
 
-# Texto
+
 
 g + 
-  labs(caption = &quot;Fuente: New York City Department of Education&quot;,
-       title = &quot;Salvar Raspando&quot;,
-       subtitle = &quot;2010 Regents scores on Algebra, \nGlobal History, Biology, English &amp; US History&quot;, 
-       y = &quot;&quot;, x = &quot;&quot;)</code></pre>
-<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-1.png" width="576" /></p>
-<pre class="r"><code># Ejes
-# Scales en el grammar of graphics
-# Customizando los ejes con scale_x_* y scale_y_*
-# le pasamos una función a labels
-# expand es contraintuitivamente importante
-# labels, breaks, expand
-g + 
-  
   labs(caption = &quot;Source: New York City Department of Education&quot;,
        title = &quot;Scraping By&quot;,
        subtitle = &quot;2010 Regents scores on Algebra, \nGlobal History, Biology, English &amp; US History&quot;, 
        y = &quot;&quot;, x = &quot;&quot;) + 
-  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expansion(add = c(0, 0))) + 
   scale_y_continuous(position = &quot;right&quot;, 
                      labels = scales::number_format(big.mark = &quot;,&quot;), # function
                      breaks = c(1e4, 2e4, 3e4))</code></pre>
-<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-2.png" width="576" /></p>
-<pre class="r"><code># Theme
-g + labs(caption = &quot;Fuente: New York City Department of Education&quot;,
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-1.png" width="576" /></p>
+<pre class="r"><code>g + labs(caption = &quot;Fuente: New York City Department of Education&quot;,
        title = &quot;Salvar Raspando&quot;,
        subtitle = &quot;Notas 2010 Regents en Álgebra, \nHistoria, Biología, e Inglés&quot;,
        y = &quot;&quot;, x = &quot;&quot;) + 
-  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expansion(add = c(0, 0))) + 
+  scale_y_continuous(position = &quot;right&quot;, 
+                     labels = scales::number_format(big.mark = &quot;,&quot;), # function
+                     breaks = c(1e4, 2e4, 3e4)) + 
+  theme_minimal() + 
+  theme(
+    panel.grid.major.y = element_line(linetype = &quot;dashed&quot;, color = &quot;gray50&quot;),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.y = element_text(vjust = 1.5),
+    axis.text.x = element_text(vjust = 7),
+    plot.margin = margin(unit(c(20, 20, 20, 20), &quot;cm&quot;))
+  )</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-2.png" width="576" /></p>
+<pre class="r"><code># color a las columnas
+ggplot(nyc_reshape, aes(score, tests)) + 
+  geom_col(color = &quot;black&quot;, fill = &quot;#C4843C&quot;) + 
+  labs(caption = &quot;Fuente: New York City Department of Education&quot;,
+       title = &quot;Salvar Raspando&quot;,
+       subtitle = &quot;Notas 2010 Regents en Álgebra, \nHistoria, Biología, e Inglés&quot;,
+       y = &quot;&quot;, x = &quot;&quot;) + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expansion(add = c(0, 0))) + 
   scale_y_continuous(position = &quot;right&quot;, 
                      labels = scales::number_format(big.mark = &quot;,&quot;), # function
                      breaks = c(1e4, 2e4, 3e4)) + 
@@ -78,27 +87,6 @@ g + labs(caption = &quot;Fuente: New York City Department of Education&quot;,
     plot.margin = margin(unit(c(20, 20, 20, 20), &quot;cm&quot;))
   )</code></pre>
 <p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-3.png" width="576" /></p>
-<pre class="r"><code># color a las columnas
-ggplot(nyc_reshape, aes(score, tests)) + 
-  geom_col(color = &quot;black&quot;, fill = &quot;#C4843C&quot;) + 
-  labs(caption = &quot;Fuente: New York City Department of Education&quot;,
-       title = &quot;Salvar Raspando&quot;,
-       subtitle = &quot;Notas 2010 Regents en Álgebra, \nHistoria, Biología, e Inglés&quot;,
-       y = &quot;&quot;, x = &quot;&quot;) + 
-  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
-  scale_y_continuous(position = &quot;right&quot;, 
-                     labels = scales::number_format(big.mark = &quot;,&quot;), # function
-                     breaks = c(1e4, 2e4, 3e4)) + 
-  theme_minimal() + 
-  theme(
-    panel.grid.major.y = element_line(linetype = &quot;dashed&quot;, color = &quot;gray50&quot;),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor = element_blank(),
-    axis.text.y = element_text(vjust = 1.5),
-    axis.text.x = element_text(vjust = 7),
-    plot.margin = margin(unit(c(20, 20, 20, 20), &quot;cm&quot;))
-  )</code></pre>
-<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-4.png" width="576" /></p>
 <pre class="r"><code># Todo junto
 nyc_regents %&gt;% 
   gather(k=&quot;k&quot;, v=&quot;v&quot;, -score) %&gt;% 
@@ -107,12 +95,16 @@ nyc_regents %&gt;%
   ggplot(aes(score, v)) +
   annotate(&quot;rect&quot;, xmin = 65, xmax=Inf, ymin=0, ymax=Inf, alpha = 0.6, fill = &quot;grey80&quot;) + 
   annotate(&quot;text&quot;, 
-           label = &quot;Mìnimo para diploma Regents&quot;,
-           x = 45, y = 2.5e4) + 
-  annotate(&quot;segment&quot;, arrow=arrow(type = &quot;closed&quot;, length = unit(0.2, &quot;cm&quot;)), x=50, y=2.8e4, xend=64, yend=3.2e4) + 
+           label = &quot;Mínimo para diploma Regents&quot;,
+           x = 40, y = 2.5e4) + 
+  annotate(&quot;curve&quot;,
+           curvature=-.2,
+           arrow=arrow(type = &quot;closed&quot;, 
+                       length = unit(0.2, &quot;cm&quot;)), 
+           x=50, y=2.8e4, xend=64, yend=3.2e4) + 
   geom_col(color = &quot;black&quot;, fill = &quot;#C4843C&quot;) + 
   theme_minimal() + 
-  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expansion(add = c(0, 0))) + 
   scale_y_continuous(position = &quot;right&quot;, 
                      labels = scales::number_format(big.mark = &quot;,&quot;), # function
                      breaks = c(1e4, 2e4, 3e4)) + 
@@ -129,5 +121,5 @@ nyc_regents %&gt;%
     axis.text.x = element_text(vjust = 7),
     plot.margin = margin(unit(c(20, 20, 20, 20), &quot;cm&quot;)) # 
   )</code></pre>
-<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-5.png" width="576" /></p>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-4.png" width="576" /></p>
 </div>

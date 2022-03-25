@@ -12,7 +12,9 @@ images: []
 
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(collapse = TRUE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(collapse = TRUE, 
+                      warning = FALSE, 
+                      message = FALSE)
 library(tidyr)
 library(dplyr)
 library(stringr)

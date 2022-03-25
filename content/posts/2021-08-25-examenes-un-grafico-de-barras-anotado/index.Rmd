@@ -1,7 +1,7 @@
 ---
-title: "Exámenes, un gráfico de barras anotado"
+title: "Salvar raspando, un gráfico de barras anotado"
 author: ''
-date: '2022-03-25'
+date: '2020-06-25'
 slug: []
 categories: []
 tags: []
@@ -33,7 +33,15 @@ Los exámenes Regents son una serie de tests estándar de temas de secundaria en
 ```{r}
 
 
-nyc_regents <-  read_csv("nyc_regents.csv")
+nyc_regents <-  read_csv("nyc_regents.csv",
+                          col_types=
+                           cols(
+                             score = col_double(),
+                             integrated_algebra = col_double(),
+                             global_history = col_double(),
+                             living_environment = col_double(),
+                             english = col_double(),
+                             us_history = col_double()))
 
 # reshape
 
@@ -44,40 +52,26 @@ nyc_reshape <- nyc_regents %>%
 
 # plot basico
 g <- ggplot(nyc_reshape, aes(score, tests)) + 
-  geom_col()
+       geom_col()
 
-# Texto
+
 
 g + 
-  labs(caption = "Fuente: New York City Department of Education",
-       title = "Salvar Raspando",
-       subtitle = "2010 Regents scores on Algebra, \nGlobal History, Biology, English & US History", 
-       y = "", x = "")
-  
-# Ejes
-# Scales en el grammar of graphics
-# Customizando los ejes con scale_x_* y scale_y_*
-# le pasamos una función a labels
-# expand es contraintuitivamente importante
-# labels, breaks, expand
-g + 
-  
   labs(caption = "Source: New York City Department of Education",
        title = "Scraping By",
        subtitle = "2010 Regents scores on Algebra, \nGlobal History, Biology, English & US History", 
        y = "", x = "") + 
-  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expansion(add = c(0, 0))) + 
   scale_y_continuous(position = "right", 
                      labels = scales::number_format(big.mark = ","), # function
                      breaks = c(1e4, 2e4, 3e4))
 
 
-# Theme
 g + labs(caption = "Fuente: New York City Department of Education",
        title = "Salvar Raspando",
        subtitle = "Notas 2010 Regents en Álgebra, \nHistoria, Biología, e Inglés",
        y = "", x = "") + 
-  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expansion(add = c(0, 0))) + 
   scale_y_continuous(position = "right", 
                      labels = scales::number_format(big.mark = ","), # function
                      breaks = c(1e4, 2e4, 3e4)) + 
@@ -98,7 +92,7 @@ ggplot(nyc_reshape, aes(score, tests)) +
        title = "Salvar Raspando",
        subtitle = "Notas 2010 Regents en Álgebra, \nHistoria, Biología, e Inglés",
        y = "", x = "") + 
-  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expansion(add = c(0, 0))) + 
   scale_y_continuous(position = "right", 
                      labels = scales::number_format(big.mark = ","), # function
                      breaks = c(1e4, 2e4, 3e4)) + 
@@ -121,12 +115,16 @@ nyc_regents %>%
   ggplot(aes(score, v)) +
   annotate("rect", xmin = 65, xmax=Inf, ymin=0, ymax=Inf, alpha = 0.6, fill = "grey80") + 
   annotate("text", 
-           label = "Mìnimo para diploma Regents",
-           x = 45, y = 2.5e4) + 
-  annotate("segment", arrow=arrow(type = "closed", length = unit(0.2, "cm")), x=50, y=2.8e4, xend=64, yend=3.2e4) + 
+           label = "Mínimo para diploma Regents",
+           x = 40, y = 2.5e4) + 
+  annotate("curve",
+           curvature=-.2,
+           arrow=arrow(type = "closed", 
+                       length = unit(0.2, "cm")), 
+           x=50, y=2.8e4, xend=64, yend=3.2e4) + 
   geom_col(color = "black", fill = "#C4843C") + 
   theme_minimal() + 
-  scale_x_continuous(breaks = seq(0, 100, 5), expand = expand_scale(add = c(0, 0))) + 
+  scale_x_continuous(breaks = seq(0, 100, 5), expand = expansion(add = c(0, 0))) + 
   scale_y_continuous(position = "right", 
                      labels = scales::number_format(big.mark = ","), # function
                      breaks = c(1e4, 2e4, 3e4)) + 
