@@ -1,25 +1,17 @@
 ---
-title: "Mining Hamlet"
-author: "Rafa"
+title: Mining Hamlet
+author: 'Rafa'
 date: '2018-01-20'
-output:
-  html_document:
-    df_print: paged
-  pdf_document: default
-slug: hamlet
-tags: ["nlp", "R"]
-description: "Visualizamos la cantidad de líneas de los personajes de Hamlet a lo largo de los 5 actos de la obra."
+slug: [mining-hamlet]
+categories: []
+tags:
+  - R
+  - nlp
+images: []
 ---
 
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(collapse = TRUE, warning = FALSE, message = FALSE)
-library(tidyr)
-library(dplyr)
-library(stringr)
-library(ggplot2)
-library(forcats)
-```
+
 
 
 A lot of Shakespeare's tragic heores don't dominate the first act of their plays. Instead, other characters speak about them, setting the scene for exploring their personalities as the play unfolds. This is the case of Julius Caesar, Macbeth and Othello (but not of King Lear).
@@ -32,8 +24,9 @@ The text of Shakespeare's plays is available from the `gutenberg` package. I dow
  so you don't have to.
 
 
-```{r}
-books <- readRDS('../../public/data/shakespeare_plays.rds')
+
+```r
+books <- readRDS('shakespeare_plays.rds')
 hamlet <- books %>%  
   filter(title == "Hamlet, Prince of Denmark")
 ```
@@ -45,7 +38,8 @@ We can use a regular expressions to extract character names from the lines of th
 `lag` and `cumsum` are useful inside call to `mutate` to look at consecutive lines in the data frame. I also create a line number index with `row_number`.
 
 
-```{r}
+
+```r
 # Fran., Ham., Pol.
 CHAR_REGEX <- regex("^([A-Z][a-z]*)\\.")
 # Stage Dir
@@ -66,7 +60,8 @@ hamlet <- hamlet %>%
 Now we need to create a `data frame` of speeches. Each line is a speech in the play, with the character that speaks it and the number of lines it lasts. 
 
 
-```{r}
+
+```r
 
 # Build a df with speech, start line, length char
 speeches_df <- hamlet %>% 
@@ -79,22 +74,56 @@ speeches_df <- hamlet %>%
 
 The longest speech is by Hamlet (duh!), and starts at line 2677.
 
-```{r}
+
+```r
 speeches_df %>% 
   arrange(-speech_length)
+## # A tibble: 1,077 x 4
+##    speech_idx char_name  line speech_length
+##         <int> <chr>     <int>         <int>
+##  1        498 Ham        2677            60
+##  2        234 Ghost      1296            50
+##  3         69 King        383            39
+##  4        761 Ham        4039            36
+##  5        154 Laer        846            35
+##  6        522 Ham        2857            35
+##  7        480 Pol        2553            34
+##  8        479 Ham        2518            33
+##  9        568 Ham        3139            32
+## 10         84 King        502            31
+## # ... with 1,067 more rows
 ```
 
 
 Lets take a look at the text of the speech:
-```{r}
+
+```r
 hamlet %>% 
   filter(line %in% 2677:2690) %>% 
   select(text) 
+## # A tibble: 14 x 1
+##    text                                           
+##    <chr>                                          
+##  1 Ham.                                           
+##  2 Ay, so, God b' wi' ye!                         
+##  3 Now I am alone.                                
+##  4 O, what a rogue and peasant slave am I!        
+##  5 Is it not monstrous that this player here,     
+##  6 But in a fiction, in a dream of passion,       
+##  7 Could force his soul so to his own conceit     
+##  8 That from her working all his visage wan'd;    
+##  9 Tears in his eyes, distraction in's aspect,    
+## 10 A broken voice, and his whole function suiting 
+## 11 With forms to his conceit? And all for nothing!
+## 12 For Hecuba?                                    
+## 13 What's Hecuba to him, or he to Hecuba,         
+## 14 That he should weep for her? What would he do,
 ```
 
 Lets focus on the characters with the most lines:
 
-```{r}
+
+```r
 top_speakers <- speeches_df %>% 
   group_by(char_name)  %>%
   summarize(total_lines = sum(speech_length)) %>% 
@@ -104,7 +133,8 @@ top_speakers <- speeches_df %>%
 
 Use `inner_join` to discard the less important characters:
 
-```{r}
+
+```r
 # Keep speeches by these speakers
 speeches_df_main <- speeches_df %>% 
   inner_join(top_speakers, by = "char_name") %>% 
@@ -113,7 +143,8 @@ speeches_df_main <- speeches_df %>%
 
 The last thing we need is a column with the cumulative lines spoken by each character:
 
-```{r}
+
+```r
 speeches_df_main <- speeches_df_main %>% 
    group_by(char_name) %>% 
    mutate(cum_lines = as.integer(cumsum(speech_length))) %>% 
@@ -125,11 +156,11 @@ speeches_df_main <- speeches_df_main %>%
              "Polonius"      = "Pol",
              "Ophelia"       = "Oph",
              "Hamlet"        = "Ham"))
-
 ```
 
 Now we can plot the play:
-```{r}
+
+```r
 # color palette
 col.pal <- RColorBrewer::brewer.pal(8, "Set2")
 
@@ -147,10 +178,16 @@ g <- ggplot(speeches_df_main, aes(line, cum_lines, fill = char_name)) +
         plot.subtitle = element_text(hjust = 0.5),
         panel.border = element_blank()) +
   scale_x_continuous(expand = c(0, 0)) + 
-  scale_y_continuous(expand = c(0, 0))
+  scale_y_continuous(expand = c(0, 0)) + 
+  facet_wrap(~char_name) + 
+  guides(fill="none")
 
 g
-
 ```
 
-The plot shows the dynamic of the play quite nicely. Horatio, Hamlet's friend figures quite prominenty at the beggining. Polonius has a lot of lines in the middle of the play, until he's caught behind the arras just before line 4000. Towards the end, Hamlet eats up the whole play in  his showdown with King Claudius.
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-9-1.png" width="672" />
+
+The plot shows the dynamic of the play quite nicely. Horatio, Hamlet's friend figures quite prominenty at the beggining. Polonius has a lot of lines in the middle of the play, until he's caught behind the arras just before line 4000. Ophelia dies around line 5000.
+
+
+Towards the end, Hamlet eats up the whole play in  his showdown with King Claudius.
