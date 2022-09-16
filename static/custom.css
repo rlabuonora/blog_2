@@ -64,7 +64,11 @@ article p .static-image {
   margin-top: 0;
 }
 
+.media-body > a > p {
+  color: red;
+  text-decoration: none;
 
+}
 /* Posts */
 
 
