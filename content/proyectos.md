@@ -16,7 +16,7 @@ weight: "20"
 {{<item-thumb 
       "Piedra, papel o tijera" 
       "Clásico Juego en React"
-      "https://piedra-paper-tijera.netlify.app" 
+      "https://frontend-mentor-rock-paper-scissors.netlify.app/" 
       "thumbs/scissors.png">}}
       
 
