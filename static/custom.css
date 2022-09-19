@@ -64,8 +64,7 @@ article p .static-image {
   margin-top: 0;
 }
 
-.media-body > a > p {
-  color: red;
+.media-body > a  {
   text-decoration: none;
 
 }
