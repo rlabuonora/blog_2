@@ -1,0 +1,33 @@
+---
+title: R for Sports Science
+author: ''
+date: '2024-08-15'
+slug: []
+categories: []
+tags: []
+images: []
+---
+
+<style>
+.centered-image {
+  display: block;
+  margin: 0 auto;
+  width: 50%; /* Adjust as needed */
+  height: auto;
+}
+</style>
+
+This year I created a course for a Sports Scientist that wanted to get into R. This is the [course website](https://r4ds-sports.netlify.app/). The course is an introduction to R with examples from Sports Science. Most of the examples are from [this book](https://www.amazon.com/Basketball-Data-Science-Applications-Chapman/dp/1138600792).
+
+I also worked with the client to create some visualizations for his job:
+
+![](images/brahmas.png)
+
+This is a short clip from one of the workshops:
+
+This is the client's feedback:
+
+![](images/matt_feedback_1.png){.centered-image}
+
+![](images/matt_feedback_2.png){.centered-image}
+
