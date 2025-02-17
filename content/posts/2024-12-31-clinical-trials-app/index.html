@@ -1,0 +1,43 @@
+---
+title: Clinical Trials app
+author: ''
+date: '2024-12-31'
+slug: []
+categories:
+  - R
+  - Shiny
+tags: []
+images: []
+draft: true
+---
+
+
+
+<p>I worked for a client in a Shiny App that visualizes the results from the <a href="http://clinicaltrials.gov/">Clinical Trials API</a>. This API allows the user to search clinical studies using multiple criteria such as keywords, study phase and even geographical information on where the studies are conducted.</p>
+<p>The app consists of a form where the user enters some search criteria, a map that allows the user to filter studies from a certain geographical area and display the studies returned by the API and a table that displays the search results.</p>
+<div id="ui-matters" class="section level1">
+<h1>UI matters</h1>
+<p>The map is the most complex part of the app, since it is both an input for the user to enter the geographical area on where the studies are conducted and an output to show the search results.</p>
+<p>With that in mind, I think it is best to lay out the app in 3 columns, the first with the input form, the second with the map and the last with the table.</p>
+<p>Provide clues from: a) errors, b) what the user is expected to do.</p>
+</div>
+<div id="reactivity" class="section level1">
+<h1>Reactivity</h1>
+<p>Initial values. Reactive data frame of results. Fetch data button.</p>
+</div>
+<div id="testing" class="section level1">
+<h1>Testing</h1>
+<div id="get_data-function" class="section level2">
+<h2>get_data function</h2>
+</div>
+<div id="testing-the-app-ui" class="section level2">
+<h2>testing the app UI</h2>
+<p>Leaflet and DT are not easily snapshotable, so we need a different strategy/tool for that.
+Maybe pupeteer? We can test the data reactivity.</p>
+<ul>
+<li>If the API is down (MOCK)</li>
+<li>If the API returns 0 results (MOCK).</li>
+<li>If the API returns an error. (can the user enter inputs that generate errors from the API?)</li>
+</ul>
+</div>
+</div>

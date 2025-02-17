@@ -1,0 +1,47 @@
+---
+title: Clinical Trials app
+author: ''
+date: '2024-12-31'
+slug: []
+categories:
+  - R
+  - Shiny
+tags: []
+images: []
+draft: true
+---
+
+I worked for a client in a Shiny App that visualizes the results from the [Clinical Trials API](http://clinicaltrials.gov/). This API allows the user to search clinical studies using multiple criteria such as keywords, study phase and even geographical information on where the studies are conducted.
+
+The app consists of a form where the user enters some search criteria, a map that allows the user to filter studies from a certain geographical area and display the studies returned by the API and a table that displays the search results.
+
+# UI matters
+
+The map is the most complex part of the app, since it is both an input for the user to enter the geographical area on where the studies are conducted and an output to show the search results.
+
+With that in mind, I think it is best to lay out the app in 3 columns, the first with the input form, the second with the map and the last with the table.
+
+Provide clues from: a) errors, b) what the user is expected to do.
+
+# Reactivity
+
+Initial values. Reactive data frame of results. Fetch data button.
+
+
+# Testing
+
+## get_data function
+
+## testing the app UI
+
+Leaflet and DT are not easily snapshotable, so we need a different strategy/tool for that.
+Maybe pupeteer? We can test the data reactivity.
+
+- If the API is down (MOCK)
+- If the API returns 0 results (MOCK).
+- If the API returns an error. (can the user enter inputs that generate errors from the API?)
+
+
+
+
+

@@ -53,4 +53,4 @@ Este año presenté este proyecto en LatinR, acá se puede ver la presentación 
 
 # Infraestructura AWS
 
-El sistema está alojado en instancias EC2 en AWS. 
+El sistema está alojado en instancias EC2 en AWS. Las imágenes de Docker se alojan en el registro ECR. AWS también gestiona los backups de las instancias de manera sencilla tomando snapshots de los volumenes diariamente.
