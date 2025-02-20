@@ -10,14 +10,13 @@ images: []
 
 
 
-<pre class="r"><code>knitr::opts_chunk$set(eval = FALSE)</code></pre>
-<p>Estoy tratando de aprender portugués, y que mejor forma de exponerme al idioma que ver cine. Así que estoy mirando muchas pelis de Brasil. Lo ideal para aprender es que las pelis sean con subtítulos en portugués, e ir consultando cuando aparecen palabras nuevas. Esto funciona excelente con las plataformas, donde pude ver Cidade de Deus con subtítulos en portugués. El problema es que cuando uno se ve obligado a recurrir a los corsarios para proveerse de cultura, el tema subtítulos se complica (por no mencionar formatos e ainda mais).</p>
+<p>Estoy tratando de aprender portugués viendo películas en portugués. Para aprender, lo ideal es tener los subtítulos en portugués, e ir consultando cuando aparecen palabras nuevas. Esto funciona excelente con las plataformas, donde pude ver Ciudad de Dios, pero se complica cuando hay que recurrir a los corsarios <span style="font-size: 24px;">🏴‍☠️</span> para proveerse de cultura.</p>
 <p>Una peli que tengo muchas ganas de ver es O Auto da Compadecida, que solo encontré sin subtítulos. También encontré otras películas interesantes con subtítulos en otros idiomas. Para estos casos se me ocurrió usar un modelo texto a texto para traducir los subtítulos cuando están disponibles en otro idioma. Parece sencillo con la API de GPT, o alguna otra API dedicada para traducción, pero después de pensarlo un poco me di cuenta que se pierde un montón de info entre la palabra que dicen los actores, el subtítulo en una lengua extranjera y la traducción al portugués de vuelta.</p>
-<p>Entonces se me ocurrió usar un modelo de audio a texto. para transcribir el audio directamente. OpenAI tiene <a href="https://cdn.openai.com/papers/whisper.pdf">whisper</a>. Como tengo una Mac nueva con GPU, pensé que el modelo podía andar bien localmente, pero aparentemente whisper no es compatible con la GPU de M1. Entonces, decidí usar una GPU en AWS.</p>
+<p>Entonces se me ocurrió usar un modelo de audio a texto. para transcribir el audio directamente. OpenAI tiene <a href="https://cdn.openai.com/papers/whisper.pdf">Whisper</a>. Como tengo una Mac nueva con GPU, pensé que el modelo podía andar bien localmente, pero Whisper no es compatible con la GPU de M1. Entonces, decidí usar una GPU en AWS.</p>
 <div id="aws" class="section level2">
 <h2>AWS</h2>
-<p>Primero decidir el OS, EC2 tiene una AMI con Ubuntu preparada para tareas de deep learning y pytorch out of the box. El tipo de instancia es el más barato con GPUs: <code>g4dn.xlarge</code>. Tuve un problema con el tope para cada tipo de recurso que podemos pedir, y no me permitía lanzar la instancia porque pedía 4 GPUs y mi límite era 1. Para levantar ese límite hay que hacer una solicitud que demora un rato en ser procesada. Cometí el error 🤦 de pedir un aumento en la cantidad de GPUs en instancias spot en vez de instancias on-demand.</p>
-<p>Las instancias spot son instancias que estan disponibles a un precio menor que las on demand, pero pueden ser terminadas con 2 minutos de aviso. También hay que tener en cuenta que las intancias EC2 incurren en costos mientras están corriendo, y no son baratas, por lo que tenemos que ser cuidadosos y apagarlas cuando no las estamos usando.</p>
+<p>EC2 tiene una AMI con Ubuntu preparada para tareas de deep learning. El tipo de instancia es el más barato con GPUs: <code>g4dn.xlarge</code>. Tuve un problema con el tope para cada tipo de recurso que podemos pedir, y no me permitía lanzar la instancia porque pedía 4 GPUs y mi límite era 1. Para levantar ese límite hay que hacer una solicitud que demora un rato en ser procesada. Cometí el error 🤦 de pedir un aumento en la cantidad de GPUs en instancias spot en vez de instancias on-demand.</p>
+<p>Las instancias spot son instancias que estan disponibles a un precio menor que las on-demand, pero pueden ser terminadas con 2 minutos de aviso. También hay que tener en cuenta que las intancias EC2 incurren en costos mientras están corriendo, y no son baratas, por lo que tenemos que ser cuidadosos y apagarlas cuando no las estamos usando.</p>
 <p>Estos son los comandos para configurar la máquina con los requerimientos:</p>
 <pre class="bash"><code># actualizar el OS 
 sudo apt update &amp;&amp; sudo apt install -y ffmpeg
@@ -122,5 +121,5 @@ def lambda_handler(event, context):
     instance_id = response[&#39;Instances&#39;][0][&#39;InstanceId&#39;]
     print(f&quot;EC2 Instance Launched: {instance_id} for file {s3_object}&quot;)
     return {&quot;message&quot;: f&quot;Processing started for {s3_object}, EC2 instance {instance_id} launched.&quot;}</code></pre>
-<p>Bueno al final no se si configurar esto para automaizar todo vale la pena. Lo cierto es que la solución funciona. Ahora hay que ver las pelis a ver que tan bien anda Whisper.</p>
+<p>No se si configurar esto para automatizar todo vale la pena. Lo cierto es que la solución funciona. Ahora hay que ver las pelis a ver que tan bien anda Whisper.</p>
 </div>
