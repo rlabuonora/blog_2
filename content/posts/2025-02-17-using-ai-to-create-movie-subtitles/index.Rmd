@@ -18,16 +18,11 @@ Estoy tratando de aprender portugués viendo películas en portugués. Para apre
 
 Una peli que tengo muchas ganas de ver es O Auto da Compadecida, que solo encontré sin subtítulos. También encontré otras películas interesantes con subtítulos en otros idiomas. Para estos casos se me ocurrió usar un modelo texto a texto para traducir los subtítulos cuando están disponibles en otro idioma. Parece sencillo con la API de GPT, o alguna otra API dedicada para traducción, pero después de pensarlo un poco me di cuenta que se pierde un montón de info entre la palabra que dicen los actores, el subtítulo en una lengua extranjera y la traducción al portugués de vuelta. 
 
-Entonces se me ocurrió usar un modelo de audio a texto. para transcribir el audio directamente. OpenAI tiene [Whisper](https://cdn.openai.com/papers/whisper.pdf). Como tengo una Mac nueva con GPU, pensé que el modelo podía andar bien localmente, pero Whisper no es compatible con la GPU de M1. Entonces, decidí usar una GPU en AWS.
+Entonces se me ocurrió usar [Whisper](https://cdn.openai.com/papers/whisper.pdf para transcribir el audio directamente. Como tengo una Mac nueva con GPU, pensé que el modelo podía andar bien localmente, pero Whisper no es compatible con la GPU de mi MAC, y con la CPU es bastante lento así que usé una instancia EC2 en AWS.
 
 ## AWS
 
-EC2 tiene una AMI con Ubuntu preparada para tareas de deep learning. El tipo de instancia es el más barato con GPUs: `g4dn.xlarge`. Tuve un problema con el tope para cada tipo de recurso que podemos pedir, y no me permitía lanzar la instancia porque pedía 4 GPUs y mi límite era 1. Para levantar ese límite hay que hacer una solicitud que demora un rato en ser procesada. Cometí el error 🤦 de pedir un aumento en la cantidad de GPUs en instancias spot en vez de instancias on-demand.
-
-Las instancias spot son instancias que estan disponibles a un precio menor que las on-demand, pero pueden ser terminadas con 2 minutos de aviso. También hay que tener en cuenta que las intancias EC2 incurren en costos mientras están corriendo, y no son baratas, por lo que tenemos que ser cuidadosos y apagarlas cuando no las estamos usando.
-
-
-Estos son los comandos para configurar la máquina con los requerimientos:
+EC2 tiene una AMI con Ubuntu preparada para tareas de deep learning. El tipo de instancia es el más barato con GPUs: `g4dn.xlarge`. Una vez lanzada la instancia, actualizamos el OS e instalamos los requerimientos:
 
 ```{bash}
 # actualizar el OS 
@@ -43,7 +38,7 @@ pip install openai-whisper
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 ```
 
-Ahora tenemos que subir el archivo que whisper va a procesar a la instancia. `ffmpeg` puede extraer un archivo mp3 de un archivo de video:
+`ffmpeg` puede extraer un archivo mp3 de un archivo de video:
 
 ```{bash}
 ffmpeg -i o_auto_da_compadecida.mp4 -vn -acodec libmp3lame o_auto_da_compadecida.mp3
@@ -57,30 +52,20 @@ whisper o_auto_da_compadecida.mp3 --model medium --language Portuguese --task tr
 
 ```
 
-Acá estoy debiendo un análisis más detallado de cuanto tiempo toma correr esto en la CPU de mi MAC. Tampoco tengo claro cuánto me salió en AWS. 
+ 
 
 ```{bash}
 head -n 10 o_auto_da_compadecida.srt
 ```
 
-Ahora descargar el archivo srt con scp y a disfrutar de la peli. La transcripción tiene algunos problemas al principio, pero después parece dar bien (aunque habría que mirar la peli completa para verifarlo).
-
-
-Un problema que tiene esta solución es que la GPU es cara. Para optimizar el 
-costo en AWS, tengo que parar la instancia cuando no la uso, por lo que sería
-bueno automatizar el proceso de crearla. De hecho, la dejé prendida una noche sin
-usarla y me salió como 5 USD. Lección aprendida.
-
-La otra mejora sería subir los archivos a S3 en vez de usar `scp`. Como
-subir un archivo a S3 es gratis, parece tener sentido subir el archivo de video,
-extraer el mp3 en la instancia y luego pasarselo a whisper. Al final no.
+La transcripción tiene algunos problemas al principio, pero después parece dar bien (aunque habría que mirar la peli completa para verifarlo). Hay que tener en cuenta que esta instancia es cara
+(~ 0.5 USD/hora) por lo que hay que pararla cuando no la usomos. La dejé prendida una noche sin
+usarla y me salió como 5 USD. Lección aprendida. Subir los archivos a S3 en vez de usar `scp` también puede ser mejor. 
 
 # Automatizar AWS
 
-Como no estoy tan ducho en AWS esto me llevó un poquito más de trabajo. La 
-solución que se me ocurre sería subir el archivo a S3 y configurar lambda para que
-lance la instancia, corra whisper, suba el archivo srt a S3 de vuelta y
-cierre la instancia.
+La solución que se me ocurre para automatizar un poco el proceso es subir el 
+archivo a S3 y configurar lambda para que lance la instancia, corra whisper, suba el archivo srt a S3 de vuelta y termine la instancia.
 
 Lo primero que hay que resolver bien es el tema de los permisos. La instancia
 que corre whisper tiene que tener permisos para leer y escribir en S3. Lo más complejo

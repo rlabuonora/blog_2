@@ -12,12 +12,10 @@ images: []
 
 <p>Estoy tratando de aprender portugués viendo películas en portugués. Para aprender, lo ideal es tener los subtítulos en portugués, e ir consultando cuando aparecen palabras nuevas. Esto funciona excelente con las plataformas, donde pude ver Ciudad de Dios, pero se complica cuando hay que recurrir a los corsarios <span style="font-size: 24px;">🏴‍☠️</span> para proveerse de cultura.</p>
 <p>Una peli que tengo muchas ganas de ver es O Auto da Compadecida, que solo encontré sin subtítulos. También encontré otras películas interesantes con subtítulos en otros idiomas. Para estos casos se me ocurrió usar un modelo texto a texto para traducir los subtítulos cuando están disponibles en otro idioma. Parece sencillo con la API de GPT, o alguna otra API dedicada para traducción, pero después de pensarlo un poco me di cuenta que se pierde un montón de info entre la palabra que dicen los actores, el subtítulo en una lengua extranjera y la traducción al portugués de vuelta.</p>
-<p>Entonces se me ocurrió usar un modelo de audio a texto. para transcribir el audio directamente. OpenAI tiene <a href="https://cdn.openai.com/papers/whisper.pdf">Whisper</a>. Como tengo una Mac nueva con GPU, pensé que el modelo podía andar bien localmente, pero Whisper no es compatible con la GPU de M1. Entonces, decidí usar una GPU en AWS.</p>
+<p>Entonces se me ocurrió usar [Whisper](<a href="https://cdn.openai.com/papers/whisper.pdf" class="uri">https://cdn.openai.com/papers/whisper.pdf</a> para transcribir el audio directamente. Como tengo una Mac nueva con GPU, pensé que el modelo podía andar bien localmente, pero Whisper no es compatible con la GPU de mi MAC, y con la CPU es bastante lento así que usé una instancia EC2 en AWS.</p>
 <div id="aws" class="section level2">
 <h2>AWS</h2>
-<p>EC2 tiene una AMI con Ubuntu preparada para tareas de deep learning. El tipo de instancia es el más barato con GPUs: <code>g4dn.xlarge</code>. Tuve un problema con el tope para cada tipo de recurso que podemos pedir, y no me permitía lanzar la instancia porque pedía 4 GPUs y mi límite era 1. Para levantar ese límite hay que hacer una solicitud que demora un rato en ser procesada. Cometí el error 🤦 de pedir un aumento en la cantidad de GPUs en instancias spot en vez de instancias on-demand.</p>
-<p>Las instancias spot son instancias que estan disponibles a un precio menor que las on-demand, pero pueden ser terminadas con 2 minutos de aviso. También hay que tener en cuenta que las intancias EC2 incurren en costos mientras están corriendo, y no son baratas, por lo que tenemos que ser cuidadosos y apagarlas cuando no las estamos usando.</p>
-<p>Estos son los comandos para configurar la máquina con los requerimientos:</p>
+<p>EC2 tiene una AMI con Ubuntu preparada para tareas de deep learning. El tipo de instancia es el más barato con GPUs: <code>g4dn.xlarge</code>. Una vez lanzada la instancia, actualizamos el OS e instalamos los requerimientos:</p>
 <pre class="bash"><code># actualizar el OS 
 sudo apt update &amp;&amp; sudo apt install -y ffmpeg
 # instalar las dependencias:
@@ -29,29 +27,21 @@ source whisper_env/bin/activate
 # instalar whisper 
 pip install openai-whisper
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118</code></pre>
-<p>Ahora tenemos que subir el archivo que whisper va a procesar a la instancia. <code>ffmpeg</code> puede extraer un archivo mp3 de un archivo de video:</p>
+<p><code>ffmpeg</code> puede extraer un archivo mp3 de un archivo de video:</p>
 <pre class="bash"><code>ffmpeg -i o_auto_da_compadecida.mp4 -vn -acodec libmp3lame o_auto_da_compadecida.mp3</code></pre>
 <p>Para subirlo a la instancia tenemos dos opciones: scp o S3. Copiamos el mp3 con <code>scp</code> y
 nos logueamos a la instancia para correr whisper:</p>
 <pre class="bash"><code>whisper o_auto_da_compadecida.mp3 --model medium --language Portuguese --task transcribe --output_format srt
 </code></pre>
-<p>Acá estoy debiendo un análisis más detallado de cuanto tiempo toma correr esto en la CPU de mi MAC. Tampoco tengo claro cuánto me salió en AWS.</p>
 <pre class="bash"><code>head -n 10 o_auto_da_compadecida.srt</code></pre>
-<p>Ahora descargar el archivo srt con scp y a disfrutar de la peli. La transcripción tiene algunos problemas al principio, pero después parece dar bien (aunque habría que mirar la peli completa para verifarlo).</p>
-<p>Un problema que tiene esta solución es que la GPU es cara. Para optimizar el
-costo en AWS, tengo que parar la instancia cuando no la uso, por lo que sería
-bueno automatizar el proceso de crearla. De hecho, la dejé prendida una noche sin
-usarla y me salió como 5 USD. Lección aprendida.</p>
-<p>La otra mejora sería subir los archivos a S3 en vez de usar <code>scp</code>. Como
-subir un archivo a S3 es gratis, parece tener sentido subir el archivo de video,
-extraer el mp3 en la instancia y luego pasarselo a whisper. Al final no.</p>
+<p>La transcripción tiene algunos problemas al principio, pero después parece dar bien (aunque habría que mirar la peli completa para verifarlo). Hay que tener en cuenta que esta instancia es cara
+(~ 0.5 USD/hora) por lo que hay que pararla cuando no la usomos. La dejé prendida una noche sin
+usarla y me salió como 5 USD. Lección aprendida. Subir los archivos a S3 en vez de usar <code>scp</code> también puede ser mejor.</p>
 </div>
 <div id="automatizar-aws" class="section level1">
 <h1>Automatizar AWS</h1>
-<p>Como no estoy tan ducho en AWS esto me llevó un poquito más de trabajo. La
-solución que se me ocurre sería subir el archivo a S3 y configurar lambda para que
-lance la instancia, corra whisper, suba el archivo srt a S3 de vuelta y
-cierre la instancia.</p>
+<p>La solución que se me ocurre para automatizar un poco el proceso es subir el
+archivo a S3 y configurar lambda para que lance la instancia, corra whisper, suba el archivo srt a S3 de vuelta y termine la instancia.</p>
 <p>Lo primero que hay que resolver bien es el tema de los permisos. La instancia
 que corre whisper tiene que tener permisos para leer y escribir en S3. Lo más complejo
 es que lambda tiene que tener permisos para crear una instancia <strong>y asignarle los permisos
