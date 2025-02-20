@@ -22,10 +22,12 @@ Entonces se me ocurrió usar un modelo de audio a texto. para transcribir el aud
 
 ## AWS
 
-Primero decidir el OS, EC2 tiene una AMI con Ubuntu preparada para tareas de deep learning y pytorch out of the box. El tipo de instancia es el más barato con GPUs: g4dn.xlarge. Tuve un problema con el tope para cada tipo de recurso que podemos pedir, y no me permitía lanzar la instancia porque pedía 4 GPUs y mi límite era 1. Para levantar ese límite hay que hacer una solicitud que demora un rato en ser procesada. Cometí un error EMOJI de pedir un aumento en la cantidad de GPUs en instancias spot en vez de instancias on-demand.
+Primero decidir el OS, EC2 tiene una AMI con Ubuntu preparada para tareas de deep learning y pytorch out of the box. El tipo de instancia es el más barato con GPUs: `g4dn.xlarge`. Tuve un problema con el tope para cada tipo de recurso que podemos pedir, y no me permitía lanzar la instancia porque pedía 4 GPUs y mi límite era 1. Para levantar ese límite hay que hacer una solicitud que demora un rato en ser procesada. Cometí el error 🤦 de pedir un aumento en la cantidad de GPUs en instancias spot en vez de instancias on-demand.
 
 Las instancias spot son instancias que estan disponibles a un precio menor que las on demand, pero pueden ser terminadas con 2 minutos de aviso. También hay que tener en cuenta que las intancias EC2 incurren en costos mientras están corriendo, y no son baratas, por lo que tenemos que ser cuidadosos y apagarlas cuando no las estamos usando.
 
+
+Estos son los comandos para configurar la máquina con los requerimientos:
 
 ```{bash}
 # actualizar el OS 
@@ -47,27 +49,21 @@ Ahora tenemos que subir el archivo que whisper va a procesar a la instancia. `ff
 ffmpeg -i o_auto_da_compadecida.mp4 -vn -acodec libmp3lame o_auto_da_compadecida.mp3
 ```
 
-Para subirlo a la instancia tenemos dos opciones: scp o S3. El primer intento con scp funcionó bien:
-
-```{bash}
-scp -i deep_learning_instance.pem ...
-```
-
-
-login to the instance using ssh and run whisper:
+Para subirlo a la instancia tenemos dos opciones: scp o S3. Copiamos el mp3 con `scp` y 
+nos logueamos a la instancia para correr whisper:
 
 ```{bash}
 whisper o_auto_da_compadecida.mp3 --model medium --language Portuguese --task transcribe --output_format srt
 
 ```
 
-Acá estoy debiendo un análisis más detallado de cuanto tiempo toma correr esto en la CPU de mi MAC. Tampoco tengo claro cuánto me salió en AWS. Screenshot de los costos.
+Acá estoy debiendo un análisis más detallado de cuanto tiempo toma correr esto en la CPU de mi MAC. Tampoco tengo claro cuánto me salió en AWS. 
 
 ```{bash}
 head -n 10 o_auto_da_compadecida.srt
 ```
 
-Ahora descargar el archivo srt con scp y a disfrutar de la peli. También debo un análisis de la calidad de los subtítulos.
+Ahora descargar el archivo srt con scp y a disfrutar de la peli. La transcripción tiene algunos problemas al principio, pero después parece dar bien (aunque habría que mirar la peli completa para verifarlo).
 
 
 Un problema que tiene esta solución es que la GPU es cara. Para optimizar el 
@@ -75,33 +71,39 @@ costo en AWS, tengo que parar la instancia cuando no la uso, por lo que sería
 bueno automatizar el proceso de crearla. De hecho, la dejé prendida una noche sin
 usarla y me salió como 5 USD. Lección aprendida.
 
-La otra mejora sería subir los archivos a S3 en vez de usar scp. Como
+La otra mejora sería subir los archivos a S3 en vez de usar `scp`. Como
 subir un archivo a S3 es gratis, parece tener sentido subir el archivo de video,
-extraer el mp3 en la instancia y luego pasarselo a whisper.
+extraer el mp3 en la instancia y luego pasarselo a whisper. Al final no.
 
 # Automatizar AWS
-
 
 Como no estoy tan ducho en AWS esto me llevó un poquito más de trabajo. La 
 solución que se me ocurre sería subir el archivo a S3 y configurar lambda para que
 lance la instancia, corra whisper, suba el archivo srt a S3 de vuelta y
 cierre la instancia.
 
-El primer problema es configurar los permisos para lanzar la instancia automáticamente. 
-Acá entra toda la jugada de los roles, las políticas, bastante complejo. En la solución final,
-lambda se activa cuando subo un archivo a un directorio del bucket. Lanza la instancia 
-y le pasa el nombre del archivo. Esta es la función: 
+Lo primero que hay que resolver bien es el tema de los permisos. La instancia
+que corre whisper tiene que tener permisos para leer y escribir en S3. Lo más complejo
+es que lambda tiene que tener permisos para crear una instancia __y asignarle los permisos
+para leer y escribir a S3__.
 
+La función lambda es invocada cuando alguien sube un mp3 al bucket, toma el nombre
+del archivo, lanza la instancia y la configura con un script user_data. Este
+script:
 
+  - Instala los requerimientos
+  - Descarga el archivo de S3
+  - Corre whisper con ese archivo
+  - Sube el srt a S3
+  - Termina la instancia
+  
 ```{python}
 import boto3
 
-# AWS Clients
 ec2 = boto3.client("ec2")
 
-# Configuration
-AMI_ID = "ami-0a844bb563d863f8c"  # Replace with a suitable Ubuntu/Debian AMI
-INSTANCE_TYPE = "g4dn.xlarge"  # Adjust based on Whisper requirements
+AMI_ID = "ami-0a844bb563d863f8c"  
+INSTANCE_TYPE = "g4dn.xlarge"  
 S3_BUCKET = "INPUT_BUCKET"
 S3_OUTPUT_BUCKET = "OUTPUT_BUCKET"
 
@@ -120,21 +122,21 @@ def lambda_handler(event, context):
         SecurityGroupIds=[SECURITY_GROUP_ID], 
         MinCount=1,
         MaxCount=1,
-        InstanceMarketOptions={  # ✅ Enable Spot Instance
+        InstanceMarketOptions={  
             "MarketType": "spot",
             "SpotOptions": {
-                "SpotInstanceType": "one-time",  # "persistent" or "one-time"
-                "InstanceInterruptionBehavior": "terminate"  # "stop", "hibernate", or "terminate"
+                "SpotInstanceType": "one-time",  
+                "InstanceInterruptionBehavior": "terminate"  
             }
         },
         IamInstanceProfile={'Name': 'EC2-S3-Access'},
         UserData=f'''#!/bin/bash
         apt update && apt install -y ffmpeg git python3-pip
         apt install -y ffmpeg git python3 python3-pip
-        # Install Whisper AI
+        # Instalar Whisper AI
         pip3 install openai-whisper
 
-        # Install PyTorch with CUDA (for NVIDIA GPU instances)
+        # Instalar PyTorch con CUDA 
         pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
 
