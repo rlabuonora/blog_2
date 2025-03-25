@@ -1,18 +1,23 @@
 ---
-title: 'Como subtitular películas con whisper'
+title: 'Subtitular películas con Whisper'
 author: ''
 date: '2025-02-17'
 slug: []
 categories: []
 tags: []
 images: []
+output:
+  html_document:
+    toc: true
+    toc_depth: 1
+    toc_float: true
 ---
 
 
 
-<p>Estoy tratando de aprender portugués viendo películas en portugués. Para aprender, lo ideal es tener los subtítulos en portugués, e ir consultando cuando aparecen palabras nuevas. Esto funciona excelente con las plataformas, donde pude ver Ciudad de Dios, pero se complica cuando hay que recurrir a los corsarios <span style="font-size: 24px;">🏴‍☠️</span> para proveerse de cultura.</p>
-<p>Una peli que tengo muchas ganas de ver es O Auto da Compadecida, que solo encontré sin subtítulos. También encontré otras películas interesantes con subtítulos en otros idiomas. Para estos casos se me ocurrió usar un modelo texto a texto para traducir los subtítulos cuando están disponibles en otro idioma. Parece sencillo con la API de GPT, o alguna otra API dedicada para traducción, pero después de pensarlo un poco me di cuenta que se pierde un montón de info entre la palabra que dicen los actores, el subtítulo en una lengua extranjera y la traducción al portugués de vuelta.</p>
-<p>Entonces se me ocurrió usar [Whisper](<a href="https://cdn.openai.com/papers/whisper.pdf" class="uri">https://cdn.openai.com/papers/whisper.pdf</a> para transcribir el audio directamente. Como tengo una Mac nueva con GPU, pensé que el modelo podía andar bien localmente, pero Whisper no es compatible con la GPU de mi MAC, y con la CPU es bastante lento así que usé una instancia EC2 en AWS.</p>
+<p>Estoy tratando de aprender portugués viendo películas. Lo ideal es tener los subtítulos en portugués, e ir consultando cuando aparecen palabras nuevas. Esto funciona excelente con las plataformas, donde pude ver Ciudad de Dios, pero se complica cuando hay que recurrir a los corsarios <span style="font-size: 24px;">🏴‍☠️</span> para proveerse de cultura.</p>
+<!-- Encontré otras películas interesantes con subtítulos en otros idiomas. Para estos casos se me ocurrió usar un modelo texto a texto para traducir los subtítulos cuando están disponibles en otro idioma. Parece sencillo con la API de GPT, o alguna otra API dedicada para traducción, pero después de pensarlo un poco me di cuenta que se pierde un montón de info entre la palabra que dicen los actores, el subtítulo en una lengua extranjera y la traducción al portugués de vuelta. -->
+<p>Una peli que tengo muchas ganas de ver es O Auto da Compadecida, que solo encontré sin subtítulos. Se me ocurrió usar <a href="https://cdn.openai.com/papers/whisper.pdf">Whisper</a> para transcribir el audio directamente. Como tengo una Mac nueva con GPU, pensé que el modelo podía andar bien localmente, pero Whisper no es compatible con la GPU de mi MAC, y con la CPU es bastante lento así que usé una instancia EC2 en AWS.</p>
 <div id="aws" class="section level2">
 <h2>AWS</h2>
 <p>EC2 tiene una AMI con Ubuntu preparada para tareas de deep learning. El tipo de instancia es el más barato con GPUs: <code>g4dn.xlarge</code>. Una vez lanzada la instancia, actualizamos el OS e instalamos los requerimientos:</p>
@@ -111,5 +116,8 @@ def lambda_handler(event, context):
     instance_id = response[&#39;Instances&#39;][0][&#39;InstanceId&#39;]
     print(f&quot;EC2 Instance Launched: {instance_id} for file {s3_object}&quot;)
     return {&quot;message&quot;: f&quot;Processing started for {s3_object}, EC2 instance {instance_id} launched.&quot;}</code></pre>
-<p>No se si configurar esto para automatizar todo vale la pena. Lo cierto es que la solución funciona. Ahora hay que ver las pelis a ver que tan bien anda Whisper.</p>
+</div>
+<div id="takeaways" class="section level1">
+<h1>Takeaways</h1>
+<p>Después de ver una peli subtitulada con Whisper creo que es una gran opción para este caso de uso. Creo que configurar lambda para automatizar todo no vale la pena.</p>
 </div>
