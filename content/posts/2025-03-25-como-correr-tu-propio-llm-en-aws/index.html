@@ -1,0 +1,143 @@
+---
+title: Como correr tu propio LLM en AWS
+author: ''
+date: '2025-02-17'
+slug: []
+categories: []
+tags: []
+images: []
+output:
+  html_document:
+    toc: true
+    toc_depth: 1
+    toc_float: true
+---
+
+
+
+<pre class="r"><code>knitr::opts_chunk$set(eval = FALSE)</code></pre>
+<p>En este post cuento como poner un LLM en una instancia EC2. La solución usa contendores Docker con Ollama y OpenWebUI. Tengo una suscripción a ChatGPT que me parece un gran producto, pero
+hay alguna info de trabajo que no puedo subir. Además, esta solución permite correr
+cualquier modelo opensource disponible en Ollama.</p>
+<div id="ec2" class="section level1">
+<h1>EC2</h1>
+<p>AWS tiene varios tipos de instancia con GPU. Las mejores opciones son: <code>g4dn.2xlarge</code> ($0.526) y <code>g5.2xlarge</code> ($1.212). Las dos son bastante caras así que hay que acordarse de apagarlas
+cuando no las usas!</p>
+<p>Para lanzar las instancias, hay que definir la configuración de la conectividad y el almacenamiento.
+Para el almacenamiento aumenté a 100 GB el tamaño del volúmen para poder correr modelos un poco más grandes.</p>
+<p>Para conectividad, precisamos acceso <code>ssh</code> (opcional) y acceso web a través del puerto (¿3000? ¿80?). Otra cosa que podría probar el el SSM.</p>
+<p>Una vez lanzada la instancia, configuramos los drivers para poder usar la GPU. Hay que registrar el repositorio e instalar los drivers. Demora un poco.</p>
+<pre class="bash"><code># 1. Add NVIDIA&#39;s official drivers PPA
+sudo add-apt-repository ppa:graphics-drivers/ppa -y
+sudo apt update
+
+# 2. Install the driver (525 or newer)
+sudo apt install -y nvidia-driver-525
+
+# 3. Reboot to activate the driver
+sudo reboot</code></pre>
+<p>Si está todo OK, el comando <code>nvidia-smi</code> nos da info sobre la GPU.</p>
+<pre class="bash"><code>nvidia-smi</code></pre>
+<p>TODO: paste output. Este comando nos dice el modelo de GPU y cuanto RAM tiene disponible.</p>
+</div>
+<div id="ollama" class="section level1">
+<h1>Ollama</h1>
+<p>Ollama permite correr modelos open source usando contenedores de Docker. Para esto, precisamos instalar Docker (doh!), y el toolkit de nvidia para contenedores.</p>
+<div id="instalar-docker" class="section level2">
+<h2>Instalar Docker</h2>
+<pre class="bash"><code>sudo apt update
+sudo apt install docker.io</code></pre>
+</div>
+<div id="nvidia-container-toolkit" class="section level2">
+<h2>NVIDIA Container toolkit</h2>
+<p>Esto sirve para que los contenedores de Docker puedan usar la GPU. Para probar si anda, corremos el comando <code>nvidia-smi</code> <em>adentro de un contenedor</em>. Este comando usa la imagen <code>nvidia/cuda</code>. <code>ubuntu/ubuntu</code> también funciona.</p>
+<pre class="bash"><code>docker run --rm --gpus all nvidia/cuda:12.0.0-base-ubuntu20.04 nvidia-smi</code></pre>
+</div>
+<div id="instalar-ollama" class="section level2">
+<h2>Instalar Ollama</h2>
+<pre class="bash"><code>curl -fsSL https://ollama.com/install.sh | sh</code></pre>
+<p>Prendemos Docker y creamos un contenedor basado en la imagen <code>ollama/ollama</code>:</p>
+<pre class="bash"><code>sudo docker run -d   --gpus=all   --restart unless-stopped -v ollama:/root/.ollama -p 11343:11343   --name ollama   ollama/ollama</code></pre>
+<p>El contenedor tiene un volumen para persistir datos (los modelos que bajemos, etc.). La opción <code>--restart unless-stopped</code> hace que el contenedor se reinicie si apagamos la instancia y la volvemos a prender. También recibimos conexiones por el puerto 11343.</p>
+<p>El daemon de Docker corre como root, por lo que precisamos usar sudo para usar la cli. Para solucionar esto, agregamos nuestro usuario al grupo docker <code>sudo usermod -aG docker ubuntu</code>.</p>
+<p>Una vez creado el contenedor, corremos el comando ollama run dentro del contenedor. Este comando se baja dolphin-mixtral del repositorio de ollama (si no lo tenemos disponible en una carga anterior), lo carga en la memoria y nos da una consola interactiva para interactuar con el modelo.</p>
+<pre><code>docker exec -it ollama ollama run dolphin-mixtral</code></pre>
+<p>Tenemos todo funcionando bien, pero la interfaz por línea de comandos es incómoda.</p>
+</div>
+</div>
+<div id="enter-openwebui" class="section level1">
+<h1>Enter OpenWebUI</h1>
+<p>OpenWebUI es una app de React que nos permite interactuar con ollama a través de un navegador web, permite tener múltiples usuarios y guarda un historial de conversaciones. Para configurarlo, tenemos que crear un contenedor en base a la imagen oficial.</p>
+<p>Hay que configurarlo para que se conecte con <code>ollama</code> a través de la API. Este es el comando:</p>
+<pre class="bash"><code>sudo docker run -d \
+  -v $(pwd)/openwebui:/app/backend/data \
+  -p 3000:8080 \
+  -e OLLAMA_BASE_URLS=&quot;http://172.31.39.200:11434&quot; \
+  --name openwebui \
+  ghcr.io/open-webui/open-webui:main</code></pre>
+<p>Hay que acordarse de configurar la red paradejar pasar tráfico por el puerto 3000. Además, Ollama tiene que aceptar conexiones desde el contenedor que está corriendo openwebui. Para eso, seteamos la opción <code>OLLAMA_HOST</code> cuando arrancamos el contenedor con ollama:</p>
+<pre class="bash"><code>docker run -d   \
+   --gpus=all   \
+   --restart unless-stopped \ 
+   -v ollama:/root/.ollama  \
+   -e OLLAMA_HOST=&quot;0.0.0.0&quot;
+   -p 11434:11434   \
+   --name ollama   \
+   ollama/ollama </code></pre>
+</div>
+<div id="docker-compose" class="section level1">
+<h1>Docker Compose</h1>
+<p>Para no tener que iniciar los contenedores manualmente desde la línea de comandos, docker compose nos permite especificar todos los parámetros necesarios en un archivo:</p>
+<p>Con este archivo corremos <code>docker compose up -d</code> y la app queda configurada.</p>
+<p><code>restart: always</code>. Esta opción reinicia los contenedores cada vez que prendemos la máquina. Esto nos permite apagar y prender la instancia sin tener que volver a correr los contendores.</p>
+<pre><code>services:
+  ollama:
+    image: ollama/ollama
+    restart: always
+    ports:
+      - &quot;11434:11434&quot;
+    environment:
+    - &quot;OLLAMA_HOST=0.0.0.0&quot;
+    volumes:
+    - ollama:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:main
+    restart: always
+    environment:
+      - &quot;OLLAMA_BASE_URLS=http://ollama:11434&quot;
+    ports:
+      - &quot;3000:8080&quot;
+    volumes:    
+      - openwebui:/app/backend/data/
+</code></pre>
+<div id="otra-mejora-para-aws" class="section level2">
+<h2>Otra mejora para AWS</h2>
+<p>También hice un script que prende la instancia cada vez que la uso:</p>
+</div>
+<div id="optimizando" class="section level2">
+<h2>Optimizando</h2>
+<p>Uno de los costos más altos en mi cuenta de AWS es de EBS storage, así que para bajar estos costos voy a configurar un snapshot de esta instancia y crear el volúmen cada vez que la prendo. Esto hace el tiempo de inicio un poquito más alto pero el costo es bastante menor. EBS sale ~$0.08 GB/mes y un snapshot (~$0.05 GB/mes). Además, salvando la snapshot en S3 pagamos solo por GB usado, mientras que el volumen cuesta por toda la capacidad del volúmen.</p>
+<p>Una opción aún más barata es respaldar todo como un objeto en S3.</p>
+<p>Otra cosa que noto es que la instancia demora mucho en parar.</p>
+</div>
+</div>
+<div id="cambiando-el-modelo" class="section level1">
+<h1>Cambiando el modelo</h1>
+<p>Estoy leyendo que Dolphin3 puede tener mejor performance que el modelo que estaba usando. Para usarlo, nos conectamos el contenedor de ollama y borramos dolphin-mixtral:</p>
+<pre><code># ollama ls
+NAME                                        ID              SIZE      MODIFIED    
+dolphin-mixtral:latest                      4f76c28c0414    26 GB     2 weeks ago    
+
+# ollama rm dolphin-mixtral:latest
+deleted &#39;dolphin-mixtral:latest&#39;
+</code></pre>
+<p>Bajamos dolphin3:</p>
+<pre><code>docker ps </code></pre>
+</div>
