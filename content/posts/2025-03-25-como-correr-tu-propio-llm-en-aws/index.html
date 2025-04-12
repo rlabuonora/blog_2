@@ -16,9 +16,7 @@ output:
 
 
 <pre class="r"><code>knitr::opts_chunk$set(eval = FALSE)</code></pre>
-<p>En este post cuento como poner un LLM en una instancia EC2. La solución usa contendores Docker con Ollama y OpenWebUI. Tengo una suscripción a ChatGPT que me parece un gran producto, pero
-hay alguna info de trabajo que no puedo subir. Además, esta solución permite correr
-cualquier modelo opensource disponible en Ollama.</p>
+<p>Tengo una suscripción a ChatGPT que me parece un gran producto, pero info de trabajo que no puedo subir. En este post cuento como poner un LLM en una instancia EC2 para correrlo en forma local. La solución usa contendores con Ollama y OpenWebUI. Esta solución permite correr cualquier modelo open source disponible en Ollama como Deepseek, Mixtral y Dolphin3.</p>
 <div id="ec2" class="section level1">
 <h1>EC2</h1>
 <p>AWS tiene varios tipos de instancia con GPU. Las mejores opciones son: <code>g4dn.2xlarge</code> ($0.526) y <code>g5.2xlarge</code> ($1.212). Las dos son bastante caras así que hay que acordarse de apagarlas
