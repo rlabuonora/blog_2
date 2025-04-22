@@ -76,3 +76,9 @@ article p .static-image {
   width: 40%;
   margin: 0 auto;
 }
+
+.featured_image img {
+  width: 100vw !important;
+  max-width: none !important;
+  margin-left: calc(-50vw + 50%) !important;
+}

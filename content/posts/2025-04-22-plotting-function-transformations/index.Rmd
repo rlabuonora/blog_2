@@ -1,0 +1,107 @@
+---
+title: Plotting Function Transformations
+author: ''
+date: '2025-04-22'
+slug: []
+categories: []
+tags: []
+images: []
+---
+
+```{r include=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE)
+library(tidyverse)
+library(showtext)
+
+# Download and register "Roboto Slab" from Google Fonts
+font_add_google(name = "Roboto Slab", family = "Roboto Slab")
+
+# Enable showtext rendering
+showtext_auto()
+
+theme_blog <- theme_minimal(base_family = "Roboto Slab", base_size = 28)
+
+
+```
+
+Sometimes I come across things I cannot believe I didn't know. That is one of the things I like about textbooks, since they give you a nice tour of the basics, they might not be complete, but you're almost guaranteed that the material they have is worth learning.
+
+Plotting basic mathematical transformations of functions can be quite useful. This plots show how adding a constant $f(x+c)$ or multiplying $f(cx)$ the argument of a function modifies the function:
+
+```{r}
+
+
+color_2 <- "#ffffcc"
+
+lbls <- c(expression(- pi),
+          expression(-pi/2),
+          0,
+          expression(pi/ 2),
+          expression(pi))
+
+  
+# Helper to return the function layer
+make_fun_layer <- function(f) {
+  
+  color <- "#e57373"
+  stat_function(fun = f, 
+                      geom = "line", 
+                      linetype = "dashed", 
+                      size = 1,
+                      colour = color)
+}
+
+basic_plot <- ggplot(tibble(x = c(-pi, pi)), aes(x = x)) +
+  stat_function(fun = sin, 
+                geom = "line", 
+                size = 1,
+                colour = "black") +
+  scale_x_continuous(
+    breaks = seq(- pi, pi, pi/2),
+    labels = lbls
+  ) + 
+  geom_segment(aes(x=x, xend = xend, y=y, yend=yend), 
+               size = 0.5,
+               data=tibble(x=-pi, y=0, xend=pi, yend=0),
+               arrow = arrow(length = unit(0.2, "cm"))) + 
+  geom_segment(aes(x=0, xend=xend, y=y, yend=yend),
+               size = 0.5,
+               data=tibble(x=0, y=-1, yend=1.2, xend=0),
+               lineend = "butt",
+               arrow = arrow(length = unit(0.2, "cm"))) + 
+  coord_fixed(ratio=1)+
+  theme_blog + 
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    legend.title = element_blank(),
+  )
+
+basic_plot + 
+  make_fun_layer(function(x) sin(x) + 1/2) +
+  labs(title="sin(x) + c")
+```
+
+
+Now we can plot adding and multiplying to x and to y with a reusable function and display the 4 plots in a single pane with `patchwork`:
+
+```{r}
+basic_plot + 
+  make_fun_layer(function(x) sin(x + 1/2)) +
+  labs(x="x", title="sin(x + c)")
+```
+
+```{r}
+basic_plot + 
+  make_fun_layer(function(x) sin(2*x) ) +
+  labs(x="x", title="sin(2*x)")
+```
+
+
+
+```{r}
+basic_plot + 
+  make_fun_layer(function(x) 2 * sin(x)) +
+  labs(x="x", title="2 * sin(x)")
+```
+
+
