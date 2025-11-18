@@ -13,12 +13,12 @@ images: []
 
 Over the summer, I decided to research how to use LLM's for learning. I have been teaching economics, econometrics and data science for more than a decade, but never got any formal education. The first realization was that to use technology effectively, I needed to learn about the science of learning. 
 
-I found a couple of interesting youtube channels (Justin Su and Benjamin Keep). I also came across Math Academy. Justin Skycak has an in depth review of the scientific literature on learning that caught my eye. It laid out the scientific literature around learning, and how Math Academy leverages it's main findings to optimize learning. While there is no LLM's in MA, it was very much what I was looking for, so I dove right in.
+I found a couple of interesting youtube channels (Justin Su and Benjamin Keep). I also came across [Math Academy](https://www.mathacademy.com/). Justin Skycak has an [in depth review of the scientific literature on learning](https://www.justinmath.com/files/the-math-academy-way.pdf) that caught my eye. It laid out the scientific literature around learning, and how Math Academy leverages it's main findings to optimize learning. While there is no LLM's in MA, it was very much what I was looking for, so I dove right in.
 
 The first thing I like about MA is that is designed to optimize learning,
 based on what we know about how the brain works. Other technologies like schools, books, youtube videos and online courses are not. 
 
-As a long time teacher and casual reader of the scientific literature on learning, a lot of the science resonates with me and what I naturally do in the classroom. Others principles were quite new to me, so that was very useful too! The dirty secret of education systems is that some of the principles that emerge from the literature are very hard to put into practice in a classroom setting, so most teachers ignore them. 
+As a long time teacher and casual reader of the scientific literature on learning, a lot of the science resonates with me and what I naturally do in the classroom. Others principles were quite new to me, so that was very useful too! The dirty secret of education systems is that some of the principles that emerge from the literature are very hard to put into practice in a normal classroom setting, so most teachers ignore them. 
 
 # A brief note about me, learning and math
 
@@ -30,11 +30,9 @@ As I got older, I became more interested in math and science, and also started w
 
 I was always ok at math. I studied very little in high school, but managed to escape it learning a few derivative formulas and the formula for the roots of a quadratic polynomial. As I advanced in my university courses, I got more interested and managed to get through Calculus, Linear Algebra, Probability and Statistics. I even took a few classed that required Differential Equations and Control Theory. After getting my degree, I taught econometrics for a few years, so I had to learn statistics. I got pretty good at using results but knew that the building of my math knowledge had very shaky foundations. I had never seen complex numbers, trigonometry or geometry in formal course, so had zero knowledge on those topics. Throughout the years, I have always had a growing interest in math, and realized that it underpins all the things I want to learn more about and get good at. I pushed to fill in those gaps, and even expand my knowledge a bit further, but was pretty inconsistent.
 
-
-
 # Back to MA
 
-So what are the main findings of the literature on learning? What is the best way to use  technology to leverage these findings? Here are the main principles MA is built on:
+So what are the main findings of the literature on learning? What is the best way to use  technology to leverage these findings? Here are the main principles MA is built on.
 
 Neuroscientists agree that we can keep a limited amount of information in our head at the same time. This works like RAM on a computer. To solve a problem, we need to keep all the relevant pieces of a puzzle in working memory at the same time. This type of memory is very limited, and almost impossible to expand.
 
@@ -45,7 +43,6 @@ In this model, you enconde knowledge by solving problems putting the pieces of t
 Think of math a a huge puzzle. When you open a math book, you have thousands of puzzle pieces in front of you. Experts, who know what the final picture looks like, find it easy to find their way around a big fat textbook. They can look at a random example in the middle of the book and make sense of it because they have the structure of the subject encoded in their working memory. 
 
 A novice, however, looks at a textbook and feels overwhelmed by the amount of information. Since they have no representation of the information in their long term memory, all this material quickly fills up their working memory and makes them feel overwhelmed. Think of a computer that runs out of RAM and starts to lag.
-
 
 An amazing feature of MA is that it has a detailed model that records your math knowledge. It has many bite sized lessons that are exactly at the level of difficulty that you need. This allows the app to present you with puzzles that are missing just a few pieces, so you keep getting the rewards of putting the last couple of pieces into place, instead of being overwhelmed by sifting through mountains of puzzle pieces and not having a clue of how they fit together.
 
@@ -75,7 +72,7 @@ The system is very well calibrated to get a good sense of how well you know the 
 
 <!-- I learned a ton with Math Academy. Both math and learning science. Here are a few future avenues I'd like to explore: -->
 
-I figure I have about a year of material on Math Academy. They are working on more content, so it is likely that it will take longer. I wish they added courses on Game Theory and Information Theory and Physics. 
+I figure I have about a year of material on Math Academy. They are working on more content, so it is likely that it will take longer. I wish they added courses on Game Theory and Information Theory and Physics. Math Academy is the best education technology out there, if you want to learn math and can afford it, I would definitely recommend it.
 
 <!-- I wonder if I can now learn better from traditional materials. Also, can LLM's help re purposing traditional materials? -->
  
