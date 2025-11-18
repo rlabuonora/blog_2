@@ -11,9 +11,9 @@ images: []
 
 # Summer project
 
-Over the summer, I decided to research how to use LLM's for learning. I have been teaching economics, econometrics and data science for more than a decade, but never got any formal education. The first realization was that to use technology effectively, I needed to learn about the science of learning. 
+Over the summer, I decided to research how to use LLM's for learning. I have been teaching economics, econometrics and data science for more than a decade, but never got any formal training on teaching or pedagogy. My first realization was that to use technology effectively, I needed to learn about the science of learning. 
 
-I found a couple of interesting youtube channels (Justin Su and Benjamin Keep). I also came across [Math Academy](https://www.mathacademy.com/). Justin Skycak has an [in depth review of the scientific literature on learning](https://www.justinmath.com/files/the-math-academy-way.pdf) that caught my eye. It laid out the scientific literature around learning, and how Math Academy leverages it's main findings to optimize learning. While there is no LLM's in MA, it was very much what I was looking for, so I dove right in.
+I came across [Math Academy](https://www.mathacademy.com/). One of the main forces behind this company is Justin Skycak. He has an [in depth review of the scientific literature on learning](https://www.justinmath.com/files/the-math-academy-way.pdf) that caught my eye. It laid out the scientific literature around learning, and how Math Academy leverages it's main findings to optimize learning. While there is no LLM's in MA, it was very much what I was looking for, so I dove right in.
 
 The first thing I like about MA is that is designed to optimize learning,
 based on what we know about how the brain works. Other technologies like schools, books, youtube videos and online courses are not. 
