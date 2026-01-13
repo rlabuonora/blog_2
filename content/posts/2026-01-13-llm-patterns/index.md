@@ -44,4 +44,6 @@ El modelo sugiere actividades y objetivos para las sesiones y el usuario reporta
 
 Este patrón no apunta a producir ni a entrenar, sino a pensar mejor. El modelo funciona como un espejo que aclara tus ideas, detecta inconsistencias, te obliga a elaborar y estimula integración entre pensamientos que tenías sueltos.
 
-No reemplaza el juicio del usuario: lo afila. Estimula la elaboración e integración de pensamientos.
+No reemplaza el juicio del usuario: lo afila. Estimula la elaboración e integración de pensamientos. Obviamente este es el patrón que menos uso y está acá solo a sugerencia de ChatGPT.
+
+También estaría faltando una conclusión que enlace todo y cierre pero que le vamos a hacer esto es internet.
