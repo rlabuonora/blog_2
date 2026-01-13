@@ -1,5 +1,5 @@
 ---
-title: LLM Patterns
+title: Patrones de uso de modelos de lenguaje
 author: ''
 date: '2026-01-13'
 slug: []
