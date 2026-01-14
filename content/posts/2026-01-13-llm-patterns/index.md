@@ -1,7 +1,7 @@
 ---
 title: Patrones de uso de modelos de lenguaje
 author: ''
-date: '2026-01-2'
+date: '2026-01-01'
 slug: []
 categories: []
 tags: []
