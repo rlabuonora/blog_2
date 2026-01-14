@@ -10,7 +10,8 @@
 
     {{ .Content }}
 
-    {{ range (.Paginate (.Pages.GroupByDate "2006")).PageGroups  }}
+    {{ with .Pages }}
+    {{ range (.GroupByDate "2006") }}
 
     <h3>{{ .Key }}</h3>
     <ul>
@@ -23,9 +24,12 @@
     </ul>
 
     {{ end }}
+    {{ end }}
 
 </section>
 
-{{ template "_internal/pagination.html" . }}
+{{ with .Paginator }}
+{{ template "_internal/pagination.html" $ }}
+{{ end }}
 
 {{ end }}
