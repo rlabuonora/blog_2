@@ -8,14 +8,14 @@ tags: []
 images: []
 ---
 
-Los modelos de lenguaje son la tecnología que estábamos esperando. No sabemos si vinieron a salvarnos o a confirmar nuestra obsolecencia pero es imposible permanecer ajeno a lo que están haciendo y preguntarse que implican para el futuro. En este posteo explico __cuatro patrones__ que uso para acelerar su llegada. El tiempo dirá si es buena idea o no.
+Los modelos de lenguaje son la tecnología que estábamos esperando. No sabemos si vinieron a salvarnos o a confirmar nuestra obsolecencia pero es imposible permanecer ajeno a lo que están haciendo y preguntarse que implican para el futuro. En este posteo anoto __cuatro patrones__ que uso para acelerar su llegada. El tiempo dirá si es buena idea o no.
 
 ## El Minion 
 
 Algunos les dicen por favor y gracias, pero solo los usan para evitar tareas ingratas. Claude Code está prendiendo fuego X estos días, encaja perfecto en este patrón: hace el trabajo duro, repetitivo y poco glamoroso sin quejarse.  Yo pasé de copiar y pegar código de ChatGPT a Codex en Visual Studio y la aceleración es brutal. 
 En el pasado hubo varios intentos de crear tecnologías que permitieran programar con lenguaje natural, pero todas fracasaron. Todas las tecnologías que conozco para darle instrucciones a la computadora se basan en abstracciones a niveles mucho más bajos que el lenguaje natural. 
 
-Estas abstracciones nos llevaron lejos. Algunas son bastante interesantes, otras parecen instrumentos de tortura _(i'm looking at you css)_, pero todas implicaban un esfuerzo considerable de aprendizaje antes usarlas productivamente. El plan era que además de aprender a leer y escribir en la escuela nos iban a enseñar a programar y ese iba a ser el futuro. Parece que esta vez es diferente. Está claro que los modelos pueden hacer software útil sin que el usuario toque una sola línea de código. Java, javascript, Python, HTML, CSS parecen haber seguido el camino de Assembler y C.
+Estas abstracciones nos llevaron lejos. Algunas son bastante interesantes, otras parecen instrumentos de tortura _(i'm looking at you css)_, pero todas implicaban un esfuerzo considerable de aprendizaje antes usarlas productivamente. El plan era que además de aprender a leer y escribir en la escuela nos iban a enseñar a programar y ese iba a ser el futuro. Parece que esta vez es diferente. Está claro que los modelos pueden hacer software útil sin que el usuario toque una sola línea de código. Java, javascript, Python, HTML, CSS parecen haber seguido el camino de Assembler y C. 
 
 De a poco me vuelven ideas de proyectos que se me fueron ocurriendo con los años pero nunca programé porque para cuando tenía configurado el ambiente de desarrollo bajado las librerías que necesitaba habían pasado 2 horas y el fuego estaba apagado. Ahora todas esas ideas parecen ser viables.
  
@@ -50,3 +50,6 @@ Este patrón no apunta a producir ni a entrenar, sino a pensar mejor. El modelo 
 No reemplaza el juicio del usuario: lo afila. Estimula la elaboración e integración de pensamientos. Obviamente este es el patrón que menos uso y está acá solo a sugerencia de ChatGPT.
 
 También estaría faltando una conclusión que enlace todo y cierre pero que le vamos a hacer esto es internet.
+
+
+# Un framework

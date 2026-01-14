@@ -32,6 +32,9 @@ header-includes:
         color: #2F3E4E;
         text-decoration: none;
       }
+      #container main article a {
+        text-decoration: underline;
+      }
       table {
         background: #F1EFEA;
         border: 1px solid #CFCFCF;
@@ -109,11 +112,13 @@ theme_set(
 ```
 
 
-En la época de la guerra Franco-Prusiana, los prusianos llevaban registros detallados de la muerte de los soldados. Cada vez que un caballo mataba a a un soldado de una patada, quedaba registrado:
+En la época de la guerra Franco-Prusiana, los prusianos llevaban registros detallados de la muerte de los soldados. Cada vez que un caballo mataba a a un soldado de una patada, anotaban:
 
 ![](./tabla.png)
 
-Los datos estan disponibles en un paquete de R:
+La tabla anterior muestra los datos de 20 años para 14 cuerpos. Cada combinación de año-cuerpo representa una observación. No pases rápido esta parte porque es importante para entender lo que viene después. 
+
+Cada año cuerpo es una _unidad de exposición_ al riesgo de que un caballo te pegue una patada. El riesgo no lo corre el soldado, ni en cuerpo, ni el año. El riesgo lo corre el año-cuerpo. Los datos estan disponibles en un paquete de R:
 
 ```{r warning=FALSE, message=FALSE, echo=FALSE}
 
@@ -122,14 +127,21 @@ library(Horsekicks)
 
 patadas <- hkdeaths |> 
   filter(between(year, 1875, 1894)) |> 
+  select(corps, year, kick) |> 
   tibble::as_tibble()
 
 head(patadas)
 ```
 
-Cada fila corresponde a un cuerpo-año, y las columnas muestran cuantos muertos hubo por cada causa (también hay datos de ahogamientos y caídas). Hay datos de XX cuerpos para los 20 años, por lo que el data frame tiene XX filas y `r sum(patadas$kick)` muertes entre 1875 y 1894. 
+Los datos nos dicen cuantas veces ocurrió el evento para 240 unidades de exposición al riesgo. La mayor parte de las veces, el evento no ocurre. Entre 1875 y 1894, los datos tienen  hubo `r sum(patadas$kick)` muertos por patadas de caballo. 
 
-Si contamos las muertes por cada cuerpo-año, vemos que las muertes por patada de caballo son raras: en cada cuerpo de caballería, lo más probable es que en un año determinado no haya soldados muertos:
+Como el evento es bastante raro, en la mayor parte de las unidades de exposición al riesgo, el evento no ocurrió. En el peor escenario, un cuerpo perdía 4 soldados en un año por esta causa (cuerpos XIV en el 80 y el 82):
+
+```{r}
+patadas |> 
+  filter(kick==4)
+```
+Si miramos toda la distribución vemos que la cantidad de unidades decrece rápidamente con la cantidad de ocurrencias del evento: la mayor parte de las veces la cantidad es 0, algunos tienen 1 muerto, pocos 2, muy pocos 3 y casi ninguno 4:
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
 cuentas <- patadas |> 
@@ -145,19 +157,21 @@ cuentas |>
 
 ```
 
-Ladislaus von Bortkeiwicz descubrió que la distribución Poisson se ajusta bastante a los datos. Esta distribución sirve cuando los eventos suceden en forma independiente, los eventos son raros y la tasa de ocurrencia del evento es constante.
+En promedio, las unidades registran el evento `r mean(patadas$kick)` veces. O sea, para cada año y para cada cuerpo, el promedio de soldados muertos es 0.7.
 
-$$ X \sim \operatorname{Poisson}(\lambda) $$
+[Ladislaus von Bortkeiwicz](https://en.wikipedia.org/wiki/Ladislaus_Bortkiewicz) descubrió que estos datos siguen una distribución Poisson. Esta distribución sirve para modelar eventos raros que suceden en forma independiente con una tasa de ocurrencia ($\lambda$) constante.
+
+Si $X$ sigue una distribución Poisson, $\lambda$ es la esperanza de ocurrencia del evento por _unidad de exposición_. Por eso te dije que prestaras atención al principio. El estimador de $\lambda$ es el promedio de ocurrencias del evento para las unidades de exposición: 0.7. Una vez que tenemos un estimador de $\lambda$, podemos calcular cuantas veces esperamos ver 0, 1, 2, 3 y 4 muertos usando la función de densidad:
+
 $$ P(X=x) = \frac{e^{-\lambda}  \lambda^x}{x!} $$
-Para mostrar eso hizo dos cosas: 1) calculó el valor de $\lambda$ en base a los datos obervados, y 2) comparó la distribución observada con la teórica. El valor de lambda es la tasa promedio de muertes. La comparación la hizo "a ojo":
 
+No tengo idea de cómo se calculaba esto en Europa del Este a fines del siglo XIX, pero en R es fácil con la función `dpois`:
 
-Hacemos lo mismo en R:
 ```{r}
-lambda <- .7
-n <- sum(cuentas$n)
+lambda <- mean(patadas$kick)
+
 cuentas <- cuentas |> 
-  mutate(pred=round(exp(-lambda)*lambda^muertes/factorial(muertes)*sum(n))) |> 
+  mutate(pred=dpois(muertes, lambda) * sum(n)) |> 
   tidyr::pivot_longer(-muertes)
 
 cuentas |> 

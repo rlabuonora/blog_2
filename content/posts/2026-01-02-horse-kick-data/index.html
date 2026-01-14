@@ -32,6 +32,9 @@ header-includes:
         color: #2F3E4E;
         text-decoration: none;
       }
+      #container main article a {
+        text-decoration: underline;
+      }
       table {
         background: #F1EFEA;
         border: 1px solid #CFCFCF;
@@ -106,6 +109,9 @@ header-includes:
     color: #2F3E4E;
     text-decoration: none;
   }
+  #container main article a {
+    text-decoration: underline;
+  }
   table {
     background: #F1EFEA;
     border: 1px solid #CFCFCF;
@@ -159,30 +165,39 @@ header-includes:
 </style>
 
 
-<p>En la época de la guerra Franco-Prusiana, los prusianos llevaban registros detallados de la muerte de los soldados. Cada vez que un caballo mataba a a un soldado de una patada, quedaba registrado:</p>
+<p>En la época de la guerra Franco-Prusiana, los prusianos llevaban registros detallados de la muerte de los soldados. Cada vez que un caballo mataba a a un soldado de una patada, anotaban:</p>
 <p><img src="tabla.png" /></p>
-<p>Los datos estan disponibles en un paquete de R:</p>
-<pre><code>## # A tibble: 6 × 8
-##    year corps regiments  NCOs  kick drown  fall vonB_kick
-##   &lt;int&gt; &lt;fct&gt;     &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;     &lt;int&gt;
-## 1  1875 G             8     0     0     3     0         0
-## 2  1875 I             6     0     0     5     0         0
-## 3  1875 II            4     0     0     6     0         0
-## 4  1875 III           4     0     0     7     1         0
-## 5  1875 IV            4     0     0     7     0         0
-## 6  1875 V             4     0     0    11     0         0</code></pre>
-<p>Cada fila corresponde a un cuerpo-año, y las columnas muestran cuantos muertos hubo por cada causa (también hay datos de ahogamientos y caídas). Hay datos de XX cuerpos para los 20 años, por lo que el data frame tiene XX filas y 196 muertes entre 1875 y 1894.</p>
-<p>Si contamos las muertes por cada cuerpo-año, vemos que las muertes por patada de caballo son raras: en cada cuerpo de caballería, lo más probable es que en un año determinado no haya soldados muertos:</p>
-<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
-<p>Ladislaus von Bortkeiwicz descubrió que la distribución Poisson se ajusta bastante a los datos. Esta distribución sirve cuando los eventos suceden en forma independiente, los eventos son raros y la tasa de ocurrencia del evento es constante.</p>
-<p><span class="math display">\[ X \sim \operatorname{Poisson}(\lambda) \]</span>
-<span class="math display">\[ P(X=x) = \frac{e^{-\lambda}  \lambda^x}{x!} \]</span>
-Para mostrar eso hizo dos cosas: 1) calculó el valor de <span class="math inline">\(\lambda\)</span> en base a los datos obervados, y 2) comparó la distribución observada con la teórica. El valor de lambda es la tasa promedio de muertes. La comparación la hizo “a ojo”:</p>
-<p>Hacemos lo mismo en R:</p>
-<pre class="r"><code>lambda &lt;- .7
-n &lt;- sum(cuentas$n)
+<p>La tabla anterior muestra los datos de 20 años para 14 cuerpos. Cada combinación de año-cuerpo representa una observación. No pases rápido esta parte porque es importante para entender lo que viene después.</p>
+<p>Cada año cuerpo es una <em>unidad de exposición</em> al riesgo de que un caballo te pegue una patada. El riesgo no lo corre el soldado, ni en cuerpo, ni el año. El riesgo lo corre el año-cuerpo. Los datos estan disponibles en un paquete de R:</p>
+<pre><code>## # A tibble: 6 × 3
+##   corps  year  kick
+##   &lt;fct&gt; &lt;int&gt; &lt;int&gt;
+## 1 G      1875     0
+## 2 I      1875     0
+## 3 II     1875     0
+## 4 III    1875     0
+## 5 IV     1875     0
+## 6 V      1875     0</code></pre>
+<p>Los datos nos dicen cuantas veces ocurrió el evento para 240 unidades de exposición al riesgo. La mayor parte de las veces, el evento no ocurre. Entre 1875 y 1894, los datos tienen hubo 196 muertos por patadas de caballo.</p>
+<p>Como el evento es bastante raro, en la mayor parte de las unidades de exposición al riesgo, el evento no ocurrió. En el peor escenario, un cuerpo perdía 4 soldados en un año por esta causa (cuerpos XIV en el 80 y el 82):</p>
+<pre class="r"><code>patadas |&gt; 
+  filter(kick==4)</code></pre>
+<pre><code>## # A tibble: 2 × 3
+##   corps  year  kick
+##   &lt;fct&gt; &lt;int&gt; &lt;int&gt;
+## 1 XIV    1880     4
+## 2 XIV    1882     4</code></pre>
+<p>Si miramos toda la distribución vemos que la cantidad de unidades decrece rápidamente con la cantidad de ocurrencias del evento: la mayor parte de las veces la cantidad es 0, algunos tienen 1 muerto, pocos 2, muy pocos 3 y casi ninguno 4:</p>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>En promedio, las unidades registran el evento 0.7 veces. O sea, para cada año y para cada cuerpo, el promedio de soldados muertos es 0.7.</p>
+<p><a href="https://en.wikipedia.org/wiki/Ladislaus_Bortkiewicz">Ladislaus von Bortkeiwicz</a> descubrió que estos datos siguen una distribución Poisson. Esta distribución sirve para modelar eventos raros que suceden en forma independiente con una tasa de ocurrencia (<span class="math inline">\(\lambda\)</span>) constante.</p>
+<p>Si <span class="math inline">\(X\)</span> sigue una distribución Poisson, <span class="math inline">\(\lambda\)</span> es la esperanza de ocurrencia del evento por <em>unidad de exposición</em>. Por eso te dije que prestaras atención al principio. El estimador de <span class="math inline">\(\lambda\)</span> es el promedio de ocurrencias del evento para las unidades de exposición: 0.7. Una vez que tenemos un estimador de <span class="math inline">\(\lambda\)</span>, podemos calcular cuantas veces esperamos ver 0, 1, 2, 3 y 4 muertos usando la función de densidad:</p>
+<p><span class="math display">\[ P(X=x) = \frac{e^{-\lambda}  \lambda^x}{x!} \]</span></p>
+<p>No tengo idea de cómo se calculaba esto en Europa del Este a fines del siglo XIX, pero en R es fácil con la función <code>dpois</code>:</p>
+<pre class="r"><code>lambda &lt;- mean(patadas$kick)
+
 cuentas &lt;- cuentas |&gt; 
-  mutate(pred=round(exp(-lambda)*lambda^muertes/factorial(muertes)*sum(n))) |&gt; 
+  mutate(pred=dpois(muertes, lambda) * sum(n)) |&gt; 
   tidyr::pivot_longer(-muertes)
 
 cuentas |&gt; 
@@ -191,4 +206,4 @@ cuentas |&gt;
   scale_fill_manual(&quot;&quot;,
     values = c(&quot;#1E1C1A&quot;, &quot;#6E6B68&quot;)) +
   labs(x=&quot;Muertes por patada&quot;, y=&quot;N&quot;)</code></pre>
-<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
