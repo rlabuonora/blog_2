@@ -9,13 +9,103 @@ images: []
 sidebar_image: "Ladislaus_Bortkiewicz.jpg"
 sidebar_caption: "Ladislaus von Bortkeiwicz"
 draft: false
+header-includes:
+  - |
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;600;700&display=swap");
+      :root {
+        --title-font: "IBM Plex Sans", sans-serif;
+        --body-font: "EB Garamond", serif;
+      }
+      body, p, li, blockquote, .post-content, #container, #container main {
+        font-family: var(--body-font) !important;
+      }
+      body {
+        font-size: 1.5rem;
+      }
+      #container main article,
+      #container main article p,
+      #container main article li {
+        font-size: 1.5rem;
+      }
+      a {
+        color: #2F3E4E;
+        text-decoration: none;
+      }
+      table {
+        background: #F1EFEA;
+        border: 1px solid #CFCFCF;
+        color: inherit;
+      }
+      table th,
+      table td {
+        border-color: #CFCFCF;
+      }
+      h1, h2, h3, h4, h5, h6, .post-title, .entry-title, #container header h1 {
+        font-family: var(--title-font) !important;
+      }
+      #container header h1,
+      h1,
+      .post-title,
+      .entry-title {
+        font-size: 2rem;
+        text-align: center;
+      }
+      #container nav ul li a {
+        font-size: 1.05rem;
+      }
+      #container header h1 {
+        text-align: left;
+      }
+      .post-title + p,
+      .entry-title + p,
+      #container main h1 + p {
+        margin-top: 0.2rem;
+      }
+      #container main article > h1 {
+        margin-bottom: 0.2rem;
+      }
+      #container main article aside {
+        margin: 0;
+      }
+      #container main article > p:first-of-type {
+        margin-top: 0;
+      }
+      .post-sidebar .sidebar-figure {
+        margin: 0;
+      }
+      #container main article > pre {
+        background-color: transparent;
+        box-shadow: none;
+      }
+      #container main article pre.r,
+      #container main article .highlight pre {
+        background-color: #f1f1f1;
+      }
+    </style>
 ---
 ```{r warning=FALSE, message=FALSE, echo=FALSE}
 suppressPackageStartupMessages({
   library(dplyr)
   library(tibble)
   library(ggplot2)
+  library(showtext)
 })
+
+font_add_google(name = "EB Garamond", family = "EB Garamond")
+font_add_google(name = "IBM Plex Sans", family = "IBM Plex Sans")
+showtext_auto()
+theme_set(
+  theme_minimal(base_family = "EB Garamond") +
+    theme(
+      plot.title = element_text(family = "IBM Plex Sans", color = "#2B2B2B"),
+      plot.subtitle = element_text(family = "IBM Plex Sans", color = "#2B2B2B"),
+      axis.title = element_text(size = 16),
+      axis.text = element_text(size = 14),
+      legend.title = element_text(size = 14),
+      legend.text = element_text(size = 13)
+    )
+)
 ```
 
 
@@ -37,7 +127,7 @@ patadas <- hkdeaths |>
 head(patadas)
 ```
 
-Cada fila corresponde a un cuerpo-año, y las columnas muestran cuantos muertos hubo por cada causa (también hay datos de ahogamientos y caídas). El dataset registra `r sum(patadas$kick)` muertes entre 1875 y 1894. 
+Cada fila corresponde a un cuerpo-año, y las columnas muestran cuantos muertos hubo por cada causa (también hay datos de ahogamientos y caídas). Hay datos de XX cuerpos para los 20 años, por lo que el data frame tiene XX filas y `r sum(patadas$kick)` muertes entre 1875 y 1894. 
 
 Si contamos las muertes por cada cuerpo-año, vemos que las muertes por patada de caballo son raras: en cada cuerpo de caballería, lo más probable es que en un año determinado no haya soldados muertos:
 
@@ -50,7 +140,8 @@ cuentas <- patadas |>
 
 cuentas |> 
   ggplot(aes(muertes, n)) +
-  geom_col()
+  geom_col(fill = "#1E1C1A") +
+  labs(x="Muertes por patada", y="N")
 
 ```
 
@@ -58,7 +149,7 @@ Ladislaus von Bortkeiwicz descubrió que la distribución Poisson se ajusta bast
 
 $$ X \sim \operatorname{Poisson}(\lambda) $$
 $$ P(X=x) = \frac{e^{-\lambda}  \lambda^x}{x!} $$
-Para mostrar eso hizo dos cosas: 1) calculó el valor de $\lambda$ en base a los datos obervados, y 2) comparó la distribución observada con la teórica.
+Para mostrar eso hizo dos cosas: 1) calculó el valor de $\lambda$ en base a los datos obervados, y 2) comparó la distribución observada con la teórica. El valor de lambda es la tasa promedio de muertes. La comparación la hizo "a ojo":
 
 
 Hacemos lo mismo en R:
@@ -71,8 +162,8 @@ cuentas <- cuentas |>
 
 cuentas |> 
   ggplot(aes(muertes, value, fill=name)) + 
-  geom_col(position="dodge")
+  geom_col(position="dodge") +
+  scale_fill_manual("",
+    values = c("#1E1C1A", "#6E6B68")) +
+  labs(x="Muertes por patada", y="N")
 ```
-
-
-

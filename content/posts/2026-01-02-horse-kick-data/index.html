@@ -9,8 +9,154 @@ images: []
 sidebar_image: "Ladislaus_Bortkiewicz.jpg"
 sidebar_caption: "Ladislaus von Bortkeiwicz"
 draft: false
+header-includes:
+  - |
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;600;700&display=swap");
+      :root {
+        --title-font: "IBM Plex Sans", sans-serif;
+        --body-font: "EB Garamond", serif;
+      }
+      body, p, li, blockquote, .post-content, #container, #container main {
+        font-family: var(--body-font) !important;
+      }
+      body {
+        font-size: 1.5rem;
+      }
+      #container main article,
+      #container main article p,
+      #container main article li {
+        font-size: 1.5rem;
+      }
+      a {
+        color: #2F3E4E;
+        text-decoration: none;
+      }
+      table {
+        background: #F1EFEA;
+        border: 1px solid #CFCFCF;
+        color: inherit;
+      }
+      table th,
+      table td {
+        border-color: #CFCFCF;
+      }
+      h1, h2, h3, h4, h5, h6, .post-title, .entry-title, #container header h1 {
+        font-family: var(--title-font) !important;
+      }
+      #container header h1,
+      h1,
+      .post-title,
+      .entry-title {
+        font-size: 2rem;
+        text-align: center;
+      }
+      #container nav ul li a {
+        font-size: 1.05rem;
+      }
+      #container header h1 {
+        text-align: left;
+      }
+      .post-title + p,
+      .entry-title + p,
+      #container main h1 + p {
+        margin-top: 0.2rem;
+      }
+      #container main article > h1 {
+        margin-bottom: 0.2rem;
+      }
+      #container main article aside {
+        margin: 0;
+      }
+      #container main article > p:first-of-type {
+        margin-top: 0;
+      }
+      .post-sidebar .sidebar-figure {
+        margin: 0;
+      }
+      #container main article > pre {
+        background-color: transparent;
+        box-shadow: none;
+      }
+      #container main article pre.r,
+      #container main article .highlight pre {
+        background-color: #f1f1f1;
+      }
+    </style>
 ---
 
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;600;700&display=swap");
+  :root {
+    --title-font: "IBM Plex Sans", sans-serif;
+    --body-font: "EB Garamond", serif;
+  }
+  body, p, li, blockquote, .post-content, #container, #container main {
+    font-family: var(--body-font) !important;
+  }
+  body {
+    font-size: 1.5rem;
+  }
+  #container main article,
+  #container main article p,
+  #container main article li {
+    font-size: 1.5rem;
+  }
+  a {
+    color: #2F3E4E;
+    text-decoration: none;
+  }
+  table {
+    background: #F1EFEA;
+    border: 1px solid #CFCFCF;
+    color: inherit;
+  }
+  table th,
+  table td {
+    border-color: #CFCFCF;
+  }
+  h1, h2, h3, h4, h5, h6, .post-title, .entry-title, #container header h1 {
+    font-family: var(--title-font) !important;
+  }
+  #container header h1,
+  h1,
+  .post-title,
+  .entry-title {
+    font-size: 2rem;
+    text-align: center;
+  }
+  #container nav ul li a {
+    font-size: 1.05rem;
+  }
+  #container header h1 {
+    text-align: left;
+  }
+  .post-title + p,
+  .entry-title + p,
+  #container main h1 + p {
+    margin-top: 0.2rem;
+  }
+  #container main article > h1 {
+    margin-bottom: 0.2rem;
+  }
+  #container main article aside {
+    margin: 0;
+  }
+  #container main article > p:first-of-type {
+    margin-top: 0;
+  }
+  .post-sidebar .sidebar-figure {
+    margin: 0;
+  }
+  #container main article > pre {
+    background-color: transparent;
+    box-shadow: none;
+  }
+  #container main article pre.r,
+  #container main article .highlight pre {
+    background-color: #f1f1f1;
+  }
+</style>
 
 
 <p>En la época de la guerra Franco-Prusiana, los prusianos llevaban registros detallados de la muerte de los soldados. Cada vez que un caballo mataba a a un soldado de una patada, quedaba registrado:</p>
@@ -25,13 +171,13 @@ draft: false
 ## 4  1875 III           4     0     0     7     1         0
 ## 5  1875 IV            4     0     0     7     0         0
 ## 6  1875 V             4     0     0    11     0         0</code></pre>
-<p>Cada fila corresponde a un cuerpo-año, y las columnas muestran cuantos muertos hubo por cada causa (también hay datos de ahogamientos y caídas). El dataset registra 196 muertes entre 1875 y 1894.</p>
+<p>Cada fila corresponde a un cuerpo-año, y las columnas muestran cuantos muertos hubo por cada causa (también hay datos de ahogamientos y caídas). Hay datos de XX cuerpos para los 20 años, por lo que el data frame tiene XX filas y 196 muertes entre 1875 y 1894.</p>
 <p>Si contamos las muertes por cada cuerpo-año, vemos que las muertes por patada de caballo son raras: en cada cuerpo de caballería, lo más probable es que en un año determinado no haya soldados muertos:</p>
 <p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
 <p>Ladislaus von Bortkeiwicz descubrió que la distribución Poisson se ajusta bastante a los datos. Esta distribución sirve cuando los eventos suceden en forma independiente, los eventos son raros y la tasa de ocurrencia del evento es constante.</p>
 <p><span class="math display">\[ X \sim \operatorname{Poisson}(\lambda) \]</span>
 <span class="math display">\[ P(X=x) = \frac{e^{-\lambda}  \lambda^x}{x!} \]</span>
-Para mostrar eso hizo dos cosas: 1) calculó el valor de <span class="math inline">\(\lambda\)</span> en base a los datos obervados, y 2) comparó la distribución observada con la teórica.</p>
+Para mostrar eso hizo dos cosas: 1) calculó el valor de <span class="math inline">\(\lambda\)</span> en base a los datos obervados, y 2) comparó la distribución observada con la teórica. El valor de lambda es la tasa promedio de muertes. La comparación la hizo “a ojo”:</p>
 <p>Hacemos lo mismo en R:</p>
 <pre class="r"><code>lambda &lt;- .7
 n &lt;- sum(cuentas$n)
@@ -41,5 +187,8 @@ cuentas &lt;- cuentas |&gt;
 
 cuentas |&gt; 
   ggplot(aes(muertes, value, fill=name)) + 
-  geom_col(position=&quot;dodge&quot;)</code></pre>
+  geom_col(position=&quot;dodge&quot;) +
+  scale_fill_manual(&quot;&quot;,
+    values = c(&quot;#1E1C1A&quot;, &quot;#6E6B68&quot;)) +
+  labs(x=&quot;Muertes por patada&quot;, y=&quot;N&quot;)</code></pre>
 <p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
