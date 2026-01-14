@@ -9,7 +9,7 @@ images: []
 ---
 
 
-# Summer project
+## Summer project
 
 Over the summer, I decided to research how to use LLM's for learning. I have been teaching economics, econometrics and data science for more than a decade, but never got any formal training on teaching or pedagogy. My first realization was that to use technology effectively, I needed to learn about the science of learning. 
 
@@ -20,7 +20,7 @@ based on what we know about how the brain works. Other technologies like schools
 
 As a long time teacher and casual reader of the scientific literature on learning, a lot of the science resonates with me and what I naturally do in the classroom. Others principles were quite new to me, so that was very useful too! The dirty secret of education systems is that some of the principles that emerge from the literature are very hard to put into practice in a normal classroom setting, so most teachers ignore them. 
 
-# A brief note about me, learning and math
+## A brief note about me, learning and math
 
 In my early twenties, I discovered I loved learning. I started listening to podcasts and lectures , mostly about literature, history and economics. That way I learned a lot and discovered great teachers that inspired me to become a teacher myself. The best teachers were the ones that kept you engaged and were able to hold your attention for an hour, so that was what I tried to do in the classroom. 
 
@@ -30,7 +30,7 @@ As I got older, I became more interested in math and science, and also started w
 
 I was always ok at math. I studied very little in high school, but managed to escape it learning a few derivative formulas and the formula for the roots of a quadratic polynomial. As I advanced in my university courses, I got more interested and managed to get through Calculus, Linear Algebra, Probability and Statistics. I even took a few classed that required Differential Equations and Control Theory. After getting my degree, I taught econometrics for a few years, so I had to learn statistics. I got pretty good at using results but knew that the building of my math knowledge had very shaky foundations. I had never seen complex numbers, trigonometry or geometry in formal course, so had zero knowledge on those topics. Throughout the years, I have always had a growing interest in math, and realized that it underpins all the things I want to learn more about and get good at. I pushed to fill in those gaps, and even expand my knowledge a bit further, but was pretty inconsistent.
 
-# Back to MA
+## Back to MA
 
 So what are the main findings of the literature on learning? What is the best way to use  technology to leverage these findings? Here are the main principles MA is built on.
 
