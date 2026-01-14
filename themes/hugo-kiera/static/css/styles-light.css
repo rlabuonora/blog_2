@@ -140,6 +140,10 @@ time {
   border-bottom: none;
 }
 
+#container main section#list a {
+  text-decoration: none;
+}
+
 #container main section.post-nav ul {
   margin: 0.5em 0;
   padding: 0.5em 0 0;
