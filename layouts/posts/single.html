@@ -1,0 +1,11 @@
+{{ define "main" }}
+<div class="post-layout">
+  <div class="post-main">
+    {{ partial "post_article" . }}
+    {{ partial "single_footer" . }}
+  </div>
+  <aside class="post-sidebar" aria-label="Post sidebar">
+    {{ partial "post_sidebar" . }}
+  </aside>
+</div>
+{{ end }}

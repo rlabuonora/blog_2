@@ -1,0 +1,45 @@
+---
+title: 'Muerte por patada de caballo prusiano'
+author: ''
+date: '2023-01-02'
+slug: []
+categories: []
+tags: []
+images: []
+sidebar_image: "Ladislaus_Bortkiewicz.jpg"
+sidebar_caption: "Ladislaus von Bortkeiwicz"
+draft: true
+---
+
+
+
+<p>En la época de la guerra Franco-Prusiana, los prusianos llevaban registros detallados de la muerte de los soldados. Cada vez que un caballo mataba a a un soldado de una patada, quedaba registrado:</p>
+<p><img src="tabla.png" /></p>
+<p>Los datos estan disponibles en un paquete de R:</p>
+<pre><code>## # A tibble: 6 × 8
+##    year corps regiments  NCOs  kick drown  fall vonB_kick
+##   &lt;int&gt; &lt;fct&gt;     &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;     &lt;int&gt;
+## 1  1875 G             8     0     0     3     0         0
+## 2  1875 I             6     0     0     5     0         0
+## 3  1875 II            4     0     0     6     0         0
+## 4  1875 III           4     0     0     7     1         0
+## 5  1875 IV            4     0     0     7     0         0
+## 6  1875 V             4     0     0    11     0         0</code></pre>
+<p>Cada fila corresponde a un cuerpo-año, y las columnas muestran cuantos muertos hubo por cada causa (también hay datos de ahogamientos y caídas). El dataset registra 196 muertes entre 1875 y 1894.</p>
+<p>Si contamos las muertes por cada cuerpo-año, vemos que las muertes por patada de caballo son raras: en cada cuerpo de caballería, lo más probable es que en un año determinado no haya soldados muertos:</p>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>Ladislaus von Bortkeiwicz descubrió que la distribución Poisson se ajusta bastante a los datos. Esta distribución sirve cuando los eventos suceden en forma independiente, los eventos son raros y la tasa de ocurrencia del evento es constante.</p>
+<p><span class="math display">\[ X \sim \operatorname{Poisson}(\lambda) \]</span>
+<span class="math display">\[ P(X=x) = \frac{e^{-\lambda}  \lambda^x}{x!} \]</span>
+Para mostrar eso hizo dos cosas: 1) calculó el valor de <span class="math inline">\(\lambda\)</span> en base a los datos obervados, y 2) comparó la distribución observada con la teórica.</p>
+<p>Hacemos lo mismo en R:</p>
+<pre class="r"><code>lambda &lt;- .7
+n &lt;- sum(cuentas$n)
+cuentas &lt;- cuentas |&gt; 
+  mutate(pred=round(exp(-lambda)*lambda^muertes/factorial(muertes)*sum(n))) |&gt; 
+  tidyr::pivot_longer(-muertes)
+
+cuentas |&gt; 
+  ggplot(aes(muertes, value, fill=name)) + 
+  geom_col(position=&quot;dodge&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>

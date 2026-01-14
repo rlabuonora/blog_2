@@ -1,0 +1,79 @@
+---
+title: 'Muerte por patada de caballo prusiano'
+author: ''
+date: '2023-01-02'
+slug: []
+categories: []
+tags: []
+images: []
+sidebar_image: "Ladislaus_Bortkiewicz.jpg"
+sidebar_caption: "Ladislaus von Bortkeiwicz"
+draft: true
+---
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+suppressPackageStartupMessages({
+  library(dplyr)
+  library(tibble)
+  library(ggplot2)
+})
+```
+
+
+En la época de la guerra Franco-Prusiana, los prusianos llevaban registros detallados de la muerte de los soldados. Cada vez que un caballo mataba a a un soldado de una patada, quedaba registrado:
+
+![](./tabla.png)
+
+Los datos estan disponibles en un paquete de R:
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+
+
+library(Horsekicks)
+
+patadas <- hkdeaths |> 
+  filter(between(year, 1875, 1894)) |> 
+  tibble::as_tibble()
+
+head(patadas)
+```
+
+Cada fila corresponde a un cuerpo-año, y las columnas muestran cuantos muertos hubo por cada causa (también hay datos de ahogamientos y caídas). El dataset registra `r sum(patadas$kick)` muertes entre 1875 y 1894. 
+
+Si contamos las muertes por cada cuerpo-año, vemos que las muertes por patada de caballo son raras: en cada cuerpo de caballería, lo más probable es que en un año determinado no haya soldados muertos:
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+cuentas <- patadas |> 
+  group_by(year, corps) |> 
+  summarise(muertes=(sum(kick))) |> 
+  ungroup() |> 
+  count(muertes)
+
+cuentas |> 
+  ggplot(aes(muertes, n)) +
+  geom_col()
+
+```
+
+Ladislaus von Bortkeiwicz descubrió que la distribución Poisson se ajusta bastante a los datos. Esta distribución sirve cuando los eventos suceden en forma independiente, los eventos son raros y la tasa de ocurrencia del evento es constante.
+
+$$ X \sim \operatorname{Poisson}(\lambda) $$
+$$ P(X=x) = \frac{e^{-\lambda}  \lambda^x}{x!} $$
+Para mostrar eso hizo dos cosas: 1) calculó el valor de $\lambda$ en base a los datos obervados, y 2) comparó la distribución observada con la teórica.
+
+
+Hacemos lo mismo en R:
+```{r}
+lambda <- .7
+n <- sum(cuentas$n)
+cuentas <- cuentas |> 
+  mutate(pred=round(exp(-lambda)*lambda^muertes/factorial(muertes)*sum(n))) |> 
+  tidyr::pivot_longer(-muertes)
+
+cuentas |> 
+  ggplot(aes(muertes, value, fill=name)) + 
+  geom_col(position="dodge")
+```
+
+
+
+

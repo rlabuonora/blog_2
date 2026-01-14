@@ -410,6 +410,54 @@ figure.float-right figcaption {
   margin-left: 1em;
 }
 
+.post-layout {
+  position: relative;
+}
+
+.post-main {
+  width: 100%;
+}
+
+.post-sidebar {
+  position: absolute;
+  top: 0;
+  left: calc(100% + 2rem);
+  width: 240px;
+}
+
+.post-sidebar aside {
+  margin: 0.5em 0;
+  font-family: "Ruda", sans-serif;
+  color: #909090;
+  font-size: 0.8em;
+}
+
+.post-sidebar aside ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.post-sidebar aside ul li {
+  margin: 0;
+  padding: 0;
+}
+
+.post-sidebar .sidebar-figure {
+  margin: 1rem 0;
+}
+
+@media only screen and (max-width: 900px) {
+  .post-layout {
+    position: static;
+  }
+
+  .post-sidebar {
+    position: static;
+    width: 100%;
+  }
+}
+
 table {
   width: 100%;
   border-bottom: solid 1px #cecece;

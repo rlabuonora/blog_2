@@ -1,0 +1,19 @@
+{{ if or (not (isset .Params "meta")) (eq .Params.meta true) }}
+  <div class="post-sidebar-meta">
+    {{ partial "aside" . }}
+  </div>
+{{ end }}
+
+{{ with .Params.sidebar_image }}
+  {{ $img := $.Resources.GetMatch . }}
+  <figure class="sidebar-figure">
+    {{ if $img }}
+      <img src="{{ $img.RelPermalink }}" alt="{{ $.Params.sidebar_caption | default $.Title }}">
+    {{ else }}
+      <img src="{{ . }}" alt="{{ $.Params.sidebar_caption | default $.Title }}">
+    {{ end }}
+    {{ with $.Params.sidebar_caption }}
+      <figcaption>{{ . }}</figcaption>
+    {{ end }}
+  </figure>
+{{ end }}
